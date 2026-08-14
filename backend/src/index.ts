@@ -27,6 +27,19 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')))
 // ── Routen ──────────────────────────────────────────
 app.use('/api', router)
 
+// ── Frontend (Produktion) ────────────────────────────
+// Plesk betreibt pro (Sub-)Domain eine einzelne Node.js-App, daher liefert
+// Express hier zusätzlich das gebaute React-Frontend aus (SPA-Fallback für
+// alles außer /api und /uploads). Im lokalen Dev-Betrieb übernimmt stattdessen
+// der Vite-Dev-Server (:3000) das Frontend, dieser Block bleibt dann inaktiv.
+if (process.env.NODE_ENV === 'production') {
+  const frontendDist = path.join(__dirname, '..', '..', 'frontend', 'dist')
+  app.use(express.static(frontendDist))
+  app.get(/^\/(?!api|uploads).*/, (_req, res) => {
+    res.sendFile(path.join(frontendDist, 'index.html'))
+  })
+}
+
 // ── Fehlerbehandlung ────────────────────────────────
 app.use(notFound)
 app.use(errorHandler)
