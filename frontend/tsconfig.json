@@ -28,7 +28,7 @@
       "@pages/*": ["src/pages/*"],
       "@hooks/*": ["src/hooks/*"],
       "@services/*": ["src/services/*"],
-      "@types/*": ["src/types/*"],
+      "@app-types/*": ["src/types/*"],
       "@utils/*": ["src/utils/*"],
       "@context/*": ["src/context/*"],
       "@config/*": ["src/config/*"],

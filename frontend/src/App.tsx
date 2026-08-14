@@ -1,13 +1,14 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
+import { AuthProvider } from '@context/AuthContext'
+import { AppRoutes } from './router'
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<div>Startseite</div>} />
-        {/* Weitere Routen hier einfügen */}
-      </Routes>
-    </Router>
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
   )
 }
 

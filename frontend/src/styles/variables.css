@@ -1,1 +1,78 @@
-/* Zusätzliche CSS-Variablen können hier definiert werden */
+/*
+  Strothi Hub — Design-Tokens
+  Angelehnt an das Farbschema von strothi.de (dunkles Navy, Blau/Lila-Akzent).
+  .light auf <html> aktiviert das helle Theme (siehe ThemeToggle).
+*/
+
+:root {
+  color-scheme: dark;
+
+  /* Akzentfarbe (Buttons, Links, aktive Zustände) */
+  --color-primary: #33a1fd;
+  --color-primary-dark: #7c3aed;
+  --color-primary-light: #5fb6ff;
+
+  /* Flächen */
+  --color-background: #0c121b;
+  --color-surface: #1a2433;
+  --color-surface-alt: #060a0f;
+
+  /* Text */
+  --color-text: #e6e6e6;
+  --color-text-muted: #94a1b2;
+
+  --color-border: rgba(255, 255, 255, 0.1);
+
+  --color-error: #f87171;
+  --color-success: #4ade80;
+
+  /* Typographie */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Poppins', 'Inter', system-ui, sans-serif;
+  --font-mono: 'Courier New', monospace;
+
+  /* Radien */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* Schatten */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 14px rgba(51, 161, 253, 0.45);
+  --shadow-glow-hover: 0 0 18px rgba(124, 58, 237, 0.5);
+
+  /* Abstände */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+}
+
+.light {
+  color-scheme: light;
+
+  --color-primary: #007aff;
+  --color-primary-dark: #6b46c1;
+  --color-primary-light: #3395ff;
+
+  --color-background: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-surface-alt: #e9e9e9;
+
+  --color-text: #0c121b;
+  --color-text-muted: #5a6472;
+
+  --color-border: rgba(0, 0, 0, 0.1);
+
+  --color-error: #dc2626;
+  --color-success: #16a34a;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 0 14px rgba(0, 122, 255, 0.25);
+  --shadow-glow-hover: 0 0 18px rgba(107, 70, 193, 0.3);
+}

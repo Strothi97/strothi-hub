@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import type { ApiError } from '@types/index'
+import type { ApiError } from '@app-types/index'
 
 interface UseApiState<T> {
   data: T | null

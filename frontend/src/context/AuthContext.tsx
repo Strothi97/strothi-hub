@@ -1,10 +1,13 @@
-import { createContext, useContext, useState, ReactNode } from 'react'
-import type { User } from '@types/index'
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import type { User } from '@app-types/index'
+import { authService } from '@services/auth.service'
 
 interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
-  login: (token: string, user: User) => void
+  isAdmin: boolean
+  loading: boolean
+  login: (email: string, password: string) => Promise<void>
   logout: () => void
 }
 
@@ -12,10 +15,26 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  const login = (token: string, userData: User) => {
-    localStorage.setItem('token', token)
-    setUser(userData)
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      setLoading(false)
+      return
+    }
+
+    authService
+      .me()
+      .then(({ data }) => setUser(data.user))
+      .catch(() => localStorage.removeItem('token'))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const login = async (email: string, password: string) => {
+    const { data } = await authService.login(email, password)
+    localStorage.setItem('token', data.token)
+    setUser(data.user)
   }
 
   const logout = () => {
@@ -25,7 +44,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated: !!user, login, logout }}
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isAdmin: user?.role === 'ADMIN',
+        loading,
+        login,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -1,11 +1,14 @@
 import { Router } from 'express'
-import { login, register, getMe } from '../controllers/auth.controller'
+import { login, getMe } from '../controllers/auth.controller'
 import { authenticate } from '../middleware/authenticate'
-// import { validateLogin, validateRegister } from '../middleware/validators'
+// import { validateLogin } from '../middleware/validators'
 
 const router = Router()
 
-router.post('/register', register)
+// Keine öffentliche Registrierung: Nutzer werden über /api/admin/users
+// vom Admin angelegt. Falls später eine öffentliche Registrierung
+// gewünscht ist (z.B. für ein kostenpflichtiges Tool), kann hier wieder
+// eine Route ergänzt werden, die createUser() aus auth.service nutzt.
 router.post('/login', login)
 router.get('/me', authenticate, getMe)
 

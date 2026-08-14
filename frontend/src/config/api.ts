@@ -4,9 +4,13 @@ export const API_ENDPOINTS = {
   // Auth
   auth: {
     login: '/auth/login',
-    register: '/auth/register',
-    logout: '/auth/logout',
     me: '/auth/me',
+  },
+  tools: '/tools',
+  admin: {
+    users: '/admin/users',
+    user: (id: string) => `/admin/users/${id}`,
+    userToolAccess: (id: string) => `/admin/users/${id}/tool-access`,
   },
   // Weitere Endpunkte hier ergänzen
 } as const
