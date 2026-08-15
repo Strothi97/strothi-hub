@@ -418,7 +418,7 @@
 
 .month-grid__row {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: 2rem repeat(5, 1fr);
   gap: var(--space-2);
 }
 
@@ -430,6 +430,19 @@
   text-transform: uppercase;
   letter-spacing: 0.03em;
   padding-bottom: var(--space-1);
+}
+
+.month-grid__header-cell--kw {
+  opacity: 0.6;
+}
+
+.month-grid__kw-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
 }
 
 .month-day-tile {

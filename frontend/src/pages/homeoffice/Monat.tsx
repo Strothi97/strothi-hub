@@ -3,47 +3,50 @@ import { homeofficeService } from '@services/homeoffice.service'
 import { Button } from '@components/ui/Button'
 import { STATUS_META, chipStyle } from './status'
 import { DayStatusModal } from './DayStatusModal'
+import { MONTH_NAMES, addDays, getISOWeekNumber } from './constants'
 import type { ResolvedDay, WorkDayStatus } from '@app-types/homeoffice'
 
 const WEEKDAY_HEADERS = ['Mo', 'Di', 'Mi', 'Do', 'Fr']
-const MONTH_NAMES = [
-  'Januar',
-  'Februar',
-  'März',
-  'April',
-  'Mai',
-  'Juni',
-  'Juli',
-  'August',
-  'September',
-  'Oktober',
-  'November',
-  'Dezember',
-]
+
+interface WeekRow {
+  weekNumber: number
+  cells: (ResolvedDay | null)[]
+}
 
 // Gruppiert die (bereits nur Werktage enthaltende) Tagesliste in Kalenderwochen-
 // Zeilen zu je 5 Spalten (Mo–Fr) und füllt führende/fehlende Tage am Monatsanfang
 // bzw. -ende mit `null`-Platzhaltern auf, damit das Raster sauber ausgerichtet bleibt.
-function groupIntoWeekRows(days: ResolvedDay[]): (ResolvedDay | null)[][] {
-  const rows: (ResolvedDay | null)[][] = []
-  let currentRow: (ResolvedDay | null)[] = []
+// Jede Zeile bekommt zusätzlich ihre ISO-Kalenderwoche — dafür wird der Montag der
+// Woche rekonstruiert, auch wenn er (bei Monatsanfang mitten in der Woche) selbst
+// außerhalb des angezeigten Monats liegt und daher nicht in `days` enthalten ist.
+function groupIntoWeekRows(days: ResolvedDay[]): WeekRow[] {
+  const rows: WeekRow[] = []
+  let currentCells: (ResolvedDay | null)[] = []
+  let currentMonday: Date | null = null
 
   for (const day of days) {
     const [year, month, dayOfMonth] = day.date.split('-').map(Number)
-    const weekday = new Date(year, month - 1, dayOfMonth).getDay() // 1=Mo ... 5=Fr
+    const date = new Date(year, month - 1, dayOfMonth)
+    const weekday = date.getDay() // 1=Mo ... 5=Fr
     const column = weekday - 1
 
-    if (column === 0 && currentRow.length > 0) {
-      rows.push(currentRow)
-      currentRow = []
+    if (column === 0 && currentCells.length > 0) {
+      rows.push({ weekNumber: getISOWeekNumber(currentMonday!), cells: currentCells })
+      currentCells = []
+      currentMonday = null
     }
-    while (currentRow.length < column) currentRow.push(null)
-    currentRow.push(day)
+
+    if (currentMonday === null) {
+      currentMonday = addDays(date, -column)
+    }
+
+    while (currentCells.length < column) currentCells.push(null)
+    currentCells.push(day)
   }
 
-  if (currentRow.length > 0) {
-    while (currentRow.length < 5) currentRow.push(null)
-    rows.push(currentRow)
+  if (currentCells.length > 0) {
+    while (currentCells.length < 5) currentCells.push(null)
+    rows.push({ weekNumber: getISOWeekNumber(currentMonday!), cells: currentCells })
   }
 
   return rows
@@ -118,15 +121,19 @@ export function Monat() {
       ) : (
         <div className="month-grid">
           <div className="month-grid__row month-grid__row--header">
+            <div className="month-grid__header-cell month-grid__header-cell--kw">KW</div>
             {WEEKDAY_HEADERS.map((label) => (
               <div key={label} className="month-grid__header-cell">
                 {label}
               </div>
             ))}
           </div>
-          {rows.map((row, rowIndex) => (
-            <div key={rowIndex} className="month-grid__row">
-              {row.map((day, colIndex) =>
+          {rows.map((row) => (
+            <div key={row.weekNumber} className="month-grid__row">
+              <div className="month-grid__kw-cell" aria-hidden="true">
+                {row.weekNumber}
+              </div>
+              {row.cells.map((day, colIndex) =>
                 day ? (
                   <button
                     key={day.date}
