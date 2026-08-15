@@ -4,6 +4,7 @@
 
 .homeoffice-nav {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
   margin: var(--space-3) 0 var(--space-4);
   border-bottom: 1px solid var(--color-border);
@@ -15,6 +16,14 @@
   border-radius: var(--radius-md);
   color: var(--color-text-muted);
   font-weight: 500;
+  white-space: nowrap;
+}
+
+@media (max-width: 400px) {
+  .homeoffice-nav__link {
+    padding: var(--space-1) var(--space-2);
+    font-size: 0.9rem;
+  }
 }
 
 .homeoffice-nav__link:hover {

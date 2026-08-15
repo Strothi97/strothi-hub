@@ -14,6 +14,14 @@ html {
   scroll-behavior: smooth;
 }
 
+html,
+body {
+  /* Sicherheitsnetz: ein einzelnes zu breites Element (Tabelle, Nav, ...)
+     soll nie die ganze Seite horizontal scrollbar machen. */
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   font-family: var(--font-sans);
   color: var(--color-text);
