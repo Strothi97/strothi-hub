@@ -37,7 +37,7 @@ export function Login() {
         <ThemeToggle />
       </div>
       <Card className="login-card">
-        <h1 className="brand-gradient">Strothi Hub</h1>
+        <h1 className="brand-gradient">Strothi's Hub</h1>
         <form onSubmit={handleSubmit}>
           <Input
             id="login-email"
