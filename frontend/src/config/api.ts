@@ -7,6 +7,9 @@ export const API_ENDPOINTS = {
     me: '/auth/me',
   },
   tools: '/tools',
+  preferences: {
+    dashboard: '/preferences/dashboard',
+  },
   admin: {
     users: '/admin/users',
     user: (id: string) => `/admin/users/${id}`,

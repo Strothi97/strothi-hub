@@ -25,6 +25,11 @@ export interface AdminUser extends User {
   toolAccess: string[]
 }
 
+export interface DashboardPreferences {
+  hideComingSoonTools: boolean
+  toolOrder: string[]
+}
+
 export interface ApiResponse<T> {
   data: T
   message?: string

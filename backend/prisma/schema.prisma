@@ -24,6 +24,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Dashboard-Einstellungen (Kachel-Reihenfolge & Sichtbarkeit)
+  hideComingSoonTools Boolean @default(false)
+  toolOrder           Json?
+
   toolAccess          UserToolAccess[]
   workDayEntries      WorkDayEntry[]
   federalStates       UserFederalState[]
