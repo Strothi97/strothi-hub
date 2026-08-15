@@ -77,6 +77,7 @@ export function Jahr() {
   const current = data[year]
 
   const todayIso = useMemo(() => toISODate(new Date()), [])
+  const isCurrentYear = year === new Date().getFullYear()
 
   const { elapsedCounts, elapsedTotal } = useMemo(() => {
     const counts: Record<WorkDayStatus, number> = {
@@ -142,8 +143,8 @@ export function Jahr() {
                   <tr>
                     <th>Status</th>
                     <th>Tage</th>
-                    <th>Anteil Jahr</th>
-                    <th>Anteil bisher</th>
+                    <th>{isCurrentYear ? 'Anteil Jahr' : 'Anteil'}</th>
+                    {isCurrentYear && <th>Anteil bisher</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -165,16 +166,18 @@ export function Jahr() {
                         </td>
                         <td>{value}</td>
                         <td>{percent}%</td>
-                        <td>{percentSoFar === null ? '–' : `${percentSoFar}%`}</td>
+                        {isCurrentYear && <td>{percentSoFar === null ? '–' : `${percentSoFar}%`}</td>}
                       </tr>
                     )
                   })}
                 </tbody>
               </table>
-              <p className="year-summary year-summary--muted">
-                "Anteil bisher" bezieht sich auf die {elapsedTotal} Werktage von Jahresbeginn bis
-                gestern.
-              </p>
+              {isCurrentYear && (
+                <p className="year-summary year-summary--muted">
+                  "Anteil bisher" bezieht sich auf die {elapsedTotal} Werktage von Jahresbeginn bis
+                  gestern.
+                </p>
+              )}
               <p className="year-summary">
                 Effektive Urlaubstage: <strong>{current.effectiveHolidayDays}</strong>
                 {current.adjustmentTotal !== 0 && (
