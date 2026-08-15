@@ -11,7 +11,7 @@ export function AppShell() {
   return (
     <div className="app-shell">
       <header className="app-shell__topbar">
-        <span className="app-shell__brand brand-gradient">Strothi Hub</span>
+        <span className="app-shell__brand brand-gradient">Strothi's Hub</span>
         <div className="app-shell__user">
           <span>{user?.name}</span>
           <ThemeToggle />
