@@ -44,11 +44,10 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     key: 'homeoffice',
-    name: 'HomeOffice-Nachweis',
-    description: 'Home-Office- und Bürotage dokumentieren',
+    name: 'Arbeitsnachweis',
+    description: 'Arbeitsorte übers Jahr dokumentieren (Büro, HomeOffice, Urlaub, ...)',
     icon: '🏠',
     path: '/homeoffice',
-    comingSoon: true,
   },
   {
     key: 'notizen',

@@ -12,5 +12,15 @@ export const API_ENDPOINTS = {
     user: (id: string) => `/admin/users/${id}`,
     userToolAccess: (id: string) => `/admin/users/${id}/tool-access`,
   },
+  homeoffice: {
+    week: '/homeoffice/week',
+    day: '/homeoffice/day',
+    month: '/homeoffice/month',
+    year: '/homeoffice/year',
+    adjustments: '/homeoffice/adjustments',
+    adjustment: (id: string) => `/homeoffice/adjustments/${id}`,
+    states: '/homeoffice/states',
+    state: (id: string) => `/homeoffice/states/${id}`,
+  },
   // Weitere Endpunkte hier ergänzen
 } as const

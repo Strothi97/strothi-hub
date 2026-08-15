@@ -3,10 +3,11 @@ import { useAuth } from '@context/AuthContext'
 
 interface ProtectedRouteProps {
   adminOnly?: boolean
+  requireTool?: string
 }
 
-export function ProtectedRoute({ adminOnly = false }: ProtectedRouteProps) {
-  const { isAuthenticated, isAdmin, loading } = useAuth()
+export function ProtectedRoute({ adminOnly = false, requireTool }: ProtectedRouteProps) {
+  const { isAuthenticated, isAdmin, loading, hasToolAccess } = useAuth()
   const location = useLocation()
 
   if (loading) {
@@ -18,6 +19,10 @@ export function ProtectedRoute({ adminOnly = false }: ProtectedRouteProps) {
   }
 
   if (adminOnly && !isAdmin) {
+    return <Navigate to="/" replace />
+  }
+
+  if (requireTool && !hasToolAccess(requireTool)) {
     return <Navigate to="/" replace />
   }
 

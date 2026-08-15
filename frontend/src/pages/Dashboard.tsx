@@ -1,21 +1,9 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { toolsService } from '@services/tools.service'
+import { useAuth } from '@context/AuthContext'
 import { Card } from '@components/ui/Card'
-import type { ToolDefinition } from '@app-types/index'
 
 export function Dashboard() {
-  const [tools, setTools] = useState<ToolDefinition[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    toolsService
-      .list()
-      .then(({ data }) => setTools(data.tools))
-      .finally(() => setLoading(false))
-  }, [])
-
-  if (loading) return <p>Lädt…</p>
+  const { tools } = useAuth()
 
   return (
     <div>

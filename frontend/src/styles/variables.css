@@ -49,6 +49,15 @@
   --space-3: 16px;
   --space-4: 24px;
   --space-5: 32px;
+
+  /* Diagramm: kategoriale Statusfarben (validiert, siehe dataviz-Skill) */
+  --chart-office: #3987e5;
+  --chart-home-office: #d95926;
+  --chart-holiday: #199e70;
+  --chart-public-holiday: #c98500;
+  --chart-sick: #d55181;
+  --chart-surface: var(--color-surface);
+  --chart-text-secondary: var(--color-text-muted);
 }
 
 .light {
@@ -75,4 +84,11 @@
   --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.1);
   --shadow-glow: 0 0 14px rgba(0, 122, 255, 0.25);
   --shadow-glow-hover: 0 0 18px rgba(107, 70, 193, 0.3);
+
+  /* Diagramm: kategoriale Statusfarben (validiert, siehe dataviz-Skill) */
+  --chart-office: #2a78d6;
+  --chart-home-office: #eb6834;
+  --chart-holiday: #1baf7a;
+  --chart-public-holiday: #eda100;
+  --chart-sick: #e87ba4;
 }

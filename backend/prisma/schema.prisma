@@ -24,7 +24,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  toolAccess UserToolAccess[]
+  toolAccess          UserToolAccess[]
+  workDayEntries      WorkDayEntry[]
+  federalStates       UserFederalState[]
+  vacationAdjustments VacationAdjustment[]
 
   @@map("users")
 }
@@ -41,6 +44,81 @@ model UserToolAccess {
 
   @@unique([userId, toolKey])
   @@map("user_tool_access")
+}
+
+// ── Tool: Arbeitsnachweis ───────────────────────────────
+
+enum WorkDayStatus {
+  OFFICE
+  HOME_OFFICE
+  HOLIDAY
+  PUBLIC_HOLIDAY
+  SICK
+}
+
+enum Bundesland {
+  BW
+  BY
+  BE
+  BB
+  HB
+  HH
+  HE
+  MV
+  NI
+  NW
+  RP
+  SL
+  SN
+  ST
+  SH
+  TH
+}
+
+// Explizite Eintragung eines Nutzers für einen Werktag. Tage ohne
+// Eintrag werden zur Laufzeit ggf. automatisch als Feiertag erkannt
+// (siehe modules/homeoffice/homeoffice.service.ts), landen aber nicht
+// automatisch hier in der DB.
+model WorkDayEntry {
+  id        String        @id @default(cuid())
+  userId    String
+  date      DateTime      @db.Date
+  status    WorkDayStatus
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("work_day_entries")
+}
+
+// Verlauf: "Ab validFrom gilt für diesen Nutzer Bundesland state"
+// (für die automatische Feiertagserkennung bei Umzügen).
+model UserFederalState {
+  id        String     @id @default(cuid())
+  userId    String
+  state     Bundesland
+  validFrom DateTime   @db.Date
+  createdAt DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_federal_states")
+}
+
+// Manuelle Korrektur der Urlaubstage eines Jahres (z.B. Umzug, Rest aus Vorjahr).
+model VacationAdjustment {
+  id        String   @id @default(cuid())
+  userId    String
+  year      Int
+  amount    Int
+  reason    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("vacation_adjustments")
 }
 
 // Weitere Modelle hier ergänzen:

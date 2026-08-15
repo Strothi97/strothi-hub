@@ -1,4 +1,8 @@
 import express from 'express'
+// Muss vor allen Router-Importen geladen werden: patcht Express 4 so, dass
+// Fehler in async Route-Handlern automatisch an errorHandler weitergereicht
+// werden, statt als unhandled promise rejection den Prozess zu crashen.
+import 'express-async-errors'
 import cors from 'cors'
 import morgan from 'morgan'
 import dotenv from 'dotenv'

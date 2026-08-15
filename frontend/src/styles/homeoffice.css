@@ -1,0 +1,570 @@
+/* ================================
+   TOOL: Arbeitsnachweis
+   ================================ */
+
+.homeoffice-nav {
+  display: flex;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--space-2);
+}
+
+.homeoffice-nav__link {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.homeoffice-nav__link:hover {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.homeoffice-nav__link.is-active {
+  background-color: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* ── Wochenansicht ──────────────────────────────────── */
+
+.week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.week-nav__label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.week-nav__today {
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.week-nav__today:hover {
+  text-decoration: underline;
+}
+
+.day-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.day-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.day-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.day-card__date-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.day-card__weekday {
+  font-weight: 600;
+}
+
+.day-card__date {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.day-card__status-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.4em 0.9em;
+  border-radius: 999px;
+  border: 1px solid var(--chip-color, var(--color-border));
+  background-color: color-mix(in srgb, var(--chip-color, var(--color-surface-alt)) 16%, transparent);
+  color: var(--chip-color, var(--color-text-muted));
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.day-card__auto-badge {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-left: 4px;
+}
+
+.day-card__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.day-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.4em 0.85em;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-alt);
+  color: var(--color-text-muted);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.day-status-chip:hover {
+  border-color: var(--chip-color, var(--color-primary));
+  color: var(--color-text);
+}
+
+.day-status-chip.is-active {
+  background-color: color-mix(in srgb, var(--chip-color) 20%, transparent);
+  border-color: var(--chip-color);
+  color: var(--chip-color);
+  font-weight: 600;
+}
+
+/* ── Jahresansicht ──────────────────────────────────── */
+
+.year-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.year-nav__label {
+  font-size: 1.2rem;
+  min-width: 4ch;
+  text-align: center;
+}
+
+.year-chart-card,
+.year-table-card,
+.year-adjustments-card {
+  margin-bottom: var(--space-4);
+}
+
+.year-table-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.year-table-card__header h2 {
+  margin: 0;
+}
+
+.year-breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--space-3);
+}
+
+.year-breakdown-table th,
+.year-breakdown-table td {
+  text-align: left;
+  padding: var(--space-2) var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.year-breakdown-table__swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: var(--space-2);
+}
+
+.year-summary {
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.year-summary--muted {
+  font-size: 0.8rem;
+  margin-top: var(--space-1);
+}
+
+.year-gaps-card {
+  margin-bottom: var(--space-4);
+}
+
+.gap-group {
+  margin-top: var(--space-3);
+}
+
+.gap-group h3 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: var(--space-2);
+}
+
+.gap-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.gap-list li {
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.9rem;
+}
+
+.gap-list li:last-child {
+  border-bottom: none;
+}
+
+.adjustment-form {
+  max-width: 420px;
+}
+
+.adjustment-list {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.adjustment-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.adjustment-list button {
+  border: none;
+  background: none;
+  color: var(--color-error);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+/* ── Einstellungen ──────────────────────────────────── */
+
+.settings-form-card {
+  max-width: 480px;
+  margin-bottom: var(--space-4);
+}
+
+.state-history-list {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.state-history-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.state-history-list button {
+  border: none;
+  background: none;
+  color: var(--color-error);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+/* ── Status-Balkendiagramm (siehe dataviz-Skill) ────── */
+
+.status-bar-chart {
+  margin-top: var(--space-3);
+}
+
+.status-bar-chart__row {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.status-bar-chart__row-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+.status-bar-chart__bar {
+  display: flex;
+  gap: 2px;
+  height: 24px;
+  background-color: var(--color-background);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.status-bar-chart__segment {
+  outline-offset: 2px;
+}
+
+.status-bar-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.status-bar-chart__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--color-text);
+}
+
+.status-bar-chart__legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.status-bar-chart__tooltip {
+  position: fixed;
+  transform: translate(-50%, calc(-100% - 8px));
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 4px var(--space-2);
+  font-size: 0.8rem;
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+  z-index: 20;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .status-bar-chart__row {
+    grid-template-columns: 2.5rem 1fr;
+  }
+}
+
+/* ── Monatsansicht ──────────────────────────────────── */
+
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.month-nav__label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 9rem;
+  text-align: center;
+}
+
+.month-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.month-grid__row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-2);
+}
+
+.month-grid__header-cell {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding-bottom: var(--space-1);
+}
+
+.month-day-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 56px;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--chip-color, var(--color-border));
+  background-color: color-mix(in srgb, var(--chip-color, transparent) 22%, var(--color-surface));
+  color: var(--color-text);
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+@media (min-width: 640px) {
+  .month-day-tile {
+    min-height: 72px;
+  }
+}
+
+.month-day-tile:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.month-day-tile--empty {
+  border: none;
+  background: none;
+  cursor: default;
+  pointer-events: none;
+}
+
+.month-day-tile--empty:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.month-day-tile__date {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.month-day-tile__icon {
+  font-size: 1.2rem;
+  line-height: 1;
+  min-height: 1em;
+}
+
+.month-day-tile__label {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .month-day-tile__label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+  }
+}
+
+/* ── Status-Auswahl-Overlay: Bottom-Sheet (mobil) / Dialog (Desktop) ── */
+
+.day-status-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 30;
+}
+
+.day-status-modal {
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-bottom: none;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  box-shadow: var(--shadow-lg);
+}
+
+.day-status-modal__handle {
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background-color: var(--color-border);
+  margin: 0 auto var(--space-3);
+}
+
+.day-status-modal__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+}
+
+.day-status-chip--block {
+  justify-content: flex-start;
+  padding: var(--space-3);
+  font-size: 1rem;
+}
+
+.day-status-modal__cancel {
+  width: 100%;
+  padding: var(--space-2);
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+@media (min-width: 640px) {
+  .day-status-modal-backdrop {
+    align-items: center;
+  }
+
+  .day-status-modal {
+    width: 100%;
+    max-width: 360px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .day-status-modal__handle {
+    display: none;
+  }
+}
