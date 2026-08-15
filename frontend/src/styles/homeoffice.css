@@ -69,6 +69,12 @@
   text-decoration: underline;
 }
 
+@media (max-width: 640px) {
+  .week-nav__btn-label {
+    display: none;
+  }
+}
+
 .day-card-list {
   display: flex;
   flex-direction: column;

@@ -57,8 +57,8 @@ export function Woche() {
   return (
     <div>
       <div className="week-nav">
-        <Button variant="secondary" onClick={() => shiftWeek(-1)}>
-          ← Vorherige
+        <Button variant="secondary" onClick={() => shiftWeek(-1)} aria-label="Vorherige Woche">
+          ← <span className="week-nav__btn-label">Vorherige</span>
         </Button>
         <div className="week-nav__label">
           <strong>{range && formatRangeLabel(range.weekStart, range.weekEnd)}</strong>
@@ -70,8 +70,8 @@ export function Woche() {
             Heute
           </button>
         </div>
-        <Button variant="secondary" onClick={() => shiftWeek(1)}>
-          Nächste →
+        <Button variant="secondary" onClick={() => shiftWeek(1)} aria-label="Nächste Woche">
+          <span className="week-nav__btn-label">Nächste</span> →
         </Button>
       </div>
 
