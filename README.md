@@ -51,3 +51,7 @@ cd /var/www/vhosts/strothi.de/hub.strothi.de/frontend && GENERATE_SOURCEMAP=fals
 
 Node.js: run_script -> Wenn DB geändert
 db:migrate:prod
+
+
+# kombiniert:
+cd /var/www/vhosts/strothi.de/hub.strothi.de/backend && PATH=/opt/plesk/node/22/bin:$PATH /opt/plesk/node/22/bin/npm install && GENERATE_SOURCEMAP=false NODE_OPTIONS="--max-old-space-size=3072" PATH=/opt/plesk/node/22/bin:$PATH /opt/plesk/node/22/bin/npm run build && cd /var/www/vhosts/strothi.de/hub.strothi.de/frontend && PATH=/opt/plesk/node/22/bin:$PATH /opt/plesk/node/22/bin/npm install && GENERATE_SOURCEMAP=false NODE_OPTIONS="--max-old-space-size=3072" PATH=/opt/plesk/node/22/bin:$PATH /opt/plesk/node/22/bin/npm run build
