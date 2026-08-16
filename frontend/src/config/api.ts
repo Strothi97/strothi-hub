@@ -29,6 +29,9 @@ export const API_ENDPOINTS = {
     entries: '/farsi/entries',
     entry: (id: string) => `/farsi/entries/${id}`,
     import: '/farsi/import',
+    studySession: '/farsi/study/session',
+    studyReview: (entryId: string) => `/farsi/study/${entryId}/review`,
+    studyStats: '/farsi/study/stats',
   },
   // Weitere Endpunkte hier ergänzen
 } as const

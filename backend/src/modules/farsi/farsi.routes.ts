@@ -14,4 +14,8 @@ router.delete('/entries/:id', farsiController.deleteEntry)
 
 router.post('/import', farsiController.importEntries)
 
+router.get('/study/session', farsiController.getStudySession)
+router.post('/study/:entryId/review', farsiController.reviewCard)
+router.get('/study/stats', farsiController.getBoxStats)
+
 export default router

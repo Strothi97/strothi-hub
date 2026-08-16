@@ -30,6 +30,11 @@
   font-weight: 600;
 }
 
+.farsi-nav__spacer {
+  flex: 1;
+  min-width: var(--space-4);
+}
+
 /* ── Wörterbuch ─────────────────────────────────────── */
 
 .farsi-toolbar {
@@ -85,12 +90,30 @@
 }
 
 .farsi-entry-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
   padding: var(--space-3) var(--space-4);
   cursor: pointer;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.farsi-entry-card__box {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background-color: var(--color-surface-alt);
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .farsi-entry-card:hover {
@@ -308,6 +331,136 @@
   border-top: 1px solid var(--color-border);
 }
 
+/* ── Karteikarten (Leitner-System) ─────────────────────── */
+
+.farsi-study-setup {
+  max-width: 480px;
+}
+
+.farsi-study-mode-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.farsi-study-ineligible-hint {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin: var(--space-1) 0 var(--space-3);
+}
+
+.farsi-study-progress {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.farsi-study-session-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.farsi-study-cancel {
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: var(--space-1) 0;
+}
+
+.farsi-study-cancel:hover {
+  color: var(--color-error);
+}
+
+.farsi-study-card {
+  perspective: 1200px;
+  height: 220px;
+  margin-bottom: var(--space-3);
+}
+
+.farsi-study-card.is-clickable {
+  cursor: pointer;
+}
+
+.farsi-study-card__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.4s;
+  transform-style: preserve-3d;
+}
+
+.farsi-study-card__inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.farsi-study-card__face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  text-align: center;
+  padding: var(--space-4);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  backface-visibility: hidden;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.farsi-study-card__face--back {
+  transform: rotateY(180deg);
+}
+
+.farsi-study-card__script {
+  font-size: 1.8rem;
+}
+
+.farsi-study-card__latin {
+  font-style: italic;
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+}
+
+.farsi-study-flip-btn {
+  width: 100%;
+}
+
+.farsi-study-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.farsi-study-actions__known,
+.farsi-study-actions__unknown {
+  flex: 1;
+  min-height: 56px;
+}
+
+.farsi-study-result-summary {
+  max-width: 480px;
+  text-align: center;
+}
+
+.farsi-study-result-summary h2 {
+  margin: 0 0 var(--space-2);
+}
+
+.farsi-study-result-summary p {
+  margin-bottom: var(--space-4);
+  color: var(--color-text-muted);
+}
+
 .farsi-import-errors {
   list-style: none;
   margin: var(--space-2) 0 0;
@@ -317,4 +470,69 @@
   gap: var(--space-1);
   font-size: 0.85rem;
   color: var(--color-text-muted);
+}
+
+/* ── Statistiken ────────────────────────────────────── */
+
+.farsi-stats {
+  max-width: 560px;
+}
+
+.farsi-stats__summary {
+  color: var(--color-text-muted);
+  margin: var(--space-1) 0 var(--space-3);
+}
+
+.farsi-stats__bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.farsi-stats__row {
+  display: grid;
+  grid-template-columns: 130px 1fr 32px;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.farsi-stats__row-label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.farsi-stats__row-label small {
+  display: block;
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+.farsi-stats__bar-track {
+  height: 10px;
+  border-radius: 999px;
+  background-color: var(--color-surface-alt);
+  overflow: hidden;
+}
+
+.farsi-stats__bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background-color: var(--color-primary);
+  min-width: 2px;
+}
+
+.farsi-stats__bar-fill--new {
+  background-color: var(--color-text-muted);
+}
+
+.farsi-stats__row-count {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
+@media (max-width: 480px) {
+  .farsi-stats__row {
+    grid-template-columns: 100px 1fr 28px;
+  }
 }

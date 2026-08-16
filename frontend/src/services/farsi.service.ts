@@ -1,6 +1,15 @@
 import api from './api'
 import { API_ENDPOINTS } from '@config/api'
-import type { FarsiEntry, FarsiEntryInput, FarsiImportResult, FarsiWordType } from '@app-types/farsi'
+import type {
+  FarsiEntry,
+  FarsiEntryInput,
+  FarsiImportResult,
+  FarsiWordType,
+  FarsiStudyMode,
+  FarsiStudySession,
+  FarsiReviewResult,
+  FarsiBoxStats,
+} from '@app-types/farsi'
 
 export interface FarsiListFilters {
   search?: string
@@ -28,4 +37,13 @@ export const farsiService = {
 
   importEntries: (rawEntries: unknown[]) =>
     api.post<FarsiImportResult>(API_ENDPOINTS.farsi.import, rawEntries),
+
+  getStudySession: (mode: FarsiStudyMode, limit?: number) =>
+    api.get<FarsiStudySession>(API_ENDPOINTS.farsi.studySession, { params: { mode, limit } }),
+
+  reviewCard: (entryId: string, mode: FarsiStudyMode, correct: boolean) =>
+    api.post<FarsiReviewResult>(API_ENDPOINTS.farsi.studyReview(entryId), { mode, correct }),
+
+  getBoxStats: (mode: FarsiStudyMode) =>
+    api.get<FarsiBoxStats>(API_ENDPOINTS.farsi.studyStats, { params: { mode } }),
 }

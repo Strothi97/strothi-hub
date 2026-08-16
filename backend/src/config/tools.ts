@@ -12,7 +12,7 @@ export interface ToolDefinition {
 export const TOOLS: ToolDefinition[] = [
   {
     key: 'farsi',
-    name: 'Farsi lernen',
+    name: 'Farsi-Lernapp',
     description: 'Vokabeln, Grammatik und Übungen für Farsi',
     icon: '🗣️',
     path: '/farsi',

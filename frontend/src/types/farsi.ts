@@ -27,6 +27,7 @@ export interface FarsiEntry {
   missingFields: string[]
   createdAt: string
   updatedAt: string
+  vocabBox: number | null
 }
 
 export interface FarsiEntryInput {
@@ -40,4 +41,27 @@ export interface FarsiEntryInput {
 export interface FarsiImportResult {
   imported: number
   errors: { index: number; reason: string }[]
+}
+
+// ── Karteikarten (Leitner-System) ─────────────────────
+
+export type FarsiStudyMode = 'VOCAB' | 'SCRIPT'
+export type FarsiStudyDirection = 'FORWARD' | 'REVERSE' | 'MIXED'
+
+export interface FarsiStudySession {
+  dueCount: number
+  ineligibleCount: number
+  cards: FarsiEntry[]
+}
+
+export interface FarsiReviewResult {
+  box: number
+  dueAt: string
+}
+
+export interface FarsiBoxStats {
+  eligibleCount: number
+  ineligibleCount: number
+  newCount: number
+  byBox: Record<number, number>
 }

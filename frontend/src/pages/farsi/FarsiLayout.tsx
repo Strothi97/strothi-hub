@@ -6,11 +6,18 @@ export function FarsiLayout() {
 
   return (
     <div>
-      <h1>Farsi lernen</h1>
+      <h1>Farsi-Lernapp</h1>
       <nav className="farsi-nav">
         <NavLink to="/farsi" end className={linkClass}>
           Wörterbuch
         </NavLink>
+        <NavLink to="/farsi/karteikarten" className={linkClass}>
+          Karteikarten
+        </NavLink>
+        <NavLink to="/farsi/statistiken" className={linkClass}>
+          Statistiken
+        </NavLink>
+        <span className="farsi-nav__spacer" />
         <NavLink to="/farsi/import" className={linkClass}>
           Import
         </NavLink>

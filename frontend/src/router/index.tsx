@@ -12,6 +12,8 @@ import { Einstellungen } from '@pages/homeoffice/Einstellungen'
 import { FarsiLayout } from '@pages/farsi/FarsiLayout'
 import { Woerterbuch } from '@pages/farsi/Woerterbuch'
 import { Import } from '@pages/farsi/Import'
+import { Karteikarten } from '@pages/farsi/Karteikarten'
+import { Statistiken } from '@pages/farsi/Statistiken'
 
 export function AppRoutes() {
   return (
@@ -39,6 +41,8 @@ export function AppRoutes() {
             <Route element={<FarsiLayout />}>
               <Route index element={<Woerterbuch />} />
               <Route path="import" element={<Import />} />
+              <Route path="karteikarten" element={<Karteikarten />} />
+              <Route path="statistiken" element={<Statistiken />} />
             </Route>
           </Route>
 

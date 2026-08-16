@@ -151,6 +151,11 @@ export function Woerterbuch() {
               className={`farsi-entry-card ${!entry.isComplete ? 'farsi-entry-card--incomplete' : ''}`.trim()}
               onClick={() => setEditingEntry(entry)}
             >
+              {entry.vocabBox !== null && (
+                <span className="farsi-entry-card__box" title={`Karteikarten-Stufe ${entry.vocabBox}`}>
+                  {entry.vocabBox}
+                </span>
+              )}
               <div className="farsi-entry-card__main">
                 {entry.persianScript && (
                   <span className="farsi-entry-card__script" dir="rtl">
