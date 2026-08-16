@@ -32,6 +32,7 @@ model User {
   workDayEntries      WorkDayEntry[]
   federalStates       UserFederalState[]
   vacationAdjustments VacationAdjustment[]
+  farsiEntries        FarsiEntry[]
 
   @@map("users")
 }
@@ -123,6 +124,41 @@ model VacationAdjustment {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("vacation_adjustments")
+}
+
+// ── Tool: Farsi lernen ───────────────────────────────────
+
+enum FarsiWordType {
+  NOUN
+  VERB
+  ADJECTIVE
+  ADVERB
+  PRONOUN
+  QUESTION_WORD
+  PREPOSITION
+  CONJUNCTION
+  PARTICLE
+  NUMBER
+  PHRASE
+  IDIOM
+  LETTER
+  OTHER
+}
+
+model FarsiEntry {
+  id            String         @id @default(cuid())
+  userId        String
+  german        Json // string[] – auch bei genau einer Bedeutung
+  persianLatin  Json // string[] – Lautschrift/Transliteration
+  persianScript String? // Original-Schrift, z.B. "خانه" (optional)
+  type          FarsiWordType?
+  meaning       String? // optionale Zusatzerklärung
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("farsi_entries")
 }
 
 // Weitere Modelle hier ergänzen:

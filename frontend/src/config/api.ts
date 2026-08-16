@@ -25,5 +25,10 @@ export const API_ENDPOINTS = {
     states: '/homeoffice/states',
     state: (id: string) => `/homeoffice/states/${id}`,
   },
+  farsi: {
+    entries: '/farsi/entries',
+    entry: (id: string) => `/farsi/entries/${id}`,
+    import: '/farsi/import',
+  },
   // Weitere Endpunkte hier ergänzen
 } as const

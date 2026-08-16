@@ -1,0 +1,320 @@
+/* ================================
+   TOOL: Farsi lernen
+   ================================ */
+
+.farsi-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--space-2);
+}
+
+.farsi-nav__link {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.farsi-nav__link:hover {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.farsi-nav__link.is-active {
+  background-color: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* ── Wörterbuch ─────────────────────────────────────── */
+
+.farsi-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.farsi-search-input {
+  min-width: 260px;
+  flex: 1;
+}
+
+.farsi-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.farsi-incomplete-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: var(--space-2);
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.farsi-sort-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.farsi-sort-toggle__label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.farsi-entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.farsi-entry-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.farsi-entry-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.farsi-entry-card--incomplete {
+  border-color: color-mix(in srgb, var(--color-error) 40%, var(--color-border));
+}
+
+.farsi-entry-card__main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.farsi-entry-card__script {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.farsi-entry-card__latin {
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.farsi-entry-card__german {
+  font-weight: 600;
+}
+
+.farsi-entry-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.farsi-entry-card__warning {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-error);
+}
+
+.farsi-entry-card__note {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+}
+
+/* ── Formular-Overlay (Anlegen/Bearbeiten) ─────────────
+   Gleiches Bottom-Sheet(Mobil)/Dialog(Desktop)-Muster wie im
+   Arbeitsnachweis-Tool (siehe .day-status-modal in homeoffice.css). */
+
+.farsi-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 30;
+}
+
+.farsi-modal {
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-bottom: none;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  box-shadow: var(--shadow-lg);
+}
+
+.farsi-modal__handle {
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background-color: var(--color-border);
+  margin: 0 auto var(--space-3);
+}
+
+.farsi-modal__form {
+  margin-top: var(--space-3);
+}
+
+.farsi-modal__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.farsi-modal__actions-right {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.farsi-modal__delete {
+  border: none;
+  background: none;
+  color: var(--color-error);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: var(--space-2) 0;
+}
+
+.farsi-script-input {
+  font-size: 1.2rem;
+}
+
+.farsi-meaning-input {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.farsi-type-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+@media (min-width: 640px) {
+  .farsi-modal-backdrop {
+    align-items: center;
+  }
+
+  .farsi-modal {
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .farsi-modal__handle {
+    display: none;
+  }
+}
+
+/* ── Tag-Input (Mehrfachwerte) ──────────────────────── */
+
+.tag-input {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-alt);
+}
+
+.tag-input:focus-within {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.tag-input__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px var(--space-2);
+  border-radius: 999px;
+  background-color: color-mix(in srgb, var(--color-primary) 16%, transparent);
+  color: var(--color-primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.tag-input__chip button {
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.tag-input__field {
+  flex: 1;
+  min-width: 120px;
+  border: none;
+  background: none;
+  outline: none;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 1rem;
+  padding: var(--space-1) 0;
+}
+
+/* ── Import ─────────────────────────────────────────── */
+
+.farsi-import-card {
+  max-width: 560px;
+}
+
+.farsi-file-input {
+  display: block;
+  margin: var(--space-3) 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.farsi-import-preview,
+.farsi-import-result {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.farsi-import-errors {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}

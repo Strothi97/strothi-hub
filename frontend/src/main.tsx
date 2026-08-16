@@ -5,6 +5,7 @@ import './styles/variables.css'
 import './styles/index.css'
 import './styles/components.css'
 import './styles/homeoffice.css'
+import './styles/farsi.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

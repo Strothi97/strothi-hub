@@ -9,6 +9,9 @@ import { Woche } from '@pages/homeoffice/Woche'
 import { Monat } from '@pages/homeoffice/Monat'
 import { Jahr } from '@pages/homeoffice/Jahr'
 import { Einstellungen } from '@pages/homeoffice/Einstellungen'
+import { FarsiLayout } from '@pages/farsi/FarsiLayout'
+import { Woerterbuch } from '@pages/farsi/Woerterbuch'
+import { Import } from '@pages/farsi/Import'
 
 export function AppRoutes() {
   return (
@@ -32,7 +35,14 @@ export function AppRoutes() {
             </Route>
           </Route>
 
-          {/* Weitere Tool-Routen hier ergänzen, z.B. /farsi */}
+          <Route path="/farsi" element={<ProtectedRoute requireTool="farsi" />}>
+            <Route element={<FarsiLayout />}>
+              <Route index element={<Woerterbuch />} />
+              <Route path="import" element={<Import />} />
+            </Route>
+          </Route>
+
+          {/* Weitere Tool-Routen hier ergänzen */}
         </Route>
       </Route>
     </Routes>

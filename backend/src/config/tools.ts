@@ -16,7 +16,6 @@ export const TOOLS: ToolDefinition[] = [
     description: 'Vokabeln, Grammatik und Übungen für Farsi',
     icon: '🗣️',
     path: '/farsi',
-    comingSoon: true,
   },
   {
     key: 'haushaltsbuch',
