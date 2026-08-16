@@ -9,11 +9,9 @@ export const WORD_TYPE_ORDER: FarsiWordType[] = [
   'QUESTION_WORD',
   'PREPOSITION',
   'CONJUNCTION',
-  'PARTICLE',
   'NUMBER',
   'PHRASE',
   'IDIOM',
-  'LETTER',
   'OTHER',
 ]
 
@@ -26,10 +24,8 @@ export const WORD_TYPE_META: Record<FarsiWordType, { label: string; icon: string
   QUESTION_WORD: { label: 'Fragewort', icon: '❓' },
   PREPOSITION: { label: 'Präposition', icon: '🔗' },
   CONJUNCTION: { label: 'Konjunktion', icon: '🔀' },
-  PARTICLE: { label: 'Partikel', icon: '🧩' },
   NUMBER: { label: 'Zahl', icon: '🔢' },
   PHRASE: { label: 'Satz', icon: '💬' },
   IDIOM: { label: 'Redensart', icon: '🗣️' },
-  LETTER: { label: 'Buchstabe', icon: '🔠' },
   OTHER: { label: 'Sonstiges', icon: '❔' },
 }

@@ -86,6 +86,7 @@ export function Karteikarten() {
           </button>
         </div>
         <StudyCard
+          key={current.entry.id}
           entry={current.entry}
           front={current.front}
           back={current.back}

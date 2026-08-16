@@ -9,11 +9,9 @@ export type FarsiWordType =
   | 'QUESTION_WORD'
   | 'PREPOSITION'
   | 'CONJUNCTION'
-  | 'PARTICLE'
   | 'NUMBER'
   | 'PHRASE'
   | 'IDIOM'
-  | 'LETTER'
   | 'OTHER'
 
 export interface FarsiEntry {
