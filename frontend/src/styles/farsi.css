@@ -536,3 +536,163 @@
     grid-template-columns: 100px 1fr 28px;
   }
 }
+
+/* ── Arbeitsfläche (nur Desktop gedacht) ───────────────── */
+
+.farsi-workspace__toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.farsi-workspace__grid {
+  display: grid;
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.farsi-workspace__grid--split {
+  grid-template-columns: minmax(320px, 420px) 1fr;
+}
+
+.farsi-workspace__column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.farsi-workspace__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.farsi-workspace__panel h3 {
+  margin: 0 0 var(--space-2);
+}
+
+.farsi-workspace__panel--alphabet {
+  min-width: 0;
+}
+
+.farsi-workspace__result-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.farsi-workspace__result {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.farsi-workspace__result:hover {
+  background-color: var(--color-surface-alt);
+}
+
+.farsi-entry-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* ── Alphabet-Referenz ──────────────────────────────────── */
+
+.farsi-alphabet-table-wrap {
+  overflow-x: auto;
+}
+
+.farsi-alphabet-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.farsi-alphabet-table th {
+  text-align: left;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  padding: var(--space-1) var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.farsi-alphabet-table td {
+  padding: var(--space-1) var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.farsi-alphabet-table__glyph {
+  font-size: 1.4rem;
+}
+
+.farsi-alphabet-table__sound {
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.farsi-alphabet-page {
+  max-width: 640px;
+}
+
+/* Mobile Karten-Liste statt Tabelle — beide werden gerendert, per
+   Media-Query umgeschaltet, kein JS-Viewport-Tracking nötig. */
+.farsi-alphabet-list {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .farsi-alphabet-table-wrap {
+    display: none;
+  }
+
+  .farsi-alphabet-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+}
+
+.farsi-alphabet-list__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+}
+
+.farsi-alphabet-list__isolated {
+  font-size: 1.8rem;
+  min-width: 36px;
+  text-align: center;
+}
+
+.farsi-alphabet-list__info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.farsi-alphabet-list__name {
+  font-weight: 600;
+}
+
+.farsi-alphabet-list__sound {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.farsi-alphabet-list__forms {
+  display: flex;
+  gap: var(--space-2);
+  font-size: 1.1rem;
+  color: var(--color-text-muted);
+}

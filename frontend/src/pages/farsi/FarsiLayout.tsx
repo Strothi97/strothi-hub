@@ -17,6 +17,12 @@ export function FarsiLayout() {
         <NavLink to="/farsi/statistiken" className={linkClass}>
           Statistiken
         </NavLink>
+        <NavLink to="/farsi/arbeitsflaeche" className={linkClass}>
+          Arbeitsfläche
+        </NavLink>
+        <NavLink to="/farsi/alphabet" className={linkClass}>
+          Alphabet
+        </NavLink>
         <span className="farsi-nav__spacer" />
         <NavLink to="/farsi/import" className={linkClass}>
           Import

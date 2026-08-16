@@ -14,6 +14,8 @@ import { Woerterbuch } from '@pages/farsi/Woerterbuch'
 import { Import } from '@pages/farsi/Import'
 import { Karteikarten } from '@pages/farsi/Karteikarten'
 import { Statistiken } from '@pages/farsi/Statistiken'
+import { Arbeitsflaeche } from '@pages/farsi/Arbeitsflaeche'
+import { Alphabet } from '@pages/farsi/AlphabetPage'
 
 export function AppRoutes() {
   return (
@@ -43,6 +45,8 @@ export function AppRoutes() {
               <Route path="import" element={<Import />} />
               <Route path="karteikarten" element={<Karteikarten />} />
               <Route path="statistiken" element={<Statistiken />} />
+              <Route path="arbeitsflaeche" element={<Arbeitsflaeche />} />
+              <Route path="alphabet" element={<Alphabet />} />
             </Route>
           </Route>
 
