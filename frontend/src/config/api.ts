@@ -32,6 +32,10 @@ export const API_ENDPOINTS = {
     studySession: '/farsi/study/session',
     studyReview: (entryId: string) => `/farsi/study/${entryId}/review`,
     studyStats: '/farsi/study/stats',
+    studyStreak: '/farsi/study/streak',
+    letterProgress: '/farsi/study/letters/progress',
+    letterReview: (char: string, position: string) =>
+      `/farsi/study/letters/${encodeURIComponent(char)}/${position}/review`,
   },
   // Weitere Endpunkte hier ergänzen
 } as const

@@ -35,6 +35,14 @@
   min-width: var(--space-4);
 }
 
+/* Import ist nur für die Desktop-Nutzung gedacht (Datei-Upload) — auf
+   dem Handy blendet die Navigation den Tab komplett aus. */
+@media (max-width: 640px) {
+  .farsi-nav__desktop-only {
+    display: none;
+  }
+}
+
 /* ── Wörterbuch ─────────────────────────────────────── */
 
 .farsi-toolbar {
@@ -344,6 +352,10 @@
   margin-bottom: var(--space-3);
 }
 
+.farsi-study-due-line {
+  margin-bottom: var(--space-4);
+}
+
 .farsi-study-ineligible-hint {
   font-size: 0.85rem;
   color: var(--color-text-muted);
@@ -459,6 +471,14 @@
 .farsi-study-result-summary p {
   margin-bottom: var(--space-4);
   color: var(--color-text-muted);
+}
+
+.farsi-study-mode-picker--summary {
+  justify-content: center;
+  margin-top: var(--space-4);
+  margin-bottom: 0;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
 }
 
 .farsi-import-errors {
@@ -694,5 +714,23 @@
   display: flex;
   gap: var(--space-2);
   font-size: 1.1rem;
+  color: var(--color-text-muted);
+}
+
+/* ── Streak ─────────────────────────────────────────────── */
+
+.farsi-study-streak {
+  font-weight: 600;
+  margin-bottom: var(--space-3);
+}
+
+/* ── Buchstaben-Karteikarten ────────────────────────────── */
+
+.farsi-letter-card__glyph {
+  font-size: 4rem;
+}
+
+.farsi-letter-card__position {
+  font-size: 0.85rem;
   color: var(--color-text-muted);
 }

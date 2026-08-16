@@ -1,6 +1,9 @@
 {
+    "id": "/",
     "name": "Strothi's Hub",
     "short_name": "Strothi's Hub",
+    "start_url": "/",
+    "scope": "/",
     "icons": [
         {
             "src": "/android-chrome-192x192.png",

@@ -1,8 +1,9 @@
-import type { FarsiEntry, FarsiStudyDirection, FarsiStudyMode } from '@app-types/farsi'
+import type { FarsiEntry, FarsiKarteikartenMode, FarsiStudyDirection, FarsiStudyMode } from '@app-types/farsi'
 
-export const MODE_LABELS: Record<FarsiStudyMode, string> = {
+export const MODE_LABELS: Record<FarsiKarteikartenMode, string> = {
   VOCAB: 'Deutsch ↔ Farsi',
   SCRIPT: 'Lautschrift ↔ Schrift',
+  LETTERS: 'Alphabet',
 }
 
 export const DIRECTION_LABELS: Record<FarsiStudyMode, Record<FarsiStudyDirection, string>> = {
@@ -26,6 +27,10 @@ export const BOX_LABELS: Record<number, string> = {
   9: '1 Jahr',
 }
 export const BOX_ORDER = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+export function formatDays(n: number): string {
+  return `${n} ${n === 1 ? 'Tag' : 'Tage'}`
+}
 
 export type FaceSide = 'german' | 'farsi-latin' | 'farsi-script' | 'farsi-both'
 

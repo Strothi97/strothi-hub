@@ -79,3 +79,25 @@ export const getBoxStats = async (req: Request, res: Response) => {
   const stats = await farsiService.getBoxStats(req.user!.id, mode as FarsiStudyMode)
   return res.json(stats)
 }
+
+// ── Buchstaben-Lernen ────────────────────────────────────
+
+export const getLetterProgress = async (req: Request, res: Response) => {
+  const progress = await farsiService.getLetterProgress(req.user!.id)
+  return res.json({ progress })
+}
+
+export const reviewLetter = async (req: Request, res: Response) => {
+  const { correct } = req.body as { correct?: boolean }
+  const letterChar = decodeURIComponent(req.params.char)
+  const position = req.params.position
+  const result = await farsiService.reviewLetter(req.user!.id, letterChar, position, !!correct)
+  return res.json(result)
+}
+
+// ── Streak ─────────────────────────────────────────────
+
+export const getStreak = async (req: Request, res: Response) => {
+  const streak = await farsiService.getStudyStreak(req.user!.id)
+  return res.json(streak)
+}

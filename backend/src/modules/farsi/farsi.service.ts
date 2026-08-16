@@ -347,3 +347,120 @@ export async function getBoxStats(userId: string, mode: FarsiStudyMode): Promise
 
   return { eligibleCount: eligible.length, ineligibleCount, newCount, byBox }
 }
+
+// ── Buchstaben-Lernen ──────────────────────────────────
+
+// Buchstaben sind keine FarsiEntry-Zeilen, sondern eine statische Liste
+// im Frontend (alphabet.ts). Das Backend kennt nur Fortschritts-Zeilen
+// zu beliebigen letterChar-Strings — Eignung/Fälligkeit wird deshalb
+// clientseitig berechnet, nicht hier.
+
+export interface LetterProgressDTO {
+  letterChar: string
+  position: string
+  box: number
+  dueAt: Date
+  lastReviewedAt: Date | null
+}
+
+export async function getLetterProgress(userId: string): Promise<LetterProgressDTO[]> {
+  const rows = await prisma.farsiLetterProgress.findMany({ where: { userId } })
+  return rows.map((row) => ({
+    letterChar: row.letterChar,
+    position: row.position,
+    box: row.box,
+    dueAt: row.dueAt,
+    lastReviewedAt: row.lastReviewedAt,
+  }))
+}
+
+export async function reviewLetter(
+  userId: string,
+  letterChar: string,
+  position: string,
+  correct: boolean,
+): Promise<{ box: number; dueAt: Date }> {
+  const existing = await prisma.farsiLetterProgress.findUnique({
+    where: { userId_letterChar_position: { userId, letterChar, position } },
+  })
+
+  const currentBox = existing?.box ?? 1
+  const newBox = correct ? Math.min(currentBox + 1, MAX_BOX) : 1
+  const dueAt = new Date(Date.now() + BOX_INTERVAL_DAYS[newBox] * 24 * 60 * 60 * 1000)
+  const now = new Date()
+
+  await prisma.farsiLetterProgress.upsert({
+    where: { userId_letterChar_position: { userId, letterChar, position } },
+    create: { userId, letterChar, position, box: newBox, dueAt, lastReviewedAt: now },
+    update: { box: newBox, dueAt, lastReviewedAt: now },
+  })
+
+  return { box: newBox, dueAt }
+}
+
+// ── Streak ─────────────────────────────────────────────
+
+export interface StreakDTO {
+  currentStreak: number
+  longestStreak: number
+}
+
+function toDateKey(date: Date): string {
+  return date.toISOString().slice(0, 10)
+}
+
+// Ein "Lerntag" ist jeder Kalendertag (UTC), an dem irgendeine Karte
+// bewertet wurde — Vokabeln, Schrift oder Buchstaben zählen alle gleich.
+export async function getStudyStreak(userId: string): Promise<StreakDTO> {
+  const [progressRows, letterRows] = await Promise.all([
+    prisma.farsiProgress.findMany({
+      where: { userId, lastReviewedAt: { not: null } },
+      select: { lastReviewedAt: true },
+    }),
+    prisma.farsiLetterProgress.findMany({
+      where: { userId, lastReviewedAt: { not: null } },
+      select: { lastReviewedAt: true },
+    }),
+  ])
+
+  const days = new Set<string>()
+  for (const row of [...progressRows, ...letterRows]) {
+    if (row.lastReviewedAt) days.add(toDateKey(row.lastReviewedAt))
+  }
+
+  if (days.size === 0) return { currentStreak: 0, longestStreak: 0 }
+
+  const sortedDays = [...days].sort()
+  const dayTimestamps = sortedDays.map((d) => new Date(d + 'T00:00:00.000Z').getTime())
+  const oneDayMs = 24 * 60 * 60 * 1000
+
+  let longestStreak = 1
+  let run = 1
+  for (let i = 1; i < dayTimestamps.length; i++) {
+    if (dayTimestamps[i] - dayTimestamps[i - 1] === oneDayMs) {
+      run += 1
+    } else {
+      run = 1
+    }
+    longestStreak = Math.max(longestStreak, run)
+  }
+
+  const todayKey = toDateKey(new Date())
+  const yesterdayKey = toDateKey(new Date(Date.now() - oneDayMs))
+  const mostRecentKey = sortedDays[sortedDays.length - 1]
+
+  // Streak ist "abgelaufen", wenn weder heute noch gestern geübt wurde.
+  let currentStreak = 0
+  if (mostRecentKey === todayKey || mostRecentKey === yesterdayKey) {
+    currentStreak = 1
+    for (let i = dayTimestamps.length - 1; i > 0; i--) {
+      if (dayTimestamps[i] - dayTimestamps[i - 1] === oneDayMs) {
+        currentStreak += 1
+      } else {
+        break
+      }
+    }
+  }
+
+  return { currentStreak, longestStreak }
+}

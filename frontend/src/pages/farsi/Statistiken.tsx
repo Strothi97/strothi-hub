@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react'
 import { farsiService } from '@services/farsi.service'
 import { Card } from '@components/ui/Card'
-import { MODE_LABELS, BOX_LABELS, BOX_ORDER } from './studySession'
-import type { FarsiBoxStats, FarsiStudyMode } from '@app-types/farsi'
+import { MODE_LABELS, BOX_LABELS, BOX_ORDER, formatDays } from './studySession'
+import type { FarsiBoxStats, FarsiStreak, FarsiStudyMode } from '@app-types/farsi'
 
 const MODE_ORDER: FarsiStudyMode[] = ['VOCAB', 'SCRIPT']
 
 export function Statistiken() {
   const [mode, setMode] = useState<FarsiStudyMode>('VOCAB')
   const [stats, setStats] = useState<FarsiBoxStats | null>(null)
+  const [streak, setStreak] = useState<FarsiStreak | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -19,10 +20,21 @@ export function Statistiken() {
       .finally(() => setLoading(false))
   }, [mode])
 
+  useEffect(() => {
+    farsiService.getStreak().then(({ data }) => setStreak(data))
+  }, [])
+
   const maxCount = stats ? Math.max(stats.newCount, ...BOX_ORDER.map((box) => stats.byBox[box]), 1) : 1
 
   return (
     <div className="farsi-stats">
+      {streak && (
+        <p className="farsi-study-streak">
+          🔥 {formatDays(streak.currentStreak)} in Folge
+          {streak.longestStreak > streak.currentStreak && ` · Rekord: ${formatDays(streak.longestStreak)}`}
+        </p>
+      )}
+
       <div className="farsi-study-mode-picker">
         {MODE_ORDER.map((option) => (
           <button

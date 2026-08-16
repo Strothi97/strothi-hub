@@ -34,6 +34,7 @@ model User {
   vacationAdjustments VacationAdjustment[]
   farsiEntries        FarsiEntry[]
   farsiProgress       FarsiProgress[]
+  farsiLetterProgress FarsiLetterProgress[]
 
   @@map("users")
 }
@@ -186,6 +187,31 @@ model FarsiProgress {
   @@unique([userId, entryId, mode])
   @@index([userId, mode, dueAt])
   @@map("farsi_progress")
+}
+
+// Fortschritt für die Buchstaben-Lernübung. Buchstaben sind keine
+// FarsiEntry-Zeilen (statische Liste im Frontend, alphabet.ts) — das
+// Backend kennt daher nur Fortschritts-Zeilen zu beliebigen
+// letterChar-Strings, keine Referenzliste der 32 Buchstaben. Fortschritt
+// wird pro Buchstabe UND Position getrennt geführt (isoliert/Anfang/
+// Mitte/Ende zählen als eigene Karte) — Erkennen der isolierten Form
+// heißt nicht, dass auch die Mittelform sitzt.
+model FarsiLetterProgress {
+  id             String    @id @default(cuid())
+  userId         String
+  letterChar     String
+  position       String // 'isolated' | 'initial' | 'medial' | 'final'
+  box            Int       @default(1)
+  dueAt          DateTime  @default(now())
+  lastReviewedAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, letterChar, position])
+  @@index([userId, dueAt])
+  @@map("farsi_letter_progress")
 }
 
 // Weitere Modelle hier ergänzen:

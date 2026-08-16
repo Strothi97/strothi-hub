@@ -3,11 +3,21 @@ import { farsiService } from '@services/farsi.service'
 import { Card } from '@components/ui/Card'
 import { Button } from '@components/ui/Button'
 import { StudyCard } from './StudyCard'
-import { MODE_LABELS, DIRECTION_LABELS, DIRECTION_ORDER, buildStudyQueue } from './studySession'
+import { LetterStudyCard } from './LetterStudyCard'
+import { MODE_LABELS, DIRECTION_LABELS, DIRECTION_ORDER, buildStudyQueue, formatDays } from './studySession'
+import { buildLetterQueue, getDueLetterCount, LETTER_SESSION_SIZE } from './letterStudy'
 import type { QueueItem } from './studySession'
-import type { FarsiStudyDirection, FarsiStudyMode, FarsiStudySession } from '@app-types/farsi'
+import type { LetterQueueItem } from './letterStudy'
+import type {
+  FarsiKarteikartenMode,
+  FarsiLetterProgress,
+  FarsiStreak,
+  FarsiStudyDirection,
+  FarsiStudyMode,
+  FarsiStudySession,
+} from '@app-types/farsi'
 
-const MODE_ORDER: FarsiStudyMode[] = ['VOCAB', 'SCRIPT']
+const MODE_ORDER: FarsiKarteikartenMode[] = ['VOCAB', 'SCRIPT', 'LETTERS']
 
 const INELIGIBLE_HINTS: Record<FarsiStudyMode, (count: number) => string> = {
   VOCAB: (count) => `${count} Begriffe fehlt noch Deutsch oder Farsi (Lautschrift/Schrift) — im Wörterbuch ergänzen.`,
@@ -18,22 +28,32 @@ type Phase = 'setup' | 'session' | 'summary'
 
 export function Karteikarten() {
   const [phase, setPhase] = useState<Phase>('setup')
-  const [mode, setMode] = useState<FarsiStudyMode>('VOCAB')
+  const [mode, setMode] = useState<FarsiKarteikartenMode>('VOCAB')
   const [direction, setDirection] = useState<FarsiStudyDirection>('MIXED')
   const [sessionData, setSessionData] = useState<FarsiStudySession | null>(null)
+  const [letterProgress, setLetterProgress] = useState<FarsiLetterProgress[] | null>(null)
+  const [streak, setStreak] = useState<FarsiStreak | null>(null)
   const [loading, setLoading] = useState(true)
 
   const [queue, setQueue] = useState<QueueItem[]>([])
+  const [letterQueue, setLetterQueue] = useState<LetterQueueItem[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [results, setResults] = useState<boolean[]>([])
 
-  const loadSession = (forMode: FarsiStudyMode) => {
+  const loadSession = (forMode: FarsiKarteikartenMode) => {
     setLoading(true)
-    farsiService
-      .getStudySession(forMode)
-      .then(({ data }) => setSessionData(data))
-      .finally(() => setLoading(false))
+    if (forMode === 'LETTERS') {
+      farsiService
+        .getLetterProgress()
+        .then(({ data }) => setLetterProgress(data.progress))
+        .finally(() => setLoading(false))
+    } else {
+      farsiService
+        .getStudySession(forMode)
+        .then(({ data }) => setSessionData(data))
+        .finally(() => setLoading(false))
+    }
   }
 
   useEffect(() => {
@@ -41,9 +61,21 @@ export function Karteikarten() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode])
 
+  useEffect(() => {
+    farsiService.getStreak().then(({ data }) => setStreak(data))
+  }, [])
+
   const handleStart = () => {
-    if (!sessionData || sessionData.cards.length === 0) return
-    setQueue(buildStudyQueue(mode, direction, sessionData.cards))
+    if (mode === 'LETTERS') {
+      const built = buildLetterQueue(letterProgress ?? [])
+      if (built.length === 0) return
+      setLetterQueue(built)
+      setQueue([])
+    } else {
+      if (!sessionData || sessionData.cards.length === 0) return
+      setQueue(buildStudyQueue(mode, direction, sessionData.cards))
+      setLetterQueue([])
+    }
     setCurrentIndex(0)
     setFlipped(false)
     setResults([])
@@ -51,13 +83,20 @@ export function Karteikarten() {
   }
 
   const handleJudge = async (correct: boolean) => {
-    const current = queue[currentIndex]
-    await farsiService.reviewCard(current.entry.id, mode, correct)
+    if (mode === 'LETTERS') {
+      const current = letterQueue[currentIndex]
+      await farsiService.reviewLetter(current.letter.char, current.position, correct)
+    } else {
+      const current = queue[currentIndex]
+      await farsiService.reviewCard(current.entry.id, mode, correct)
+    }
     const nextResults = [...results, correct]
     setResults(nextResults)
     setFlipped(false)
-    if (currentIndex + 1 >= queue.length) {
+    const total = mode === 'LETTERS' ? letterQueue.length : queue.length
+    if (currentIndex + 1 >= total) {
       setPhase('summary')
+      farsiService.getStreak().then(({ data }) => setStreak(data))
     } else {
       setCurrentIndex((i) => i + 1)
     }
@@ -73,7 +112,37 @@ export function Karteikarten() {
     loadSession(mode)
   }
 
-  if (phase === 'session' && queue[currentIndex]) {
+  const handleSwitchMode = (newMode: FarsiKarteikartenMode) => {
+    setPhase('setup')
+    setMode(newMode)
+  }
+
+  if (phase === 'session' && mode === 'LETTERS' && letterQueue[currentIndex]) {
+    const current = letterQueue[currentIndex]
+    return (
+      <div>
+        <div className="farsi-study-session-header">
+          <p className="farsi-study-progress">
+            Karte {currentIndex + 1} / {letterQueue.length}
+          </p>
+          <button type="button" className="farsi-study-cancel" onClick={handleCancel}>
+            Abbrechen
+          </button>
+        </div>
+        <LetterStudyCard
+          key={`${current.letter.char}-${current.position}`}
+          letter={current.letter}
+          position={current.position}
+          flipped={flipped}
+          onFlip={() => setFlipped(true)}
+          onKnown={() => handleJudge(true)}
+          onUnknown={() => handleJudge(false)}
+        />
+      </div>
+    )
+  }
+
+  if (phase === 'session' && mode !== 'LETTERS' && queue[currentIndex]) {
     const current = queue[currentIndex]
     return (
       <div>
@@ -107,13 +176,38 @@ export function Karteikarten() {
         <p>
           {results.length} Karten geübt · {known} gewusst · {results.length - known} nicht gewusst
         </p>
+        {!!streak && streak.currentStreak > 0 && <p>🔥 {formatDays(streak.currentStreak)} in Folge</p>}
         <Button onClick={handleRestart}>Neue Runde</Button>
+
+        <div className="farsi-study-mode-picker farsi-study-mode-picker--summary">
+          {MODE_ORDER.map((option) => (
+            <button
+              key={option}
+              type="button"
+              className={`tool-chip ${mode === option ? 'is-active' : ''}`.trim()}
+              onClick={() => handleSwitchMode(option)}
+            >
+              {MODE_LABELS[option]}
+            </button>
+          ))}
+        </div>
       </Card>
     )
   }
 
+  const dueCount = mode === 'LETTERS' ? getDueLetterCount(letterProgress ?? []) : sessionData?.dueCount ?? 0
+  const sessionSize =
+    mode === 'LETTERS'
+      ? Math.min(dueCount, LETTER_SESSION_SIZE)
+      : sessionData?.cards.length ?? 0
+  const canStart = mode === 'LETTERS' ? dueCount > 0 : !!sessionData && sessionData.cards.length > 0
+
   return (
     <div className="farsi-study-setup">
+      {!!streak && streak.currentStreak > 0 && (
+        <p className="farsi-study-streak">🔥 {formatDays(streak.currentStreak)} in Folge</p>
+      )}
+
       <div className="farsi-study-mode-picker">
         {MODE_ORDER.map((option) => (
           <button
@@ -131,28 +225,30 @@ export function Karteikarten() {
         <p>Lädt…</p>
       ) : (
         <>
-          <p>
-            Fällig heute: {sessionData?.dueCount ?? 0} · Diese Runde: {sessionData?.cards.length ?? 0}
+          <p className="farsi-study-due-line">
+            Fällig heute: {dueCount} · Diese Runde: {sessionSize}
           </p>
-          {!!sessionData?.ineligibleCount && (
+          {mode !== 'LETTERS' && !!sessionData?.ineligibleCount && (
             <p className="farsi-study-ineligible-hint">{INELIGIBLE_HINTS[mode](sessionData.ineligibleCount)}</p>
           )}
 
-          <div className="farsi-filters">
-            {DIRECTION_ORDER.map((option) => (
-              <button
-                key={option}
-                type="button"
-                className={`tool-chip ${direction === option ? 'is-active' : ''}`.trim()}
-                onClick={() => setDirection(option)}
-              >
-                {DIRECTION_LABELS[mode][option]}
-              </button>
-            ))}
-          </div>
+          {mode !== 'LETTERS' && (
+            <div className="farsi-filters">
+              {DIRECTION_ORDER.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  className={`tool-chip ${direction === option ? 'is-active' : ''}`.trim()}
+                  onClick={() => setDirection(option)}
+                >
+                  {DIRECTION_LABELS[mode][option]}
+                </button>
+              ))}
+            </div>
+          )}
 
-          <Button onClick={handleStart} disabled={!sessionData || sessionData.cards.length === 0}>
-            {sessionData && sessionData.cards.length === 0 ? 'Keine Karten fällig 🎉' : "Los geht's"}
+          <Button onClick={handleStart} disabled={!canStart}>
+            {!canStart ? 'Keine Karten fällig 🎉' : "Los geht's"}
           </Button>
         </>
       )}

@@ -9,6 +9,8 @@ import type {
   FarsiStudySession,
   FarsiReviewResult,
   FarsiBoxStats,
+  FarsiLetterProgress,
+  FarsiStreak,
 } from '@app-types/farsi'
 
 export interface FarsiListFilters {
@@ -46,4 +48,12 @@ export const farsiService = {
 
   getBoxStats: (mode: FarsiStudyMode) =>
     api.get<FarsiBoxStats>(API_ENDPOINTS.farsi.studyStats, { params: { mode } }),
+
+  getStreak: () => api.get<FarsiStreak>(API_ENDPOINTS.farsi.studyStreak),
+
+  getLetterProgress: () =>
+    api.get<{ progress: FarsiLetterProgress[] }>(API_ENDPOINTS.farsi.letterProgress),
+
+  reviewLetter: (char: string, position: string, correct: boolean) =>
+    api.post<FarsiReviewResult>(API_ENDPOINTS.farsi.letterReview(char, position), { correct }),
 }

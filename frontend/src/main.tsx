@@ -12,3 +12,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <App />
   </React.StrictMode>,
 )
+
+// Kein Caching/Offline-Verhalten — der Service Worker existiert nur,
+// damit Chrome die App als vollwertige WebAPK installiert (siehe sw.js).
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  })
+}

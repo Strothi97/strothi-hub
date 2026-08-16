@@ -17,14 +17,17 @@ export function FarsiLayout() {
         <NavLink to="/farsi/statistiken" className={linkClass}>
           Statistiken
         </NavLink>
-        <NavLink to="/farsi/arbeitsflaeche" className={linkClass}>
+        <NavLink
+          to="/farsi/arbeitsflaeche"
+          className={({ isActive }) => `${linkClass({ isActive })} farsi-nav__desktop-only`.trim()}
+        >
           Arbeitsfläche
         </NavLink>
         <NavLink to="/farsi/alphabet" className={linkClass}>
           Alphabet
         </NavLink>
-        <span className="farsi-nav__spacer" />
-        <NavLink to="/farsi/import" className={linkClass}>
+        <span className="farsi-nav__spacer farsi-nav__desktop-only" />
+        <NavLink to="/farsi/import" className={({ isActive }) => `${linkClass({ isActive })} farsi-nav__desktop-only`.trim()}>
           Import
         </NavLink>
       </nav>
