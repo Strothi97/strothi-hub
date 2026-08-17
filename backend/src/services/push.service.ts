@@ -1,5 +1,5 @@
 import webpush from 'web-push'
-import { prisma } from '../../db'
+import { prisma } from '../db'
 
 const vapidPublicKey = process.env.VAPID_PUBLIC_KEY
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY
@@ -20,16 +20,28 @@ export interface PushSubscriptionInput {
   keys: { p256dh: string; auth: string }
 }
 
-export async function saveSubscription(userId: string, sub: PushSubscriptionInput) {
+export async function saveSubscription(userId: string, sub: PushSubscriptionInput, userAgent?: string) {
   return prisma.pushSubscription.upsert({
     where: { endpoint: sub.endpoint },
-    create: { userId, endpoint: sub.endpoint, p256dh: sub.keys.p256dh, auth: sub.keys.auth },
-    update: { userId, p256dh: sub.keys.p256dh, auth: sub.keys.auth },
+    create: { userId, endpoint: sub.endpoint, p256dh: sub.keys.p256dh, auth: sub.keys.auth, userAgent },
+    update: { userId, p256dh: sub.keys.p256dh, auth: sub.keys.auth, userAgent },
   })
 }
 
 export async function removeSubscription(endpoint: string) {
   await prisma.pushSubscription.deleteMany({ where: { endpoint } })
+}
+
+export async function listSubscriptions(userId: string) {
+  return prisma.pushSubscription.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+  })
+}
+
+export async function removeSubscriptionById(userId: string, id: string) {
+  const result = await prisma.pushSubscription.deleteMany({ where: { id, userId } })
+  return result.count > 0
 }
 
 export interface PushPayload {

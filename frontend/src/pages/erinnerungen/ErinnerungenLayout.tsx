@@ -1,5 +1,4 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { PushToggle } from './PushToggle'
 
 export function ErinnerungenLayout() {
   const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -15,8 +14,6 @@ export function ErinnerungenLayout() {
         <NavLink to="/erinnerungen/geburtstage" className={linkClass}>
           Geburtstage
         </NavLink>
-        <span className="farsi-nav__spacer" />
-        <PushToggle />
       </nav>
       <div className="farsi-content">
         <Outlet />

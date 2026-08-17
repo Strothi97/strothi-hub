@@ -6,7 +6,7 @@ import { Card } from '@components/ui/Card'
 import { Input } from '@components/ui/Input'
 import type { AdminUser, ToolDefinition } from '@app-types/index'
 
-const emptyForm = { name: '', email: '', password: '' }
+const emptyForm = { name: '', email: '' }
 
 export function AdminUsers() {
   const [users, setUsers] = useState<AdminUser[]>([])
@@ -14,6 +14,7 @@ export function AdminUsers() {
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState(emptyForm)
   const [formError, setFormError] = useState<string | null>(null)
+  const [formNotice, setFormNotice] = useState<string | null>(null)
   const [query, setQuery] = useState('')
 
   const loadUsers = () => adminService.listUsers().then(({ data }) => setUsers(data.users))
@@ -24,17 +25,30 @@ export function AdminUsers() {
     )
   }, [])
 
-  const handleCreate = async (event: FormEvent) => {
+  const handleInvite = async (event: FormEvent) => {
     event.preventDefault()
     setFormError(null)
+    setFormNotice(null)
     try {
-      await adminService.createUser(form)
+      const { data } = await adminService.inviteUser(form)
       setForm(emptyForm)
+      setFormNotice(
+        data.emailSent
+          ? `Einladung an ${data.user.email} verschickt.`
+          : `Nutzer angelegt, aber E-Mail-Versand ist fehlgeschlagen — bitte "Erneut senden" nutzen.`,
+      )
       await loadUsers()
     } catch (err) {
       const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message
-      setFormError(message || 'Nutzer konnte nicht angelegt werden')
+      setFormError(message || 'Einladung konnte nicht versendet werden')
     }
+  }
+
+  const handleResendInvite = async (user: AdminUser) => {
+    const { data } = await adminService.resendInvite(user.id)
+    setFormNotice(
+      data.emailSent ? `Einladung an ${user.email} erneut verschickt.` : `E-Mail-Versand fehlgeschlagen.`,
+    )
   }
 
   const toggleActive = async (user: AdminUser) => {
@@ -66,8 +80,11 @@ export function AdminUsers() {
       <p className="page-subtitle">Nutzer anlegen, Rollen verwalten und Tool-Zugriffe freigeben.</p>
 
       <Card className="admin-form-card">
-        <h2>Neuen Nutzer anlegen</h2>
-        <form onSubmit={handleCreate}>
+        <h2>Nutzer einladen</h2>
+        <p className="page-subtitle">
+          Die Person erhält eine E-Mail mit einem Link, über den sie ihr eigenes Passwort festlegt.
+        </p>
+        <form onSubmit={handleInvite}>
           <Input
             id="new-user-name"
             label="Name"
@@ -83,16 +100,9 @@ export function AdminUsers() {
             onChange={(event) => setForm({ ...form, email: event.target.value })}
             required
           />
-          <Input
-            id="new-user-password"
-            label="Passwort"
-            type="password"
-            value={form.password}
-            onChange={(event) => setForm({ ...form, password: event.target.value })}
-            required
-          />
           {formError && <p className="form-error">{formError}</p>}
-          <Button type="submit">Anlegen</Button>
+          {formNotice && <p className="form-notice">{formNotice}</p>}
+          <Button type="submit">Einladung versenden</Button>
         </form>
       </Card>
 
@@ -116,6 +126,7 @@ export function AdminUsers() {
             tools={tools}
             onToggleActive={() => toggleActive(user)}
             onToggleTool={(toolKey) => toggleTool(user, toolKey)}
+            onResendInvite={() => handleResendInvite(user)}
           />
         ))}
       </div>
@@ -128,11 +139,13 @@ function UserCard({
   tools,
   onToggleActive,
   onToggleTool,
+  onResendInvite,
 }: {
   user: AdminUser
   tools: ToolDefinition[]
   onToggleActive: () => void
   onToggleTool: (toolKey: string) => void
+  onResendInvite: () => void
 }) {
   const isAdmin = user.role === 'ADMIN'
 
@@ -142,6 +155,14 @@ function UserCard({
         <div className="user-card__identity">
           <span className="user-card__name">{user.name}</span>
           <span className="user-card__email">{user.email}</span>
+          {user.pendingInvite && (
+            <span className="user-card__pending">
+              Einladung ausstehend ·{' '}
+              <button type="button" className="user-card__resend" onClick={onResendInvite}>
+                Erneut senden
+              </button>
+            </span>
+          )}
         </div>
 
         <div className="user-card__meta">

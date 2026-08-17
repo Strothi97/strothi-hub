@@ -1,6 +1,5 @@
 import { Request, Response } from 'express'
 import * as erinnerungenService from './erinnerungen.service'
-import * as pushService from './push.service'
 
 // ── Reminders ────────────────────────────────────────────
 
@@ -62,23 +61,5 @@ export const setCongrats = async (req: Request, res: Response) => {
   const targetYear = year ?? new Date().getUTCFullYear()
   const result = await erinnerungenService.setCongrats(req.user!.id, req.params.id, targetYear, !!congratulated)
   if (!result) return res.status(404).json({ message: 'Person nicht gefunden' })
-  return res.json({ ok: true })
-}
-
-// ── Push ─────────────────────────────────────────────────
-
-export const getPushPublicKey = async (_req: Request, res: Response) => {
-  const publicKey = pushService.getPublicKey()
-  return res.json({ publicKey })
-}
-
-export const subscribePush = async (req: Request, res: Response) => {
-  await pushService.saveSubscription(req.user!.id, req.body)
-  return res.status(201).json({ ok: true })
-}
-
-export const unsubscribePush = async (req: Request, res: Response) => {
-  const { endpoint } = req.body as { endpoint?: string }
-  if (endpoint) await pushService.removeSubscription(endpoint)
   return res.json({ ok: true })
 }

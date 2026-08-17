@@ -25,6 +25,9 @@ export function AppShell() {
         <NavLink to="/" end className={navLinkClass}>
           🏠 Übersicht
         </NavLink>
+        <NavLink to="/konto" className={navLinkClass}>
+          👤 Konto
+        </NavLink>
         {isAdmin && (
           <NavLink to="/admin/users" className={navLinkClass}>
             🛠️ Nutzer

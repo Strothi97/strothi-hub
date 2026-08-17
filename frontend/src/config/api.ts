@@ -5,6 +5,8 @@ export const API_ENDPOINTS = {
   auth: {
     login: '/auth/login',
     me: '/auth/me',
+    changePassword: '/auth/change-password',
+    invite: (token: string) => `/auth/invite/${token}`,
   },
   tools: '/tools',
   preferences: {
@@ -14,6 +16,14 @@ export const API_ENDPOINTS = {
     users: '/admin/users',
     user: (id: string) => `/admin/users/${id}`,
     userToolAccess: (id: string) => `/admin/users/${id}/tool-access`,
+    resendInvite: (id: string) => `/admin/users/${id}/resend-invite`,
+  },
+  push: {
+    publicKey: '/push/public-key',
+    subscribe: '/push/subscribe',
+    unsubscribe: '/push/unsubscribe',
+    subscriptions: '/push/subscriptions',
+    subscription: (id: string) => `/push/subscriptions/${id}`,
   },
   homeoffice: {
     week: '/homeoffice/week',
@@ -44,9 +54,6 @@ export const API_ENDPOINTS = {
     person: (id: string) => `/erinnerungen/people/${id}`,
     personPhoto: (id: string) => `/erinnerungen/people/${id}/photo`,
     personCongrats: (id: string) => `/erinnerungen/people/${id}/congrats`,
-    pushPublicKey: '/erinnerungen/push/public-key',
-    pushSubscribe: '/erinnerungen/push/subscribe',
-    pushUnsubscribe: '/erinnerungen/push/unsubscribe',
   },
   // Weitere Endpunkte hier ergänzen
 } as const

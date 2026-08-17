@@ -38,8 +38,25 @@ model User {
   reminders           Reminder[]
   people              Person[]
   pushSubscriptions   PushSubscription[]
+  inviteTokens        InviteToken[]
 
   @@map("users")
+}
+
+// Einmal-Link, den ein Admin per E-Mail an eine neue Adresse schickt, um
+// dieser Person die Wahl eines eigenen Passworts zu ermöglichen (statt
+// dass der Admin selbst eins ausdenkt).
+model InviteToken {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("invite_tokens")
 }
 
 // Freigabe, welcher Nutzer welches Tool (per toolKey aus der
@@ -293,6 +310,7 @@ model PushSubscription {
   endpoint  String   @unique @db.VarChar(500)
   p256dh    String
   auth      String
+  userAgent String? // grober Geräte-/Browser-Hinweis für die Konto-Seite, z.B. "Firefox · Windows"
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

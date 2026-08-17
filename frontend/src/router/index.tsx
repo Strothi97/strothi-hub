@@ -2,7 +2,9 @@ import { Routes, Route } from 'react-router-dom'
 import { AppShell } from '@components/layout/AppShell'
 import { ProtectedRoute } from '@components/common/ProtectedRoute'
 import { Login } from '@pages/Login'
+import { AcceptInvite } from '@pages/AcceptInvite'
 import { Dashboard } from '@pages/Dashboard'
+import { Konto } from '@pages/Konto'
 import { AdminUsers } from '@pages/admin/Users'
 import { HomeofficeLayout } from '@pages/homeoffice/HomeofficeLayout'
 import { Woche } from '@pages/homeoffice/Woche'
@@ -24,10 +26,12 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/einladung/:token" element={<AcceptInvite />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/konto" element={<Konto />} />
 
           <Route element={<ProtectedRoute adminOnly />}>
             <Route path="/admin/users" element={<AdminUsers />} />

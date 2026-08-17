@@ -38,9 +38,4 @@ router.delete('/people/:id', erinnerungenController.deletePerson)
 router.post('/people/:id/photo', upload.single('photo'), erinnerungenController.uploadPersonPhoto)
 router.post('/people/:id/congrats', erinnerungenController.setCongrats)
 
-// ── Push ─────────────────────────────────────────────────
-router.get('/push/public-key', erinnerungenController.getPushPublicKey)
-router.post('/push/subscribe', erinnerungenController.subscribePush)
-router.post('/push/unsubscribe', erinnerungenController.unsubscribePush)
-
 export default router

@@ -1,4 +1,4 @@
-import { erinnerungenService } from '@services/erinnerungen.service'
+import { pushService } from '@services/push.service'
 
 export type PushStatus = 'unsupported' | 'denied' | 'inactive' | 'active'
 
@@ -31,7 +31,7 @@ export async function enablePush(): Promise<PushStatus> {
   const permission = await Notification.requestPermission()
   if (permission !== 'granted') return 'denied'
 
-  const { data } = await erinnerungenService.getPushPublicKey()
+  const { data } = await pushService.getPublicKey()
   if (!data.publicKey) return 'inactive'
 
   const registration = await navigator.serviceWorker.ready
@@ -39,7 +39,7 @@ export async function enablePush(): Promise<PushStatus> {
     userVisibleOnly: true,
     applicationServerKey: urlBase64ToUint8Array(data.publicKey) as BufferSource,
   })
-  await erinnerungenService.subscribePush(subscription.toJSON())
+  await pushService.subscribe(subscription.toJSON())
   return 'active'
 }
 
@@ -48,7 +48,7 @@ export async function disablePush(): Promise<PushStatus> {
   const registration = await navigator.serviceWorker.ready
   const subscription = await registration.pushManager.getSubscription()
   if (subscription) {
-    await erinnerungenService.unsubscribePush(subscription.endpoint)
+    await pushService.unsubscribe(subscription.endpoint)
     await subscription.unsubscribe()
   }
   return 'inactive'

@@ -1,6 +1,6 @@
 import { prisma } from '../../db'
 import { isDueOn, isLeapYear } from './erinnerungen.service'
-import { sendPush, PushPayload } from './push.service'
+import { sendPush, PushPayload } from '../../services/push.service'
 
 // Server läuft unter Passenger in Server-/UTC-Zeit, Uhrzeiten sind aber
 // vom Nutzer in Europe/Berlin gedacht — Intl.DateTimeFormat übernimmt

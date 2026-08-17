@@ -32,11 +32,4 @@ export const erinnerungenService = {
 
   setCongrats: (id: string, year: number, congratulated: boolean) =>
     api.post(API_ENDPOINTS.erinnerungen.personCongrats(id), { year, congratulated }),
-
-  getPushPublicKey: () => api.get<{ publicKey: string | null }>(API_ENDPOINTS.erinnerungen.pushPublicKey),
-
-  subscribePush: (subscription: PushSubscriptionJSON) =>
-    api.post(API_ENDPOINTS.erinnerungen.pushSubscribe, subscription),
-
-  unsubscribePush: (endpoint: string) => api.post(API_ENDPOINTS.erinnerungen.pushUnsubscribe, { endpoint }),
 }

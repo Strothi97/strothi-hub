@@ -23,6 +23,7 @@ export interface ToolDefinition {
 
 export interface AdminUser extends User {
   toolAccess: string[]
+  pendingInvite: boolean
 }
 
 export interface DashboardPreferences {

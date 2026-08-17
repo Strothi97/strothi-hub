@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Einladung zu Strothi's Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f5f7;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            color: #1f2933;
+        }
+
+        a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .wrapper {
+            width: 100%;
+            background-color: #f4f5f7;
+            padding: 24px 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+            border: 1px solid #e5e7eb;
+        }
+
+        .header {
+            padding: 24px 32px;
+            background: radial-gradient(circle at top left, #2563eb, #4f46e5);
+            color: #f9fafb;
+            text-align: left;
+        }
+
+        .logo {
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .logo img {
+            max-height: 40px;
+            width: auto;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0 0 4px 0;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 24px 32px 28px 32px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #111827;
+        }
+
+        .content p {
+            margin: 0 0 12px 0;
+        }
+
+        .meta-info {
+            margin-top: 20px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            font-size: 12px;
+            color: #1d4ed8;
+        }
+
+        .meta-info strong {
+            display: inline-block;
+            margin-right: 4px;
+        }
+
+        .button-row {
+            margin-top: 22px;
+        }
+
+        .primary-button {
+            display: inline-block;
+            padding: 10px 18px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            color: #f9fafb !important;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 8px 18px rgba(79, 70, 229, 0.35);
+        }
+
+        .primary-button:hover {
+            opacity: 0.95;
+        }
+
+        .fallback-link {
+            margin-top: 16px;
+            font-size: 12px;
+            color: #6b7280;
+            word-break: break-all;
+        }
+
+        .signature {
+            margin-top: 24px;
+            font-size: 13px;
+        }
+
+        .signature strong {
+            display: block;
+        }
+
+        .footer {
+            max-width: 600px;
+            margin: 12px auto 0 auto;
+            text-align: center;
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .footer p {
+            margin: 0 0 4px 0;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                border-radius: 0;
+            }
+
+            .header,
+            .content {
+                padding: 18px 18px 20px 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <table class="container" role="presentation" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td class="header">
+                    <div class="logo">
+                        <img src="https://hub.strothi.de/logo_square.png" alt="Strothi's Hub Logo" />
+                    </div>
+                    <h1 class="header-title">Du wurdest zu Strothi's Hub eingeladen</h1>
+                    <p class="header-subtitle">
+                        Richte dein Konto ein, um loszulegen.
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td class="content">
+                    <p>Hallo {{name}},</p>
+
+                    <p>
+                        für dich wurde ein Zugang zu Strothi's Hub angelegt. Klicke auf den
+                        Button unten, um dein eigenes Passwort festzulegen und dich direkt
+                        anzumelden.
+                    </p>
+
+                    <div class="button-row">
+                        <a href="{{inviteUrl}}" class="primary-button" target="_blank"
+                            rel="noopener noreferrer">
+                            Konto einrichten
+                        </a>
+                    </div>
+
+                    <p class="fallback-link">
+                        Falls der Button nicht funktioniert, kopiere diesen Link in deinen Browser:<br />
+                        <a href="{{inviteUrl}}">{{inviteUrl}}</a>
+                    </p>
+
+                    <div class="meta-info">
+                        <strong>Hinweis:</strong>
+                        Dieser Link ist 7 Tage gültig und kann nur einmal verwendet werden.
+                    </div>
+
+                    <div class="signature">
+                        <p>Viele Grüße</p>
+                        <strong>Strothi's Hub</strong>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="footer">
+            <p>Du erhältst diese Nachricht, weil ein Admin dich zu Strothi's Hub eingeladen hat.</p>
+        </div>
+    </div>
+</body>
+
+</html>
