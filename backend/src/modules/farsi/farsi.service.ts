@@ -239,6 +239,15 @@ export interface StudySessionDTO {
   cards: FarsiEntryDTO[]
 }
 
+// Fisher-Yates — mischt in-place und gibt das Array zurück.
+function shuffle<T>(items: T[]): T[] {
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[items[i], items[j]] = [items[j], items[i]]
+  }
+  return items
+}
+
 function isStudyEligible(entry: FarsiEntryDTO, mode: FarsiStudyMode): boolean {
   if (mode === 'VOCAB') {
     return entry.german.length > 0 && (entry.persianLatin.length > 0 || !!entry.persianScript)
@@ -272,6 +281,11 @@ export async function getStudySession(
     return !progress || progress.dueAt.getTime() <= now
   })
 
+  // Erst mischen, dann stabil nach Fälligkeit sortieren — echte
+  // Überfällige bleiben vorn, aber unter gleich fälligen (typischerweise
+  // "noch nie geübt") ist die Reihenfolge bei jeder Sitzung neu zufällig,
+  // statt immer in derselben (z.B. Anlage-)Reihenfolge zu erscheinen.
+  shuffle(due)
   due.sort((a, b) => {
     const aDue = progressByEntryId.get(a.id)?.dueAt.getTime() ?? -Infinity
     const bDue = progressByEntryId.get(b.id)?.dueAt.getTime() ?? -Infinity

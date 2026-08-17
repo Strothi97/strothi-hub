@@ -38,10 +38,24 @@ function isDue(progressByKey: Map<string, FarsiLetterProgress>, letterChar: stri
   return !p || new Date(p.dueAt).getTime() <= Date.now()
 }
 
+// Fisher-Yates — mischt in-place und gibt das Array zurück.
+function shuffle<T>(items: T[]): T[] {
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[items[i], items[j]] = [items[j], items[i]]
+  }
+  return items
+}
+
 export function buildLetterQueue(progress: FarsiLetterProgress[], limit = LETTER_SESSION_SIZE): LetterQueueItem[] {
   const progressByKey = new Map(progress.map((p) => [progressKey(p.letterChar, p.position), p]))
   const due = allLetterForms().filter((item) => isDue(progressByKey, item.letter.char, item.position))
 
+  // Erst mischen, dann stabil nach Fälligkeit sortieren — echte
+  // Überfällige bleiben vorn, aber unter gleich fälligen (z.B. "noch nie
+  // geübt") ist die Reihenfolge bei jeder Sitzung neu zufällig, statt
+  // immer alphabetisch (alef, be, pe, ...) zu erscheinen.
+  shuffle(due)
   due.sort((a, b) => {
     const aDue = progressByKey.get(progressKey(a.letter.char, a.position))?.dueAt
     const bDue = progressByKey.get(progressKey(b.letter.char, b.position))?.dueAt

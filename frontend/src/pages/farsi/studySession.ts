@@ -41,18 +41,13 @@ export interface QueueItem {
 }
 
 // Nur im Modus VOCAB relevant: Wenn eine Karte sowohl Lautschrift als auch
-// Originalschrift hat, werden bei fester Richtung beide zusammen als
-// Lernhilfe gezeigt. Nur bei "Gemischt" wird zufällig nur eine der beiden
-// gezeigt — das fordert dort stärker heraus.
-function resolveFarsiSide(entry: FarsiEntry, direction: FarsiStudyDirection): FaceSide {
+// Originalschrift hat, werden immer beide zusammen gezeigt (Originalschrift
+// groß/fett oben, Lautschrift kleiner darunter) — nicht nur bei fester
+// Richtung.
+function resolveFarsiSide(entry: FarsiEntry): FaceSide {
   const hasLatin = entry.persianLatin.length > 0
   const hasScript = !!entry.persianScript
-  if (hasLatin && hasScript) {
-    if (direction === 'MIXED') {
-      return Math.random() < 0.5 ? 'farsi-latin' : 'farsi-script'
-    }
-    return 'farsi-both'
-  }
+  if (hasLatin && hasScript) return 'farsi-both'
   return hasScript ? 'farsi-script' : 'farsi-latin'
 }
 
@@ -66,7 +61,7 @@ export function buildStudyQueue(
       direction === 'MIXED' ? (Math.random() < 0.5 ? 'FORWARD' : 'REVERSE') : direction
 
     if (mode === 'VOCAB') {
-      const farsiSide = resolveFarsiSide(entry, direction)
+      const farsiSide = resolveFarsiSide(entry)
       return cardDirection === 'FORWARD'
         ? { entry, front: 'german', back: farsiSide }
         : { entry, front: farsiSide, back: 'german' }

@@ -435,7 +435,8 @@
 }
 
 .farsi-study-card__script {
-  font-size: 1.8rem;
+  font-size: 2rem;
+  font-weight: 700;
 }
 
 .farsi-study-card__latin {
