@@ -6,6 +6,7 @@ export const API_ENDPOINTS = {
     login: '/auth/login',
     me: '/auth/me',
     changePassword: '/auth/change-password',
+    deleteMe: '/auth/me',
     invite: (token: string) => `/auth/invite/${token}`,
   },
   tools: '/tools',

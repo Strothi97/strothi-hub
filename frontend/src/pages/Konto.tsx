@@ -1,4 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@context/AuthContext'
 import { authService } from '@services/auth.service'
 import { pushService } from '@services/push.service'
 import type { PushSubscriptionInfo } from '@services/push.service'
@@ -25,6 +27,7 @@ export function Konto() {
 
       <PasswordCard />
       <PushCard />
+      <DangerZoneCard />
     </div>
   )
 }
@@ -163,6 +166,58 @@ function PushCard() {
           ))}
         </div>
       )}
+    </Card>
+  )
+}
+
+function DangerZoneCard() {
+  const { logout } = useAuth()
+  const navigate = useNavigate()
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault()
+    setError(null)
+
+    const confirmed = window.confirm(
+      'Konto wirklich unwiderruflich löschen? Alle Daten (Erinnerungen, Geburtstage, Fortschritt, ...) gehen dabei verloren.',
+    )
+    if (!confirmed) return
+
+    setSubmitting(true)
+    try {
+      await authService.deleteAccount(password)
+      logout()
+      navigate('/login', { replace: true })
+    } catch (err) {
+      const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message
+      setError(message || 'Konto konnte nicht gelöscht werden')
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <Card className="admin-form-card konto-danger-zone">
+      <h2>Konto löschen</h2>
+      <p className="page-subtitle">
+        Löscht dein Konto und alle damit verbundenen Daten unwiderruflich. Das kann nicht rückgängig gemacht werden.
+      </p>
+      <form onSubmit={handleSubmit}>
+        <Input
+          id="delete-account-password"
+          label="Passwort zur Bestätigung"
+          type="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          required
+        />
+        {error && <p className="form-error">{error}</p>}
+        <Button type="submit" variant="danger" disabled={submitting}>
+          {submitting ? 'Wird gelöscht…' : 'Konto endgültig löschen'}
+        </Button>
+      </form>
     </Card>
   )
 }

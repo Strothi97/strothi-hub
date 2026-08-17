@@ -51,6 +51,10 @@
   color: #fff;
 }
 
+.konto-danger-zone {
+  border-color: color-mix(in srgb, var(--color-error) 40%, var(--color-border));
+}
+
 .btn-sm {
   padding: 0.4em 0.9em;
   font-size: 0.85rem;

@@ -11,6 +11,8 @@ export const authService = {
   changePassword: (currentPassword: string, newPassword: string) =>
     api.post(API_ENDPOINTS.auth.changePassword, { currentPassword, newPassword }),
 
+  deleteAccount: (password: string) => api.delete(API_ENDPOINTS.auth.deleteMe, { data: { password } }),
+
   getInvite: (token: string) => api.get<{ name: string; email: string }>(API_ENDPOINTS.auth.invite(token)),
 
   acceptInvite: (token: string, password: string) =>

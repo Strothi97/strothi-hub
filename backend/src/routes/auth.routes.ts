@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { login, getMe, getInvite, acceptInvite, changePassword } from '../controllers/auth.controller'
+import { login, getMe, getInvite, acceptInvite, changePassword, deleteMyAccount } from '../controllers/auth.controller'
 import { authenticate } from '../middleware/authenticate'
 // import { validateLogin } from '../middleware/validators'
 
@@ -10,6 +10,7 @@ const router = Router()
 router.post('/login', login)
 router.get('/me', authenticate, getMe)
 router.post('/change-password', authenticate, changePassword)
+router.delete('/me', authenticate, deleteMyAccount)
 
 // Öffentlich (kein Login nötig — der Token selbst ist der Nachweis).
 router.get('/invite/:token', getInvite)
