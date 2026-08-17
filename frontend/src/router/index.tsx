@@ -16,6 +16,9 @@ import { Karteikarten } from '@pages/farsi/Karteikarten'
 import { Statistiken } from '@pages/farsi/Statistiken'
 import { Arbeitsflaeche } from '@pages/farsi/Arbeitsflaeche'
 import { Alphabet } from '@pages/farsi/AlphabetPage'
+import { ErinnerungenLayout } from '@pages/erinnerungen/ErinnerungenLayout'
+import { Erinnerungen } from '@pages/erinnerungen/Erinnerungen'
+import { Geburtstage } from '@pages/erinnerungen/Geburtstage'
 
 export function AppRoutes() {
   return (
@@ -47,6 +50,13 @@ export function AppRoutes() {
               <Route path="statistiken" element={<Statistiken />} />
               <Route path="arbeitsflaeche" element={<Arbeitsflaeche />} />
               <Route path="alphabet" element={<Alphabet />} />
+            </Route>
+          </Route>
+
+          <Route path="/erinnerungen" element={<ProtectedRoute requireTool="erinnerungen" />}>
+            <Route element={<ErinnerungenLayout />}>
+              <Route index element={<Erinnerungen />} />
+              <Route path="geburtstage" element={<Geburtstage />} />
             </Route>
           </Route>
 

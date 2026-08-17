@@ -31,7 +31,6 @@ export const TOOLS: ToolDefinition[] = [
     description: 'Geburtstage, Termine und wichtige Ereignisse',
     icon: '🔔',
     path: '/erinnerungen',
-    comingSoon: true,
   },
   {
     key: 'kleingewerbe',

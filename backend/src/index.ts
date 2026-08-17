@@ -10,6 +10,7 @@ import path from 'path'
 import { router } from './routes'
 import { errorHandler } from './middleware/errorHandler'
 import { notFound } from './middleware/notFound'
+import { startErinnerungenScheduler } from './modules/erinnerungen/scheduler'
 
 dotenv.config()
 
@@ -52,6 +53,7 @@ app.use(errorHandler)
 app.listen(PORT, () => {
   console.log(`✅ Server läuft auf http://localhost:${PORT}`)
   console.log(`🌍 Environment: ${process.env.NODE_ENV}`)
+  startErinnerungenScheduler()
 })
 
 export default app

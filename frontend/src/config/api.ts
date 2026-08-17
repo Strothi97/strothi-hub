@@ -37,5 +37,16 @@ export const API_ENDPOINTS = {
     letterReview: (char: string, position: string) =>
       `/farsi/study/letters/${encodeURIComponent(char)}/${position}/review`,
   },
+  erinnerungen: {
+    reminders: '/erinnerungen/reminders',
+    reminder: (id: string) => `/erinnerungen/reminders/${id}`,
+    people: '/erinnerungen/people',
+    person: (id: string) => `/erinnerungen/people/${id}`,
+    personPhoto: (id: string) => `/erinnerungen/people/${id}/photo`,
+    personCongrats: (id: string) => `/erinnerungen/people/${id}/congrats`,
+    pushPublicKey: '/erinnerungen/push/public-key',
+    pushSubscribe: '/erinnerungen/push/subscribe',
+    pushUnsubscribe: '/erinnerungen/push/unsubscribe',
+  },
   // Weitere Endpunkte hier ergänzen
 } as const

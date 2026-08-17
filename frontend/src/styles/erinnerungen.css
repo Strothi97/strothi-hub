@@ -1,0 +1,265 @@
+/* ================================
+   TOOL: Erinnerungen
+   ================================ */
+
+.erinnerungen-count {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+/* ── Push-Toggle (in der Nav) ───────────────────────────── */
+
+.erinnerungen-push-toggle {
+  border: 1px solid var(--color-border);
+  background: none;
+  color: var(--color-text-muted);
+  border-radius: 999px;
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.erinnerungen-push-toggle.is-active {
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.erinnerungen-push-toggle:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ── Formular (Reminder + Person teilen sich das Grundmuster) ─ */
+
+.erinnerungen-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.erinnerungen-time-field {
+  border: none;
+  background: none;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.erinnerungen-time-add {
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.erinnerungen-interval-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.erinnerungen-date-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.erinnerungen-stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-alt);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.erinnerungen-stepper button {
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.erinnerungen-stepper button:hover {
+  color: var(--color-primary);
+  background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+.erinnerungen-stepper input {
+  width: 40px;
+  text-align: center;
+  border: none;
+  background: none;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 1rem;
+  -moz-appearance: textfield;
+}
+
+.erinnerungen-stepper input::-webkit-outer-spin-button,
+.erinnerungen-stepper input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.erinnerungen-checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin: var(--space-2) 0;
+  cursor: pointer;
+}
+
+/* ── Reminder-Karten ────────────────────────────────────── */
+
+.erinnerungen-reminder-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+}
+
+.erinnerungen-reminder-card--paused {
+  opacity: 0.55;
+}
+
+.erinnerungen-reminder-card__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.erinnerungen-reminder-card__title {
+  font-weight: 600;
+}
+
+.erinnerungen-reminder-card__meta {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.erinnerungen-reminder-card__toggle {
+  border: 1px solid var(--color-border);
+  background: none;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.erinnerungen-reminder-card__toggle:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ── Geburtstags-Karten ─────────────────────────────────── */
+
+.erinnerungen-person-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+}
+
+.erinnerungen-person-card__photo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-surface-alt);
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.erinnerungen-person-card__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.erinnerungen-person-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.erinnerungen-person-card__name {
+  font-weight: 600;
+}
+
+.erinnerungen-person-card__meta {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.erinnerungen-congrats-btn {
+  border: 1px solid var(--color-success);
+  background: none;
+  color: var(--color-success);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.erinnerungen-congrats-done {
+  font-size: 0.8rem;
+  color: var(--color-success);
+  white-space: nowrap;
+}
+
+/* ── Foto-Upload ────────────────────────────────────────── */
+
+.erinnerungen-photo-picker {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: var(--color-surface-alt);
+  border: 1px dashed var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin: 0 auto var(--space-3);
+}
+
+.erinnerungen-photo-picker__preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.erinnerungen-photo-picker__placeholder {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: var(--space-2);
+}

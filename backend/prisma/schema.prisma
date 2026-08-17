@@ -35,6 +35,9 @@ model User {
   farsiEntries        FarsiEntry[]
   farsiProgress       FarsiProgress[]
   farsiLetterProgress FarsiLetterProgress[]
+  reminders           Reminder[]
+  people              Person[]
+  pushSubscriptions   PushSubscription[]
 
   @@map("users")
 }
@@ -212,6 +215,103 @@ model FarsiLetterProgress {
   @@unique([userId, letterChar, position])
   @@index([userId, dueAt])
   @@map("farsi_letter_progress")
+}
+
+// ── Tool: Erinnerungen ───────────────────────────────────
+
+enum ReminderRecurrence {
+  ONCE
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+  CUSTOM_INTERVAL
+  WEEKDAYS
+}
+
+enum IntervalUnit {
+  DAY
+  WEEK
+  MONTH
+}
+
+model Reminder {
+  id           String             @id @default(cuid())
+  userId       String
+  title        String
+  note         String?
+  recurrence   ReminderRecurrence
+  startDate    DateTime           @db.Date
+  endDate      DateTime?          @db.Date // optional, nur bei wiederkehrenden Erinnerungen sinnvoll
+  intervalN    Int? // nur CUSTOM_INTERVAL
+  intervalUnit IntervalUnit? // nur CUSTOM_INTERVAL
+  weekdays     Json? // nur WEEKDAYS: number[] (0=So..6=Sa)
+  times        Json // string[] "HH:MM", mind. 1
+  active       Boolean            @default(true)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reminders")
+}
+
+model Person {
+  id                   String   @id @default(cuid())
+  userId               String
+  firstName            String
+  lastName             String?
+  birthday             DateTime @db.Date // Jahr wird für Altersanzeige genutzt
+  photoUrl             String?
+  congratsCheckEnabled Boolean  @default(true) // 20-Uhr-Rückfrage an/aus
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  congratsLog PersonCongratsLog[]
+
+  @@map("people")
+}
+
+// Ob für eine Person in einem bestimmten Jahr schon "gratuliert" bestätigt wurde.
+model PersonCongratsLog {
+  id            String   @id @default(cuid())
+  personId      String
+  year          Int
+  congratulated Boolean  @default(false)
+  respondedAt   DateTime @default(now())
+
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([personId, year])
+  @@map("person_congrats_log")
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique @db.VarChar(500)
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("push_subscriptions")
+}
+
+// Generisches Dedupe-Log, damit der minütliche Scheduler dieselbe
+// Benachrichtigung nicht zweimal verschickt (kind+refId+Zeitschlitz eindeutig).
+model NotificationLog {
+  id           String   @id @default(cuid())
+  userId       String
+  kind         String // 'reminder' | 'birthday_morning' | 'birthday_checkin'
+  refId        String // reminderId oder personId
+  scheduledFor String // "YYYY-MM-DD HH:MM", Dedupe-Schlüssel
+  createdAt    DateTime @default(now())
+
+  @@unique([kind, refId, scheduledFor])
+  @@map("notification_logs")
 }
 
 // Weitere Modelle hier ergänzen:

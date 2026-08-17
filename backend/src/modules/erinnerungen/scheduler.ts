@@ -1,0 +1,105 @@
+import { prisma } from '../../db'
+import { isDueOn, isLeapYear } from './erinnerungen.service'
+import { sendPush, PushPayload } from './push.service'
+
+// Server läuft unter Passenger in Server-/UTC-Zeit, Uhrzeiten sind aber
+// vom Nutzer in Europe/Berlin gedacht — Intl.DateTimeFormat übernimmt
+// die korrekte Umrechnung inkl. Sommerzeit, ohne neue Abhängigkeit.
+function getBerlinNow() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Berlin',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(new Date())
+  const map = Object.fromEntries(parts.map((p) => [p.type, p.value])) as Record<string, string>
+
+  return {
+    year: Number(map.year),
+    month: Number(map.month),
+    day: Number(map.day),
+    hhmm: `${map.hour}:${map.minute}`,
+    dateKey: `${map.year}-${map.month}-${map.day}`,
+  }
+}
+
+// Legt eine Dedupe-Log-Zeile an (schlägt bei Doppel-Versand wegen des
+// Unique-Constraints fehl) und verschickt nur bei Erfolg tatsächlich den Push.
+async function fireOnce(
+  kind: string,
+  refId: string,
+  scheduledFor: string,
+  userId: string,
+  payload: PushPayload,
+): Promise<void> {
+  try {
+    await prisma.notificationLog.create({ data: { userId, kind, refId, scheduledFor } })
+  } catch {
+    return
+  }
+  await sendPush(userId, payload)
+}
+
+function isBirthdayOn(birthdayMonth: number, birthdayDay: number, target: { year: number; month: number; day: number }): boolean {
+  if (birthdayMonth === 1 && birthdayDay === 29 && !isLeapYear(target.year)) {
+    return target.month === 2 && target.day === 28
+  }
+  return target.month === birthdayMonth + 1 && target.day === birthdayDay
+}
+
+export async function runErinnerungenCheck(): Promise<void> {
+  try {
+    const berlin = getBerlinNow()
+    const todayUtcMidnight = new Date(Date.UTC(berlin.year, berlin.month - 1, berlin.day))
+    const scheduledFor = `${berlin.dateKey} ${berlin.hhmm}`
+
+    const reminders = await prisma.reminder.findMany({ where: { active: true } })
+    for (const reminder of reminders) {
+      const times = Array.isArray(reminder.times) ? (reminder.times as string[]) : []
+      if (!times.includes(berlin.hhmm)) continue
+      if (!isDueOn(reminder, todayUtcMidnight)) continue
+      await fireOnce('reminder', reminder.id, scheduledFor, reminder.userId, {
+        title: `🔔 ${reminder.title}`,
+        body: reminder.note || 'Erinnerung',
+        url: '/erinnerungen',
+      })
+    }
+
+    if (berlin.hhmm === '10:00' || berlin.hhmm === '20:00') {
+      const people = await prisma.person.findMany()
+      for (const person of people) {
+        if (!isBirthdayOn(person.birthday.getUTCMonth(), person.birthday.getUTCDate(), berlin)) continue
+
+        if (berlin.hhmm === '10:00') {
+          await fireOnce('birthday_morning', person.id, scheduledFor, person.userId, {
+            title: '🎂 Geburtstag heute',
+            body: `${person.firstName}${person.lastName ? ' ' + person.lastName : ''} hat heute Geburtstag!`,
+            url: '/erinnerungen/geburtstage',
+          })
+        }
+
+        if (berlin.hhmm === '20:00' && person.congratsCheckEnabled) {
+          const status = await prisma.personCongratsLog.findUnique({
+            where: { personId_year: { personId: person.id, year: berlin.year } },
+          })
+          if (status?.congratulated) continue
+          await fireOnce('birthday_checkin', person.id, scheduledFor, person.userId, {
+            title: '🎉 Schon gratuliert?',
+            body: `Hast du ${person.firstName} zum Geburtstag gratuliert?`,
+            url: '/erinnerungen/geburtstage',
+          })
+        }
+      }
+    }
+  } catch (error) {
+    console.error('[Erinnerungen] Scheduler-Fehler:', error)
+  }
+}
+
+export function startErinnerungenScheduler(): void {
+  setInterval(runErinnerungenCheck, 60_000)
+  console.log('🔔 Erinnerungen-Scheduler gestartet (Prüfung jede Minute)')
+}
