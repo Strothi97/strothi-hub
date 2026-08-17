@@ -50,6 +50,15 @@ function isBirthdayOn(birthdayMonth: number, birthdayDay: number, target: { year
   return target.month === birthdayMonth + 1 && target.day === birthdayDay
 }
 
+function addDays(
+  target: { year: number; month: number; day: number },
+  days: number,
+): { year: number; month: number; day: number } {
+  const d = new Date(Date.UTC(target.year, target.month - 1, target.day))
+  d.setUTCDate(d.getUTCDate() + days)
+  return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate() }
+}
+
 export async function runErinnerungenCheck(): Promise<void> {
   try {
     const berlin = getBerlinNow()
@@ -69,9 +78,22 @@ export async function runErinnerungenCheck(): Promise<void> {
     }
 
     if (berlin.hhmm === '10:00' || berlin.hhmm === '20:00') {
+      const in3Days = addDays(berlin, 3)
       const people = await prisma.person.findMany()
       for (const person of people) {
-        if (!isBirthdayOn(person.birthday.getUTCMonth(), person.birthday.getUTCDate(), berlin)) continue
+        const birthdayMonth = person.birthday.getUTCMonth()
+        const birthdayDay = person.birthday.getUTCDate()
+        const isToday = isBirthdayOn(birthdayMonth, birthdayDay, berlin)
+
+        if (berlin.hhmm === '10:00' && isBirthdayOn(birthdayMonth, birthdayDay, in3Days)) {
+          await fireOnce('birthday_upcoming', person.id, scheduledFor, person.userId, {
+            title: '🎂 Geburtstag in 3 Tagen',
+            body: `${person.firstName}${person.lastName ? ' ' + person.lastName : ''} hat in 3 Tagen Geburtstag.`,
+            url: '/erinnerungen/geburtstage',
+          })
+        }
+
+        if (!isToday) continue
 
         if (berlin.hhmm === '10:00') {
           await fireOnce('birthday_morning', person.id, scheduledFor, person.userId, {
