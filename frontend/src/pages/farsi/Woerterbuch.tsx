@@ -7,11 +7,37 @@ import { FarsiEntryModal } from './FarsiEntryModal'
 import { WORD_TYPE_META, WORD_TYPE_ORDER } from './wordType'
 import type { FarsiEntry, FarsiEntryInput, FarsiWordType } from '@app-types/farsi'
 
+// Relevanz einer Suche: exakte Treffer sollen vor "kommt nur irgendwo vor"-
+// Treffern stehen (z.B. "man" als eigenes Wort vor "man" mitten in einem
+// langen Satz). \b funktioniert für persische Schrift nicht zuverlässig
+// (JS-Regex-Wortgrenzen basieren auf ASCII-\w), daher Wortgrenzen per
+// Whitespace-Split statt Regex.
+function matchScore(entry: FarsiEntry, needle: string): number {
+  const values = [...entry.german, ...entry.persianLatin, entry.persianScript ?? ''].map((value) =>
+    value.toLowerCase(),
+  )
+  let best = 0
+  for (const value of values) {
+    if (value === needle) return 3
+    if (value.startsWith(needle)) best = Math.max(best, 2)
+    else if (value.split(/\s+/).includes(needle)) best = Math.max(best, 1)
+  }
+  return best
+}
+
+// Alphabetisch (nach deutschem Label) statt in WORD_TYPE_ORDER — für die
+// Mobil-Listenansicht, in der man einen Begriff eher alphabetisch sucht
+// als in der thematischen Reihenfolge der Chip-Leiste.
+const ALPHABETICAL_TYPE_ORDER: FarsiWordType[] = [...WORD_TYPE_ORDER].sort((a, b) =>
+  WORD_TYPE_META[a].label.localeCompare(WORD_TYPE_META[b].label, 'de'),
+)
+
 export function Woerterbuch() {
   const [entries, setEntries] = useState<FarsiEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [typeFilter, setTypeFilter] = useState<FarsiWordType | null>(null)
+  const [typeFilter, setTypeFilter] = useState<FarsiWordType[]>([])
+  const [categoryPickerOpen, setCategoryPickerOpen] = useState(false)
   const [onlyIncomplete, setOnlyIncomplete] = useState(false)
   const [sortBy, setSortBy] = useState<'german' | 'persianLatin'>('german')
   const [editingEntry, setEditingEntry] = useState<FarsiEntry | null>(null)
@@ -33,9 +59,14 @@ export function Woerterbuch() {
 
   const incompleteCount = useMemo(() => entries.filter((entry) => !entry.isComplete).length, [entries])
 
+  const toggleType = (option: FarsiWordType) =>
+    setTypeFilter((current) =>
+      current.includes(option) ? current.filter((value) => value !== option) : [...current, option],
+    )
+
   const filteredEntries = useMemo(() => {
     let result = entries
-    if (typeFilter) result = result.filter((entry) => entry.type === typeFilter)
+    if (typeFilter.length > 0) result = result.filter((entry) => entry.type && typeFilter.includes(entry.type))
     if (onlyIncomplete) result = result.filter((entry) => !entry.isComplete)
 
     const needle = search.trim().toLowerCase()
@@ -52,7 +83,13 @@ export function Woerterbuch() {
 
   const sortedEntries = useMemo(() => {
     const collator = new Intl.Collator('de', { sensitivity: 'base' })
+    const needle = search.trim().toLowerCase()
+
     return [...filteredEntries].sort((a, b) => {
+      if (needle) {
+        const scoreDiff = matchScore(b, needle) - matchScore(a, needle)
+        if (scoreDiff !== 0) return scoreDiff
+      }
       const aValue = (sortBy === 'german' ? a.german : a.persianLatin)[0] ?? ''
       const bValue = (sortBy === 'german' ? b.german : b.persianLatin)[0] ?? ''
       if (!aValue && !bValue) return 0
@@ -60,7 +97,7 @@ export function Woerterbuch() {
       if (!bValue) return -1
       return collator.compare(aValue, bValue)
     })
-  }, [filteredEntries, sortBy])
+  }, [filteredEntries, sortBy, search])
 
   const handleSave = async (input: Partial<FarsiEntryInput>) => {
     if (editingEntry) {
@@ -85,7 +122,7 @@ export function Woerterbuch() {
       <div className="farsi-toolbar">
         <Input
           id="farsi-search"
-          placeholder="Suche: Schrift, Lautschrift oder Deutsch…"
+          placeholder="Suche…"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           className="farsi-search-input"
@@ -94,23 +131,37 @@ export function Woerterbuch() {
       </div>
 
       <div className="farsi-filters">
+        {/* Desktop: Chip-Leiste, mehrere gleichzeitig aktivierbar. */}
+        <div className="farsi-filters__chips farsi-filters__chips--desktop">
+          <button
+            type="button"
+            className={`tool-chip ${typeFilter.length === 0 ? 'is-active' : ''}`.trim()}
+            onClick={() => setTypeFilter([])}
+          >
+            Alle
+          </button>
+          {WORD_TYPE_ORDER.map((option) => (
+            <button
+              key={option}
+              type="button"
+              className={`tool-chip ${typeFilter.includes(option) ? 'is-active' : ''}`.trim()}
+              onClick={() => toggleType(option)}
+            >
+              <span>{WORD_TYPE_META[option].icon}</span> {WORD_TYPE_META[option].label}
+            </button>
+          ))}
+        </div>
+
+        {/* Mobil: kompakter Knopf statt Scroll-Leiste, öffnet die
+            Kategorie-Auswahl als Popup (siehe unten). */}
         <button
           type="button"
-          className={`tool-chip ${typeFilter === null ? 'is-active' : ''}`.trim()}
-          onClick={() => setTypeFilter(null)}
+          className="farsi-filters__trigger"
+          onClick={() => setCategoryPickerOpen(true)}
         >
-          Alle
+          Kategorie{typeFilter.length > 0 ? ` (${typeFilter.length})` : ''} ▾
         </button>
-        {WORD_TYPE_ORDER.map((option) => (
-          <button
-            key={option}
-            type="button"
-            className={`tool-chip ${typeFilter === option ? 'is-active' : ''}`.trim()}
-            onClick={() => setTypeFilter((current) => (current === option ? null : option))}
-          >
-            <span>{WORD_TYPE_META[option].icon}</span> {WORD_TYPE_META[option].label}
-          </button>
-        ))}
+
         <label className="farsi-incomplete-toggle">
           <input
             type="checkbox"
@@ -171,6 +222,11 @@ export function Woerterbuch() {
                     {WORD_TYPE_META[entry.type].icon} {WORD_TYPE_META[entry.type].label}
                   </span>
                 )}
+                {entry.verbStem && (
+                  <span className="tool-card__badge" title="Präsensstamm" dir="rtl">
+                    🌱 {entry.verbStem}
+                  </span>
+                )}
                 {!entry.isComplete && (
                   <span
                     className="farsi-entry-card__warning"
@@ -196,6 +252,48 @@ export function Woerterbuch() {
             setEditingEntry(null)
           }}
         />
+      )}
+
+      {categoryPickerOpen && (
+        <div className="farsi-modal-backdrop" onClick={() => setCategoryPickerOpen(false)}>
+          <div
+            className="farsi-modal"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Kategorie auswählen"
+          >
+            <span className="farsi-modal__handle" aria-hidden="true" />
+            <div className="farsi-filters__list-header">
+              <span className="farsi-filters__list-title">Kategorie</span>
+              <button
+                type="button"
+                className="farsi-filters__list-reset"
+                onClick={() => setTypeFilter([])}
+                disabled={typeFilter.length === 0}
+              >
+                Zurücksetzen
+              </button>
+            </div>
+            <div className="farsi-filters__list-body">
+              {ALPHABETICAL_TYPE_ORDER.map((option) => (
+                <label key={option} className="farsi-filters__list-item">
+                  <input
+                    type="checkbox"
+                    checked={typeFilter.includes(option)}
+                    onChange={() => toggleType(option)}
+                  />
+                  <span>
+                    {WORD_TYPE_META[option].icon} {WORD_TYPE_META[option].label}
+                  </span>
+                </label>
+              ))}
+            </div>
+            <Button style={{ width: '100%', marginTop: 'var(--space-3)' }} onClick={() => setCategoryPickerOpen(false)}>
+              Fertig
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   )

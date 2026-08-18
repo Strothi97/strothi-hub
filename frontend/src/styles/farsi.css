@@ -36,10 +36,22 @@
 }
 
 /* Import ist nur für die Desktop-Nutzung gedacht (Datei-Upload) — auf
-   dem Handy blendet die Navigation den Tab komplett aus. */
+   dem Handy blendet die Navigation den Tab komplett aus. Die verbleibenden
+   Tabs bekommen außerdem eine horizontal scrollbare Einzelzeile statt in
+   mehreren beengten Reihen umzubrechen. */
 @media (max-width: 640px) {
   .farsi-nav__desktop-only {
     display: none;
+  }
+
+  .farsi-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .farsi-nav__link {
+    flex-shrink: 0;
   }
 }
 
@@ -59,12 +71,125 @@
   flex: 1;
 }
 
+/* Auf dem Handy immer eine eigene volle Zeile für die Suche, statt sich
+   das Umbrechen mit dem "+ Neuer Begriff"-Knopf per flex-wrap zu teilen. */
+@media (max-width: 640px) {
+  .farsi-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .farsi-search-input {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
 .farsi-filters {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
   margin-bottom: var(--space-4);
+}
+
+.farsi-filters__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Auf dem Formular-Kategorie-Picker (ein Begriff = eine Kategorie) bleibt
+   die kompakte Scroll-Leiste sinnvoll — nur bei 13 Chips, die umbrechen. */
+@media (max-width: 640px) {
+  .farsi-type-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: var(--space-1);
+  }
+
+  .farsi-type-chips .tool-chip {
+    flex-shrink: 0;
+  }
+}
+
+/* Mobil: kompakter Auslöse-Knopf statt Chip-Leiste — öffnet die
+   Kategorie-Auswahl als Popup (Bottom-Sheet, gleiches Muster wie
+   FarsiEntryModal). Desktop behält die Chip-Leiste direkt in der Seite. */
+.farsi-filters__trigger {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .farsi-filters__chips--desktop {
+    display: none;
+  }
+
+  .farsi-filters__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.4em 0.85em;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface-alt);
+    color: var(--color-text);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+}
+
+/* Inhalt des Kategorie-Popups (in Woerterbuch.tsx als eigenes
+   .farsi-modal gerendert, wenn categoryPickerOpen). */
+.farsi-filters__list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.farsi-filters__list-title {
+  font-weight: 600;
+}
+
+.farsi-filters__list-reset {
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.farsi-filters__list-reset:disabled {
+  color: var(--color-text-muted);
+  cursor: default;
+  opacity: 0.6;
+}
+
+.farsi-filters__list-body {
+  display: flex;
+  flex-direction: column;
+  max-height: 60vh;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.farsi-filters__list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+}
+
+.farsi-filters__list-item:last-child {
+  border-bottom: none;
 }
 
 .farsi-incomplete-toggle {

@@ -4,7 +4,14 @@ import { TagInput } from './TagInput'
 import { WORD_TYPE_META, WORD_TYPE_ORDER } from './wordType'
 import type { FarsiEntry, FarsiEntryInput, FarsiWordType } from '@app-types/farsi'
 
-const EMPTY_STATE = { german: [] as string[], persianLatin: [] as string[], persianScript: '', type: null as FarsiWordType | null, meaning: '' }
+const EMPTY_STATE = {
+  german: [] as string[],
+  persianLatin: [] as string[],
+  persianScript: '',
+  type: null as FarsiWordType | null,
+  meaning: '',
+  verbStem: '',
+}
 
 interface FarsiEntryFormProps {
   entry: FarsiEntry | null // null = neuer Begriff
@@ -22,6 +29,7 @@ export function FarsiEntryForm({ entry, onSave, onDelete, onCancel }: FarsiEntry
   const [persianScript, setPersianScript] = useState(entry?.persianScript ?? EMPTY_STATE.persianScript)
   const [type, setType] = useState<FarsiWordType | null>(entry?.type ?? EMPTY_STATE.type)
   const [meaning, setMeaning] = useState(entry?.meaning ?? EMPTY_STATE.meaning)
+  const [verbStem, setVerbStem] = useState(entry?.verbStem ?? EMPTY_STATE.verbStem)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -41,6 +49,7 @@ export function FarsiEntryForm({ entry, onSave, onDelete, onCancel }: FarsiEntry
         persianScript: persianScript.trim() || null,
         type,
         meaning: meaning.trim() || null,
+        verbStem: verbStem.trim() || null,
       })
       // Beim Neuanlegen (kein bestehender Eintrag) das Formular für den
       // nächsten Begriff leeren, statt es offen mit alten Werten stehen
@@ -51,6 +60,7 @@ export function FarsiEntryForm({ entry, onSave, onDelete, onCancel }: FarsiEntry
         setPersianScript(EMPTY_STATE.persianScript)
         setType(EMPTY_STATE.type)
         setMeaning(EMPTY_STATE.meaning)
+        setVerbStem(EMPTY_STATE.verbStem)
       }
     } finally {
       setSaving(false)
@@ -105,6 +115,25 @@ export function FarsiEntryForm({ entry, onSave, onDelete, onCancel }: FarsiEntry
           ))}
         </div>
       </div>
+      {type === 'VERB' && (
+        <div className="form-group">
+          <label className="form-label" htmlFor="farsi-verb-stem">
+            Präsensstamm
+          </label>
+          <input
+            id="farsi-verb-stem"
+            className="input"
+            dir="rtl"
+            value={verbStem}
+            onChange={(event) => setVerbStem(event.target.value)}
+            placeholder="z.B. رو (für رفتن)"
+          />
+          <p className="form-hint">
+            Oft unregelmäßig und nicht aus dem Infinitiv ableitbar. Ausnahmen/Besonderheiten gerne unten bei
+            "Bedeutung / Notiz" vermerken.
+          </p>
+        </div>
+      )}
       <div className="form-group">
         <label className="form-label" htmlFor="farsi-meaning">
           Bedeutung / Notiz (optional)

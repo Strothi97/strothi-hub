@@ -173,6 +173,7 @@ model FarsiEntry {
   persianScript String? // Original-Schrift, z.B. "خانه" (optional)
   type          FarsiWordType?
   meaning       String? // optionale Zusatzerklärung
+  verbStem      String? // nur bei type=VERB sinnvoll: Präsensstamm (oft unregelmäßig, nicht aus dem Infinitiv ableitbar)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 

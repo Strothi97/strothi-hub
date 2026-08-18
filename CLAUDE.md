@@ -93,6 +93,10 @@ hier duplizieren). Modelle: `User`, `InviteToken`, `UserToolAccess`, `WorkDayEnt
 
 ## Bekannte Fallstricke
 
+- **Lokale DB läuft über XAMPP, kein Windows-Dienst**: MariaDB/MySQL läuft lokal über XAMPP
+  (`C:\xampp`), nicht als registrierter Windows-Dienst — nach einem Neustart des Rechners läuft
+  sie nicht automatisch mit. Prüfen via `netstat -ano | grep ":3306 " | grep -i abh`; falls leer,
+  starten mit `cmd //c "C:\xampp\mysql_start.bat"` (im Hintergrund laufen lassen, blockiert sonst).
 - **Windows-Datei-Lock bei Prisma-Migrationen**: läuft der `tsx watch`-Dev-Server, hält er die
   Query-Engine-DLL offen → `prisma generate`/`migrate` schlägt mit `EPERM` fehl. Immer erst den
   Prozess auf Port 5000 killen (`netstat -ano | grep ":5000 " | grep -i abh` → `taskkill //PID <pid> //F`),

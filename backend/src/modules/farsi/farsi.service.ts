@@ -8,6 +8,7 @@ export interface FarsiEntryDTO {
   persianScript: string | null
   type: FarsiWordType | null
   meaning: string | null
+  verbStem: string | null
   isComplete: boolean
   missingFields: string[]
   createdAt: Date
@@ -24,6 +25,7 @@ interface RawEntry {
   persianScript: string | null
   type: FarsiWordType | null
   meaning: string | null
+  verbStem: string | null
   createdAt: Date
   updatedAt: Date
 }
@@ -57,6 +59,7 @@ function toDTO(row: RawEntry, vocabBox: number | null = null): FarsiEntryDTO {
     persianScript: row.persianScript,
     type: row.type,
     meaning: row.meaning,
+    verbStem: row.verbStem,
     isComplete,
     missingFields,
     createdAt: row.createdAt,
@@ -115,6 +118,7 @@ interface EntryInput {
   persianScript?: string | null
   type?: FarsiWordType | null
   meaning?: string | null
+  verbStem?: string | null
 }
 
 export async function createEntry(userId: string, input: EntryInput): Promise<FarsiEntryDTO> {
@@ -126,6 +130,7 @@ export async function createEntry(userId: string, input: EntryInput): Promise<Fa
       persianScript: input.persianScript || null,
       type: input.type || null,
       meaning: input.meaning || null,
+      verbStem: input.verbStem || null,
     },
   })
   return toDTO(row)
@@ -147,6 +152,7 @@ export async function updateEntry(
       ...(input.persianScript !== undefined && { persianScript: input.persianScript || null }),
       ...(input.type !== undefined && { type: input.type || null }),
       ...(input.meaning !== undefined && { meaning: input.meaning || null }),
+      ...(input.verbStem !== undefined && { verbStem: input.verbStem || null }),
     },
   })
   return toDTO(row)
@@ -314,10 +320,13 @@ export async function reviewCard(
     where: { userId_entryId_mode: { userId, entryId, mode } },
   })
 
+  const now = new Date()
   const currentBox = existing?.box ?? 1
   const newBox = correct ? Math.min(currentBox + 1, MAX_BOX) : 1
-  const dueAt = new Date(Date.now() + BOX_INTERVAL_DAYS[newBox] * 24 * 60 * 60 * 1000)
-  const now = new Date()
+  // Falsch beantwortet: sofort wieder fällig statt erst am nächsten Tag —
+  // damit dieselbe Karte im Laufe desselben Lerntages erneut drankommt,
+  // bis sie einmal richtig sitzt (bewusstes "heute richtig lernen").
+  const dueAt = correct ? new Date(now.getTime() + BOX_INTERVAL_DAYS[newBox] * 24 * 60 * 60 * 1000) : now
 
   await prisma.farsiProgress.upsert({
     where: { userId_entryId_mode: { userId, entryId, mode } },
@@ -398,10 +407,12 @@ export async function reviewLetter(
     where: { userId_letterChar_position: { userId, letterChar, position } },
   })
 
+  const now = new Date()
   const currentBox = existing?.box ?? 1
   const newBox = correct ? Math.min(currentBox + 1, MAX_BOX) : 1
-  const dueAt = new Date(Date.now() + BOX_INTERVAL_DAYS[newBox] * 24 * 60 * 60 * 1000)
-  const now = new Date()
+  // Gleiche Logik wie bei reviewCard: falsch beantwortet -> sofort wieder
+  // fällig statt erst am nächsten Tag.
+  const dueAt = correct ? new Date(now.getTime() + BOX_INTERVAL_DAYS[newBox] * 24 * 60 * 60 * 1000) : now
 
   await prisma.farsiLetterProgress.upsert({
     where: { userId_letterChar_position: { userId, letterChar, position } },

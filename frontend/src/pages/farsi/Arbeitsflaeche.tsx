@@ -104,7 +104,7 @@ export function Arbeitsflaeche() {
                 <h3>Suche</h3>
                 <Input
                   id="workspace-search"
-                  placeholder="Suche: Schrift, Lautschrift oder Deutsch…"
+                  placeholder="Suche…"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   className="farsi-search-input"
