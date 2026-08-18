@@ -1,7 +1,7 @@
 import { useState, FormEvent } from 'react'
 import { Button } from '@components/ui/Button'
 import { TagInput } from './TagInput'
-import { WORD_TYPE_META, WORD_TYPE_ORDER } from './wordType'
+import { ALPHABETICAL_TYPE_ORDER, WORD_TYPE_META, WORD_TYPE_ORDER } from './wordType'
 import type { FarsiEntry, FarsiEntryInput, FarsiWordType } from '@app-types/farsi'
 
 const EMPTY_STATE = {
@@ -10,7 +10,8 @@ const EMPTY_STATE = {
   persianScript: '',
   type: null as FarsiWordType | null,
   meaning: '',
-  verbStem: '',
+  verbStemLatin: '',
+  verbStemScript: '',
 }
 
 interface FarsiEntryFormProps {
@@ -29,7 +30,9 @@ export function FarsiEntryForm({ entry, onSave, onDelete, onCancel }: FarsiEntry
   const [persianScript, setPersianScript] = useState(entry?.persianScript ?? EMPTY_STATE.persianScript)
   const [type, setType] = useState<FarsiWordType | null>(entry?.type ?? EMPTY_STATE.type)
   const [meaning, setMeaning] = useState(entry?.meaning ?? EMPTY_STATE.meaning)
-  const [verbStem, setVerbStem] = useState(entry?.verbStem ?? EMPTY_STATE.verbStem)
+  const [verbStemLatin, setVerbStemLatin] = useState(entry?.verbStemLatin ?? EMPTY_STATE.verbStemLatin)
+  const [verbStemScript, setVerbStemScript] = useState(entry?.verbStemScript ?? EMPTY_STATE.verbStemScript)
+  const [categoryPickerOpen, setCategoryPickerOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -49,7 +52,8 @@ export function FarsiEntryForm({ entry, onSave, onDelete, onCancel }: FarsiEntry
         persianScript: persianScript.trim() || null,
         type,
         meaning: meaning.trim() || null,
-        verbStem: verbStem.trim() || null,
+        verbStemLatin: verbStemLatin.trim() || null,
+        verbStemScript: verbStemScript.trim() || null,
       })
       // Beim Neuanlegen (kein bestehender Eintrag) das Formular für den
       // nächsten Begriff leeren, statt es offen mit alten Werten stehen
@@ -60,7 +64,8 @@ export function FarsiEntryForm({ entry, onSave, onDelete, onCancel }: FarsiEntry
         setPersianScript(EMPTY_STATE.persianScript)
         setType(EMPTY_STATE.type)
         setMeaning(EMPTY_STATE.meaning)
-        setVerbStem(EMPTY_STATE.verbStem)
+        setVerbStemLatin(EMPTY_STATE.verbStemLatin)
+        setVerbStemScript(EMPTY_STATE.verbStemScript)
       }
     } finally {
       setSaving(false)
@@ -77,8 +82,38 @@ export function FarsiEntryForm({ entry, onSave, onDelete, onCancel }: FarsiEntry
     }
   }
 
+  const selectType = (option: FarsiWordType) => {
+    setType(type === option ? null : option)
+    setCategoryPickerOpen(false)
+  }
+
   return (
     <form onSubmit={handleSubmit} className="farsi-entry-form">
+      <div className="form-group">
+        <span className="form-label">Kategorie</span>
+        {/* Desktop: Chip-Leiste. Mobil: kompakter Knopf, der die Auswahl
+            als Popup öffnet (gleiches Muster wie der Suchfilter). */}
+        <div className="farsi-type-chips farsi-type-chips--desktop">
+          {WORD_TYPE_ORDER.map((option) => (
+            <button
+              key={option}
+              type="button"
+              className={`tool-chip ${type === option ? 'is-active' : ''}`.trim()}
+              onClick={() => selectType(option)}
+            >
+              <span>{WORD_TYPE_META[option].icon}</span> {WORD_TYPE_META[option].label}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          className="farsi-filters__trigger"
+          onClick={() => setCategoryPickerOpen(true)}
+        >
+          {type ? `${WORD_TYPE_META[type].icon} ${WORD_TYPE_META[type].label}` : 'Auswählen'} ▾
+        </button>
+      </div>
+
       <div className="form-group">
         <span className="form-label">Deutsch</span>
         <TagInput value={german} onChange={setGerman} placeholder="Wort eintippen, Enter zum Hinzufügen" />
@@ -100,34 +135,24 @@ export function FarsiEntryForm({ entry, onSave, onDelete, onCancel }: FarsiEntry
           placeholder="خانه"
         />
       </div>
-      <div className="form-group">
-        <span className="form-label">Kategorie</span>
-        <div className="farsi-type-chips">
-          {WORD_TYPE_ORDER.map((option) => (
-            <button
-              key={option}
-              type="button"
-              className={`tool-chip ${type === option ? 'is-active' : ''}`.trim()}
-              onClick={() => setType(type === option ? null : option)}
-            >
-              <span>{WORD_TYPE_META[option].icon}</span> {WORD_TYPE_META[option].label}
-            </button>
-          ))}
-        </div>
-      </div>
       {type === 'VERB' && (
         <div className="form-group">
-          <label className="form-label" htmlFor="farsi-verb-stem">
-            Präsensstamm
-          </label>
-          <input
-            id="farsi-verb-stem"
-            className="input"
-            dir="rtl"
-            value={verbStem}
-            onChange={(event) => setVerbStem(event.target.value)}
-            placeholder="z.B. رو (für رفتن)"
-          />
+          <span className="form-label">Präsensstamm</span>
+          <div className="farsi-verb-stem-row">
+            <input
+              className="input"
+              value={verbStemLatin}
+              onChange={(event) => setVerbStemLatin(event.target.value)}
+              placeholder="z.B. rou"
+            />
+            <input
+              className="input"
+              dir="rtl"
+              value={verbStemScript}
+              onChange={(event) => setVerbStemScript(event.target.value)}
+              placeholder="z.B. رو"
+            />
+          </div>
           <p className="form-hint">
             Oft unregelmäßig und nicht aus dem Infinitiv ableitbar. Ausnahmen/Besonderheiten gerne unten bei
             "Bedeutung / Notiz" vermerken.
@@ -164,6 +189,49 @@ export function FarsiEntryForm({ entry, onSave, onDelete, onCancel }: FarsiEntry
           </Button>
         </div>
       </div>
+
+      {categoryPickerOpen && (
+        <div className="farsi-modal-backdrop" onClick={() => setCategoryPickerOpen(false)}>
+          <div
+            className="farsi-modal"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Kategorie auswählen"
+          >
+            <span className="farsi-modal__handle" aria-hidden="true" />
+            <div className="farsi-filters__list-header">
+              <span className="farsi-filters__list-title">Kategorie</span>
+              <button
+                type="button"
+                className="farsi-filters__list-reset"
+                onClick={() => {
+                  setType(null)
+                  setCategoryPickerOpen(false)
+                }}
+                disabled={type === null}
+              >
+                Zurücksetzen
+              </button>
+            </div>
+            <div className="farsi-filters__list-body">
+              {ALPHABETICAL_TYPE_ORDER.map((option) => (
+                <label key={option} className="farsi-filters__list-item">
+                  <input
+                    type="radio"
+                    name="farsi-entry-type"
+                    checked={type === option}
+                    onChange={() => selectType(option)}
+                  />
+                  <span>
+                    {WORD_TYPE_META[option].icon} {WORD_TYPE_META[option].label}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   )
 }

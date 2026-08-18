@@ -1,22 +1,18 @@
-import { useEffect, useState } from 'react'
-
-function getInitialTheme(): 'light' | 'dark' {
-  return document.documentElement.classList.contains('light') ? 'light' : 'dark'
-}
+import { useAuth } from '@context/AuthContext'
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<'light' | 'dark'>(getInitialTheme)
+  const { dashboardPreferences, updateDashboardPreferences } = useAuth()
+  const theme = dashboardPreferences.theme
 
-  useEffect(() => {
-    document.documentElement.classList.toggle('light', theme === 'light')
-    localStorage.setItem('theme', theme)
-  }, [theme])
+  const handleClick = () => {
+    updateDashboardPreferences({ theme: theme === 'light' ? 'dark' : 'light' })
+  }
 
   return (
     <button
       type="button"
       className="theme-toggle"
-      onClick={() => setTheme((current) => (current === 'light' ? 'dark' : 'light'))}
+      onClick={handleClick}
       aria-label={theme === 'light' ? 'Dunkles Design aktivieren' : 'Helles Design aktivieren'}
       title={theme === 'light' ? 'Dunkles Design' : 'Helles Design'}
     >

@@ -9,19 +9,21 @@ function toToolOrder(value: unknown): string[] {
 export const getDashboardPreferences = async (req: Request, res: Response) => {
   const user = await prisma.user.findUnique({
     where: { id: req.user!.id },
-    select: { hideComingSoonTools: true, toolOrder: true },
+    select: { hideComingSoonTools: true, toolOrder: true, theme: true },
   })
 
   return res.json({
     hideComingSoonTools: user?.hideComingSoonTools ?? false,
     toolOrder: toToolOrder(user?.toolOrder),
+    theme: user?.theme ?? 'dark',
   })
 }
 
 export const updateDashboardPreferences = async (req: Request, res: Response) => {
-  const { hideComingSoonTools, toolOrder } = req.body as {
+  const { hideComingSoonTools, toolOrder, theme } = req.body as {
     hideComingSoonTools?: boolean
     toolOrder?: string[]
+    theme?: string
   }
 
   const user = await prisma.user.update({
@@ -29,12 +31,14 @@ export const updateDashboardPreferences = async (req: Request, res: Response) =>
     data: {
       ...(hideComingSoonTools !== undefined && { hideComingSoonTools }),
       ...(toolOrder !== undefined && { toolOrder }),
+      ...(theme === 'light' || theme === 'dark' ? { theme } : {}),
     },
-    select: { hideComingSoonTools: true, toolOrder: true },
+    select: { hideComingSoonTools: true, toolOrder: true, theme: true },
   })
 
   return res.json({
     hideComingSoonTools: user.hideComingSoonTools,
     toolOrder: toToolOrder(user.toolOrder),
+    theme: user.theme,
   })
 }

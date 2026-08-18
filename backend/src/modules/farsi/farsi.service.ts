@@ -8,7 +8,8 @@ export interface FarsiEntryDTO {
   persianScript: string | null
   type: FarsiWordType | null
   meaning: string | null
-  verbStem: string | null
+  verbStemLatin: string | null
+  verbStemScript: string | null
   isComplete: boolean
   missingFields: string[]
   createdAt: Date
@@ -25,7 +26,8 @@ interface RawEntry {
   persianScript: string | null
   type: FarsiWordType | null
   meaning: string | null
-  verbStem: string | null
+  verbStemLatin: string | null
+  verbStemScript: string | null
   createdAt: Date
   updatedAt: Date
 }
@@ -59,7 +61,8 @@ function toDTO(row: RawEntry, vocabBox: number | null = null): FarsiEntryDTO {
     persianScript: row.persianScript,
     type: row.type,
     meaning: row.meaning,
-    verbStem: row.verbStem,
+    verbStemLatin: row.verbStemLatin,
+    verbStemScript: row.verbStemScript,
     isComplete,
     missingFields,
     createdAt: row.createdAt,
@@ -118,7 +121,8 @@ interface EntryInput {
   persianScript?: string | null
   type?: FarsiWordType | null
   meaning?: string | null
-  verbStem?: string | null
+  verbStemLatin?: string | null
+  verbStemScript?: string | null
 }
 
 export async function createEntry(userId: string, input: EntryInput): Promise<FarsiEntryDTO> {
@@ -130,7 +134,8 @@ export async function createEntry(userId: string, input: EntryInput): Promise<Fa
       persianScript: input.persianScript || null,
       type: input.type || null,
       meaning: input.meaning || null,
-      verbStem: input.verbStem || null,
+      verbStemLatin: input.verbStemLatin || null,
+      verbStemScript: input.verbStemScript || null,
     },
   })
   return toDTO(row)
@@ -152,7 +157,8 @@ export async function updateEntry(
       ...(input.persianScript !== undefined && { persianScript: input.persianScript || null }),
       ...(input.type !== undefined && { type: input.type || null }),
       ...(input.meaning !== undefined && { meaning: input.meaning || null }),
-      ...(input.verbStem !== undefined && { verbStem: input.verbStem || null }),
+      ...(input.verbStemLatin !== undefined && { verbStemLatin: input.verbStemLatin || null }),
+      ...(input.verbStemScript !== undefined && { verbStemScript: input.verbStemScript || null }),
     },
   })
   return toDTO(row)

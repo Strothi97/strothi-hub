@@ -21,7 +21,8 @@ export interface FarsiEntry {
   persianScript: string | null
   type: FarsiWordType | null
   meaning: string | null
-  verbStem: string | null
+  verbStemLatin: string | null
+  verbStemScript: string | null
   isComplete: boolean
   missingFields: string[]
   createdAt: string
@@ -35,7 +36,8 @@ export interface FarsiEntryInput {
   persianScript: string | null
   type: FarsiWordType | null
   meaning: string | null
-  verbStem: string | null
+  verbStemLatin: string | null
+  verbStemScript: string | null
 }
 
 export interface FarsiImportResult {

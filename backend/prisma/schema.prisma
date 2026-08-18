@@ -27,6 +27,9 @@ model User {
   // Dashboard-Einstellungen (Kachel-Reihenfolge & Sichtbarkeit)
   hideComingSoonTools Boolean @default(false)
   toolOrder           Json?
+  // Hell/Dunkel-Design, kontogebunden statt nur lokal im Browser (localStorage
+  // bleibt als schnelle Bootstrap-Vorschau vor dem Laden des Kontos erhalten).
+  theme               String  @default("dark")
 
   toolAccess          UserToolAccess[]
   workDayEntries      WorkDayEntry[]
@@ -173,7 +176,11 @@ model FarsiEntry {
   persianScript String? // Original-Schrift, z.B. "خانه" (optional)
   type          FarsiWordType?
   meaning       String? // optionale Zusatzerklärung
-  verbStem      String? // nur bei type=VERB sinnvoll: Präsensstamm (oft unregelmäßig, nicht aus dem Infinitiv ableitbar)
+  // Nur bei type=VERB sinnvoll: Präsensstamm (oft unregelmäßig, nicht aus
+  // dem Infinitiv ableitbar) — analog zu persianLatin/persianScript als
+  // getrenntes Lautschrift-/Originalschrift-Paar statt einem Feld.
+  verbStemLatin  String?
+  verbStemScript String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 

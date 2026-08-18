@@ -4,7 +4,18 @@ import { authService } from '@services/auth.service'
 import { toolsService } from '@services/tools.service'
 import { preferencesService } from '@services/preferences.service'
 
-const DEFAULT_PREFERENCES: DashboardPreferences = { hideComingSoonTools: false, toolOrder: [] }
+// Schnelle Bootstrap-Vorschau, bevor die Kontodaten geladen sind (oder
+// falls gar nicht eingeloggt, z.B. auf der Login-Seite) — die echte Quelle
+// der Wahrheit ist nach dem Login das Konto (siehe updateDashboardPreferences).
+function getBootstrapTheme(): 'light' | 'dark' {
+  return localStorage.getItem('theme') === 'light' ? 'light' : 'dark'
+}
+
+const DEFAULT_PREFERENCES: DashboardPreferences = {
+  hideComingSoonTools: false,
+  toolOrder: [],
+  theme: getBootstrapTheme(),
+}
 
 interface AuthContextType {
   user: User | null
@@ -26,6 +37,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [tools, setTools] = useState<ToolDefinition[]>([])
   const [dashboardPreferences, setDashboardPreferences] = useState<DashboardPreferences>(DEFAULT_PREFERENCES)
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('light', dashboardPreferences.theme === 'light')
+    localStorage.setItem('theme', dashboardPreferences.theme)
+  }, [dashboardPreferences.theme])
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -61,7 +77,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('token')
     setUser(null)
     setTools([])
-    setDashboardPreferences(DEFAULT_PREFERENCES)
+    // Design-Wahl bleibt über den Logout hinaus erhalten (nur Dashboard-
+    // spezifische Einstellungen ergeben ohne Konto keinen Sinn mehr).
+    setDashboardPreferences((current) => ({ ...DEFAULT_PREFERENCES, theme: current.theme }))
   }
 
   const hasToolAccess = (toolKey: string) => {
@@ -72,6 +90,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateDashboardPreferences = async (patch: Partial<DashboardPreferences>) => {
     const previous = dashboardPreferences
     setDashboardPreferences({ ...previous, ...patch })
+    // Ohne Konto (z.B. Theme-Umschalter auf der Login-Seite) gibt es nichts
+    // zu synchronisieren — lokal übernehmen und fertig, sonst würde der
+    // 401 der Anfrage die Änderung gleich wieder zurückrollen.
+    if (!user) return
     try {
       const { data } = await preferencesService.updateDashboard(patch)
       setDashboardPreferences(data)

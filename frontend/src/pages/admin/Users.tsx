@@ -109,7 +109,7 @@ export function AdminUsers() {
       <div className="admin-users-list-header">
         <h2>Bestehende Nutzer ({users.length})</h2>
         <Input
-          placeholder="Suche nach Name oder E-Mail…"
+          placeholder="Suche nach..."
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           className="admin-search-input"

@@ -1,6 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '@context/AuthContext'
-import { ThemeToggle } from '@components/ui/ThemeToggle'
 
 export function AppShell() {
   const { user, isAdmin, logout } = useAuth()
@@ -14,7 +13,6 @@ export function AppShell() {
         <span className="app-shell__brand brand-gradient">Strothi's Hub</span>
         <div className="app-shell__user">
           <span>{user?.name}</span>
-          <ThemeToggle />
           <button className="btn btn-secondary btn-sm" onClick={logout}>
             Abmelden
           </button>
@@ -22,15 +20,18 @@ export function AppShell() {
       </header>
 
       <nav className="app-shell__nav">
-        <NavLink to="/" end className={navLinkClass}>
-          🏠 Übersicht
+        <NavLink to="/" end className={navLinkClass} aria-label="Übersicht">
+          <span className="app-shell__nav-icon" aria-hidden="true">🏠</span>
+          <span className="app-shell__nav-label">Übersicht</span>
         </NavLink>
-        <NavLink to="/konto" className={navLinkClass}>
-          👤 Konto
+        <NavLink to="/konto" className={navLinkClass} aria-label="Konto">
+          <span className="app-shell__nav-icon" aria-hidden="true">👤</span>
+          <span className="app-shell__nav-label">Konto</span>
         </NavLink>
         {isAdmin && (
-          <NavLink to="/admin/users" className={navLinkClass}>
-            🛠️ Nutzer
+          <NavLink to="/admin/users" className={navLinkClass} aria-label="Nutzer">
+            <span className="app-shell__nav-icon" aria-hidden="true">🛠️</span>
+            <span className="app-shell__nav-label">Nutzer</span>
           </NavLink>
         )}
       </nav>

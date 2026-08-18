@@ -7,6 +7,30 @@
   font-size: 0.9rem;
 }
 
+.erinnerungen-add-btn--mobile {
+  display: none;
+}
+
+/* Mobil: "+ Neue Person" wird zum kompakten "+" und wandert neben den
+   Sortieren-Knopf, statt als voller Button eine eigene Zeile zu belegen. */
+@media (max-width: 640px) {
+  .erinnerungen-add-btn--desktop {
+    display: none;
+  }
+
+  .erinnerungen-add-btn--mobile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 1.2rem;
+    line-height: 1;
+    margin-left: auto;
+  }
+}
+
 /* ── Formular (Reminder + Person teilen sich das Grundmuster) ─ */
 
 .erinnerungen-form {
@@ -151,6 +175,7 @@
 /* ── Geburtstags-Karten ─────────────────────────────────── */
 
 .erinnerungen-person-card {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -195,21 +220,34 @@
   color: var(--color-text-muted);
 }
 
-.erinnerungen-congrats-btn {
-  border: 1px solid var(--color-success);
-  background: none;
-  color: var(--color-success);
+/* Eigene Ecken-Box statt Inline-Button/-Text — passte auf schmalen
+   Bildschirmen sonst nicht neben Name/Meta und brach das Kartenlayout. */
+.erinnerungen-congrats-badge {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-md);
-  padding: var(--space-1) var(--space-3);
-  font-size: 0.8rem;
-  cursor: pointer;
-  white-space: nowrap;
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
-.erinnerungen-congrats-done {
-  font-size: 0.8rem;
+.erinnerungen-congrats-badge--pending {
+  border: 1px solid var(--color-success);
+  background-color: color-mix(in srgb, var(--color-success) 12%, transparent);
   color: var(--color-success);
-  white-space: nowrap;
+  cursor: pointer;
+}
+
+.erinnerungen-congrats-badge--done {
+  border: 1px solid var(--color-success);
+  background-color: color-mix(in srgb, var(--color-success) 22%, transparent);
+  color: var(--color-success);
+  cursor: default;
 }
 
 /* ── Foto-Upload ────────────────────────────────────────── */

@@ -29,6 +29,7 @@ export interface AdminUser extends User {
 export interface DashboardPreferences {
   hideComingSoonTools: boolean
   toolOrder: string[]
+  theme: 'light' | 'dark'
 }
 
 export interface ApiResponse<T> {

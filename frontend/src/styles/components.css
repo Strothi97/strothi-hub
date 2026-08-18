@@ -160,8 +160,8 @@
 
 .konto-push-list__item {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
+  flex-direction: column;
+  gap: 2px;
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -169,10 +169,23 @@
   font-size: 0.85rem;
 }
 
+.konto-push-list__item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.konto-push-list__item-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .konto-push-list__date {
   color: var(--color-text-muted);
   font-size: 0.8rem;
-  margin-right: auto;
 }
 
 /* Verlaufs-Branding, angelehnt an strothi.de */
@@ -279,17 +292,22 @@
   display: flex;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
+  background-color: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   overflow-x: auto;
 }
 
 .app-shell__nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   color: var(--color-text-muted);
   white-space: nowrap;
   font-weight: 500;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  border: 1px solid transparent;
 }
 
 .app-shell__nav-link:hover {
@@ -298,7 +316,8 @@
 }
 
 .app-shell__nav-link.is-active {
-  background-color: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  background-color: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
   color: var(--color-primary);
   font-weight: 600;
 }
@@ -313,6 +332,14 @@
 }
 
 @media (max-width: 640px) {
+  :root {
+    /* Feste Höhe statt aus Inhalt/Schrift/Emoji-Rendering abgeleitet —
+       .app-shell__content rechnet exakt damit, sonst reicht der
+       Abstand auf manchen (v.a. kleineren) Geräten nicht und die
+       letzte Kachel wird von der fixierten Leiste überdeckt. */
+    --mobile-nav-height: 64px;
+  }
+
   .app-shell__user > span {
     display: none;
   }
@@ -322,16 +349,36 @@
     bottom: 0;
     left: 0;
     right: 0;
+    height: var(--mobile-nav-height);
+    box-sizing: border-box;
     justify-content: space-around;
-    padding: var(--space-2);
-    background-color: var(--color-background);
+    padding: var(--space-2) var(--space-2) max(var(--space-2), env(safe-area-inset-bottom));
+    background-color: var(--color-surface);
     border-top: 1px solid var(--color-border);
     border-bottom: none;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.25);
     z-index: 10;
   }
 
+  .app-shell__nav-link {
+    flex: 1;
+    justify-content: center;
+  }
+
+  /* Icon-und-Text passt bei 3 Einträgen (Admin) nicht immer verlässlich
+     in eine Zeile — nur-Icon ist robuster als kleinere Schrift, bricht
+     auch nicht wieder, wenn später ein weiterer Nav-Punkt dazukommt. */
+  .app-shell__nav-label {
+    display: none;
+  }
+
+  .app-shell__nav-icon {
+    font-size: 1.3rem;
+  }
+
   .app-shell__content {
-    padding-bottom: calc(var(--space-5) * 2);
+    padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + var(--space-3));
   }
 }
 
@@ -383,12 +430,42 @@
 }
 
 .tool-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
   height: 100%;
   box-sizing: border-box;
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+/* Auf dem Handy reichen Icon + Titel nebeneinander — Beschreibung und der
+   "Bald verfügbar"/"Kein Zugriff"-Tag entfallen (die gedimmte Opazität von
+   .tool-card--disabled zeigt "nicht nutzbar" schon ausreichend an), das
+   macht die Kacheln deutlich kompakter. */
+@media (max-width: 640px) {
+  .tool-card {
+    flex-direction: row;
+    align-items: center;
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+
+  .tool-card p {
+    display: none;
+  }
+
+  .tool-card h3 {
+    margin: 0;
+  }
+
+  .tool-card__icon {
+    font-size: 1.6rem;
+  }
+
+  .tool-card__badge {
+    display: none;
+  }
 }
 
 .tool-card p {
@@ -468,6 +545,46 @@
 .admin-form-card {
   max-width: 420px;
   margin-bottom: var(--space-5);
+}
+
+/* Schmales Band für kleine Icon-Einstellungen (aktuell nur Design-Umschalter)
+   — braucht keine eigene Karte pro Mini-Einstellung, hat aber Platz für
+   weitere, falls später mehr dazukommen. */
+.konto-settings-band {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-4);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.konto-settings-band__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.konto-settings-band__label {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+/* Konto-Seite: Karten nebeneinander statt einer schmalen Spalte mit viel
+   Leerraum daneben — jede Karte füllt ihre Grid-Spalte, statt auf
+   .admin-form-cards feste max-width beschränkt zu bleiben. */
+.konto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  align-items: start;
+  gap: var(--space-4);
+}
+
+.konto-grid .admin-form-card {
+  max-width: none;
+  margin-bottom: 0;
 }
 
 .admin-users-list-header {

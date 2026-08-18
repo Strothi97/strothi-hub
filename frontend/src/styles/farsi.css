@@ -99,30 +99,24 @@
   gap: var(--space-2);
 }
 
-/* Auf dem Formular-Kategorie-Picker (ein Begriff = eine Kategorie) bleibt
-   die kompakte Scroll-Leiste sinnvoll — nur bei 13 Chips, die umbrechen. */
-@media (max-width: 640px) {
-  .farsi-type-chips {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: var(--space-1);
-  }
-
-  .farsi-type-chips .tool-chip {
-    flex-shrink: 0;
-  }
-}
-
 /* Mobil: kompakter Auslöse-Knopf statt Chip-Leiste — öffnet die
    Kategorie-Auswahl als Popup (Bottom-Sheet, gleiches Muster wie
-   FarsiEntryModal). Desktop behält die Chip-Leiste direkt in der Seite. */
+   FarsiEntryModal). Desktop behält die Chip-Leiste direkt in der Seite.
+   Gilt für den Suchfilter (.farsi-filters__chips--desktop) genauso wie
+   für den Kategorie-Picker im Begriff-Formular (.farsi-type-chips--desktop). */
 .farsi-filters__trigger {
   display: none;
 }
 
 @media (max-width: 640px) {
-  .farsi-filters__chips--desktop {
+  /* Kombinierter Selektor (statt nur der --desktop-Klasse) für höhere
+     Spezifität — beide Elemente tragen auch ihre unconditional-display:flex-
+     Basisklasse (.farsi-filters__chips / .farsi-type-chips), die an anderer
+     Stelle in dieser Datei steht; ohne die höhere Spezifität würde die
+     Quellreihenfolge entscheiden, nicht die Medienabfrage. */
+  .farsi-filters__chips.farsi-filters__chips--desktop,
+  .farsi-type-chips.farsi-type-chips--desktop,
+  .farsi-sort-toggle__label.farsi-sort-toggle__label--desktop {
     display: none;
   }
 
@@ -373,6 +367,17 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+}
+
+.farsi-verb-stem-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.farsi-verb-stem-row input {
+  flex: 1;
+  min-width: 140px;
 }
 
 @media (min-width: 640px) {

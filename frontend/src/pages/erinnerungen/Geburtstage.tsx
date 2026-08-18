@@ -28,6 +28,7 @@ export function Geburtstage() {
   const [people, setPeople] = useState<Person[]>([])
   const [loading, setLoading] = useState(true)
   const [sortMode, setSortMode] = useState<SortMode>('upcoming')
+  const [sortPickerOpen, setSortPickerOpen] = useState(false)
   const [editing, setEditing] = useState<Person | null>(null)
   const [creating, setCreating] = useState(false)
   const [brokenPhotoIds, setBrokenPhotoIds] = useState<Set<string>>(new Set())
@@ -84,21 +85,39 @@ export function Geburtstage() {
     <div>
       <div className="farsi-toolbar">
         <p className="erinnerungen-count">{people.length} Geburtstage</p>
-        <Button onClick={() => setCreating(true)}>+ Neue Person</Button>
+        <Button className="erinnerungen-add-btn--desktop" onClick={() => setCreating(true)}>
+          + Neue Person
+        </Button>
       </div>
 
       <div className="farsi-sort-toggle" role="group" aria-label="Sortierung">
-        <span className="farsi-sort-toggle__label">Sortieren:</span>
-        {SORT_ORDER.map((mode) => (
-          <button
-            key={mode}
-            type="button"
-            className={`tool-chip ${sortMode === mode ? 'is-active' : ''}`.trim()}
-            onClick={() => setSortMode(mode)}
-          >
-            {SORT_LABELS[mode]}
-          </button>
-        ))}
+        <span className="farsi-sort-toggle__label farsi-sort-toggle__label--desktop">Sortieren:</span>
+        {/* Desktop: Chip-Leiste. Mobil: kompakter Knopf, öffnet die
+            Auswahl als Popup (gleiches Muster wie die Farsi-Kategorien). */}
+        <div className="farsi-filters__chips farsi-filters__chips--desktop">
+          {SORT_ORDER.map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              className={`tool-chip ${sortMode === mode ? 'is-active' : ''}`.trim()}
+              onClick={() => setSortMode(mode)}
+            >
+              {SORT_LABELS[mode]}
+            </button>
+          ))}
+        </div>
+        <button type="button" className="farsi-filters__trigger" onClick={() => setSortPickerOpen(true)}>
+          Sortieren: {SORT_LABELS[sortMode]} ▾
+        </button>
+        {/* Mobil: der Platz neben dem Sortieren-Knopf reicht für ein
+            kompaktes "+" statt des vollen Buttons oben. */}
+        <Button
+          className="erinnerungen-add-btn--mobile"
+          onClick={() => setCreating(true)}
+          aria-label="Neue Person"
+        >
+          +
+        </Button>
       </div>
 
       {loading ? (
@@ -129,12 +148,20 @@ export function Geburtstage() {
                 </span>
               </div>
               {person.daysUntilBirthday === 0 && !person.congratulatedThisYear && (
-                <button type="button" className="erinnerungen-congrats-btn" onClick={(event) => handleCongrats(event, person)}>
-                  Gratuliert ✅
+                <button
+                  type="button"
+                  className="erinnerungen-congrats-badge erinnerungen-congrats-badge--pending"
+                  title="Als gratuliert markieren"
+                  aria-label="Als gratuliert markieren"
+                  onClick={(event) => handleCongrats(event, person)}
+                >
+                  🎉
                 </button>
               )}
               {person.congratulatedThisYear && person.daysUntilBirthday === 0 && (
-                <span className="erinnerungen-congrats-done">Gratuliert ✅</span>
+                <span className="erinnerungen-congrats-badge erinnerungen-congrats-badge--done" title="Gratuliert">
+                  ✅
+                </span>
               )}
             </Card>
           ))}
@@ -152,6 +179,39 @@ export function Geburtstage() {
             setEditing(null)
           }}
         />
+      )}
+
+      {sortPickerOpen && (
+        <div className="farsi-modal-backdrop" onClick={() => setSortPickerOpen(false)}>
+          <div
+            className="farsi-modal"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Sortierung wählen"
+          >
+            <span className="farsi-modal__handle" aria-hidden="true" />
+            <div className="farsi-filters__list-header">
+              <span className="farsi-filters__list-title">Sortieren</span>
+            </div>
+            <div className="farsi-filters__list-body">
+              {SORT_ORDER.map((mode) => (
+                <label key={mode} className="farsi-filters__list-item">
+                  <input
+                    type="radio"
+                    name="geburtstage-sort-mode"
+                    checked={sortMode === mode}
+                    onChange={() => {
+                      setSortMode(mode)
+                      setSortPickerOpen(false)
+                    }}
+                  />
+                  <span>{SORT_LABELS[mode]}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

@@ -9,6 +9,7 @@ import type { PushStatus } from '@utils/push'
 import { Button } from '@components/ui/Button'
 import { Card } from '@components/ui/Card'
 import { Input } from '@components/ui/Input'
+import { ThemeToggle } from '@components/ui/ThemeToggle'
 
 const STATUS_LABEL: Record<PushStatus, string> = {
   unsupported: 'Push wird von diesem Browser nicht unterstützt',
@@ -25,9 +26,20 @@ export function Konto() {
       <h1>Mein Konto</h1>
       <p className="page-subtitle">Passwort ändern und Push-Benachrichtigungen verwalten.</p>
 
-      <PasswordCard />
-      <PushCard />
-      <DangerZoneCard />
+      {/* Kompaktes Band für kleine An/Aus-Einstellungen (aktuell nur Design) —
+          spart eine ganze Karte pro Mini-Einstellung, Platz für weitere. */}
+      <div className="konto-settings-band">
+        <span className="konto-settings-band__item">
+          <span className="konto-settings-band__label">Design:</span>
+          <ThemeToggle />
+        </span>
+      </div>
+
+      <div className="konto-grid">
+        <PasswordCard />
+        <PushCard />
+        <DangerZoneCard />
+      </div>
     </div>
   )
 }
@@ -155,13 +167,15 @@ function PushCard() {
           <span className="konto-push-list__label">Registrierte Geräte</span>
           {subscriptions.map((sub) => (
             <div key={sub.id} className="konto-push-list__item">
-              <span>{sub.label}</span>
+              <div className="konto-push-list__item-row">
+                <span className="konto-push-list__item-label">{sub.label}</span>
+                <button type="button" className="user-card__resend" onClick={() => handleRemove(sub.id)}>
+                  Entfernen
+                </button>
+              </div>
               <span className="konto-push-list__date">
                 seit {new Date(sub.createdAt).toLocaleDateString('de-DE')}
               </span>
-              <button type="button" className="user-card__resend" onClick={() => handleRemove(sub.id)}>
-                Entfernen
-              </button>
             </div>
           ))}
         </div>

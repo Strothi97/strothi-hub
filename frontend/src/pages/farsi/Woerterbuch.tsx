@@ -4,7 +4,7 @@ import { Card } from '@components/ui/Card'
 import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
 import { FarsiEntryModal } from './FarsiEntryModal'
-import { WORD_TYPE_META, WORD_TYPE_ORDER } from './wordType'
+import { ALPHABETICAL_TYPE_ORDER, WORD_TYPE_META, WORD_TYPE_ORDER } from './wordType'
 import type { FarsiEntry, FarsiEntryInput, FarsiWordType } from '@app-types/farsi'
 
 // Relevanz einer Suche: exakte Treffer sollen vor "kommt nur irgendwo vor"-
@@ -24,13 +24,6 @@ function matchScore(entry: FarsiEntry, needle: string): number {
   }
   return best
 }
-
-// Alphabetisch (nach deutschem Label) statt in WORD_TYPE_ORDER — für die
-// Mobil-Listenansicht, in der man einen Begriff eher alphabetisch sucht
-// als in der thematischen Reihenfolge der Chip-Leiste.
-const ALPHABETICAL_TYPE_ORDER: FarsiWordType[] = [...WORD_TYPE_ORDER].sort((a, b) =>
-  WORD_TYPE_META[a].label.localeCompare(WORD_TYPE_META[b].label, 'de'),
-)
 
 export function Woerterbuch() {
   const [entries, setEntries] = useState<FarsiEntry[]>([])
@@ -222,9 +215,9 @@ export function Woerterbuch() {
                     {WORD_TYPE_META[entry.type].icon} {WORD_TYPE_META[entry.type].label}
                   </span>
                 )}
-                {entry.verbStem && (
-                  <span className="tool-card__badge" title="Präsensstamm" dir="rtl">
-                    🌱 {entry.verbStem}
+                {(entry.verbStemLatin || entry.verbStemScript) && (
+                  <span className="tool-card__badge" title="Präsensstamm">
+                    🌱 {[entry.verbStemScript, entry.verbStemLatin].filter(Boolean).join(' / ')}
                   </span>
                 )}
                 {!entry.isComplete && (
