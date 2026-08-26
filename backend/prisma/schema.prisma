@@ -181,6 +181,9 @@ model FarsiEntry {
   // getrenntes Lautschrift-/Originalschrift-Paar statt einem Feld.
   verbStemLatin  String?
   verbStemScript String?
+  // 1 = am wichtigsten, 5 = am unwichtigsten; kein Wert = noch nicht
+  // eingestuft (zählt nicht automatisch als "wichtig" oder "unwichtig").
+  priority      Int?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -273,6 +276,8 @@ model Reminder {
   weekdays     Json? // nur WEEKDAYS: number[] (0=So..6=Sa)
   times        Json // string[] "HH:MM", mind. 1
   active       Boolean            @default(true)
+  isTodo       Boolean            @default(false) // ToDo statt Termin/Erinnerung — eigener Tab, per Checkbox abhakbar
+  completedAt  DateTime? // nur bei isTodo relevant; gesetzt = abgehakt, Scheduler feuert dann nicht mehr
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 

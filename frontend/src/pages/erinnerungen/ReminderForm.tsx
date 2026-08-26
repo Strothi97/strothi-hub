@@ -13,7 +13,8 @@ import {
 import type { IntervalUnit, Reminder, ReminderInput, ReminderRecurrence } from '@app-types/erinnerungen'
 
 interface ReminderFormProps {
-  reminder: Reminder | null // null = neue Erinnerung
+  reminder: Reminder | null // null = neue Erinnerung/neues ToDo
+  isTodo: boolean
   onSave: (input: ReminderInput) => Promise<void>
   onDelete?: () => Promise<void>
   onCancel: () => void
@@ -23,7 +24,7 @@ function today(): string {
   return new Date().toISOString().slice(0, 10)
 }
 
-export function ReminderForm({ reminder, onSave, onDelete, onCancel }: ReminderFormProps) {
+export function ReminderForm({ reminder, isTodo, onSave, onDelete, onCancel }: ReminderFormProps) {
   const [title, setTitle] = useState(reminder?.title ?? '')
   const [note, setNote] = useState(reminder?.note ?? '')
   const [recurrence, setRecurrence] = useState<ReminderRecurrence>(reminder?.recurrence ?? 'ONCE')
@@ -77,6 +78,7 @@ export function ReminderForm({ reminder, onSave, onDelete, onCancel }: ReminderF
         intervalUnit: recurrence === 'CUSTOM_INTERVAL' ? intervalUnit : null,
         weekdays: recurrence === 'WEEKDAYS' ? weekdays : null,
         times,
+        isTodo,
       })
     } finally {
       setSaving(false)

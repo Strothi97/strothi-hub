@@ -10,6 +10,7 @@ export interface FarsiEntryDTO {
   meaning: string | null
   verbStemLatin: string | null
   verbStemScript: string | null
+  priority: number | null
   isComplete: boolean
   missingFields: string[]
   createdAt: Date
@@ -28,6 +29,7 @@ interface RawEntry {
   meaning: string | null
   verbStemLatin: string | null
   verbStemScript: string | null
+  priority: number | null
   createdAt: Date
   updatedAt: Date
 }
@@ -63,6 +65,7 @@ function toDTO(row: RawEntry, vocabBox: number | null = null): FarsiEntryDTO {
     meaning: row.meaning,
     verbStemLatin: row.verbStemLatin,
     verbStemScript: row.verbStemScript,
+    priority: row.priority,
     isComplete,
     missingFields,
     createdAt: row.createdAt,
@@ -123,6 +126,7 @@ interface EntryInput {
   meaning?: string | null
   verbStemLatin?: string | null
   verbStemScript?: string | null
+  priority?: number | null
 }
 
 export async function createEntry(userId: string, input: EntryInput): Promise<FarsiEntryDTO> {
@@ -136,6 +140,7 @@ export async function createEntry(userId: string, input: EntryInput): Promise<Fa
       meaning: input.meaning || null,
       verbStemLatin: input.verbStemLatin || null,
       verbStemScript: input.verbStemScript || null,
+      priority: input.priority || null,
     },
   })
   return toDTO(row)
@@ -159,6 +164,7 @@ export async function updateEntry(
       ...(input.meaning !== undefined && { meaning: input.meaning || null }),
       ...(input.verbStemLatin !== undefined && { verbStemLatin: input.verbStemLatin || null }),
       ...(input.verbStemScript !== undefined && { verbStemScript: input.verbStemScript || null }),
+      ...(input.priority !== undefined && { priority: input.priority || null }),
     },
   })
   return toDTO(row)
@@ -269,12 +275,19 @@ function isStudyEligible(entry: FarsiEntryDTO, mode: FarsiStudyMode): boolean {
   return entry.persianLatin.length > 0 && !!entry.persianScript
 }
 
+export interface StudySessionFilters {
+  // 1-5 = gesetzte Priorität, 0 = "ohne Bewertung" (noch nicht eingestuft).
+  // Leer/undefined = keine Einschränkung (alle Prioritäten).
+  priorities?: number[]
+}
+
 // Fortschritt wird pro (userId, entryId, mode) getrennt geführt — Bedeutungs-
 // und Schrift-Erkennung sind unterschiedliche Fähigkeiten mit eigenem Takt.
 export async function getStudySession(
   userId: string,
   mode: FarsiStudyMode,
   limit = DEFAULT_SESSION_SIZE,
+  filters: StudySessionFilters = {},
 ): Promise<StudySessionDTO> {
   const [rows, progressRows] = await Promise.all([
     prisma.farsiEntry.findMany({ where: { userId } }),
@@ -285,10 +298,18 @@ export async function getStudySession(
   const entries = rows.map(toDTO)
 
   const eligible = entries.filter((entry) => isStudyEligible(entry, mode))
+  // ineligibleCount bleibt bewusst unabhängig vom Prioritäts-Filter — er
+  // soll weiterhin "fehlen Pflichtfelder" bedeuten, nicht "durch die
+  // Prioritäts-Auswahl gerade nicht ausgewählt".
   const ineligibleCount = entries.length - eligible.length
 
+  const priorityFiltered =
+    filters.priorities && filters.priorities.length > 0
+      ? eligible.filter((entry) => filters.priorities!.includes(entry.priority ?? 0))
+      : eligible
+
   const now = Date.now()
-  const due = eligible.filter((entry) => {
+  const due = priorityFiltered.filter((entry) => {
     const progress = progressByEntryId.get(entry.id)
     return !progress || progress.dueAt.getTime() <= now
   })

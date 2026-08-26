@@ -40,8 +40,14 @@ export const farsiService = {
   importEntries: (rawEntries: unknown[]) =>
     api.post<FarsiImportResult>(API_ENDPOINTS.farsi.import, rawEntries),
 
-  getStudySession: (mode: FarsiStudyMode, limit?: number) =>
-    api.get<FarsiStudySession>(API_ENDPOINTS.farsi.studySession, { params: { mode, limit } }),
+  getStudySession: (mode: FarsiStudyMode, limit?: number, priorities?: number[]) =>
+    api.get<FarsiStudySession>(API_ENDPOINTS.farsi.studySession, {
+      params: {
+        mode,
+        limit,
+        priorities: priorities && priorities.length > 0 ? priorities.join(',') : undefined,
+      },
+    }),
 
   reviewCard: (entryId: string, mode: FarsiStudyMode, correct: boolean) =>
     api.post<FarsiReviewResult>(API_ENDPOINTS.farsi.studyReview(entryId), { mode, correct }),

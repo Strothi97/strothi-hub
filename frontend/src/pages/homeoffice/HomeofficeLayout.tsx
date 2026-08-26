@@ -9,9 +9,6 @@ export function HomeofficeLayout() {
       <h1>Arbeitsnachweis</h1>
       <nav className="homeoffice-nav">
         <NavLink to="/homeoffice" end className={linkClass}>
-          Woche
-        </NavLink>
-        <NavLink to="/homeoffice/monat" className={linkClass}>
           Monat
         </NavLink>
         <NavLink to="/homeoffice/jahr" className={linkClass}>

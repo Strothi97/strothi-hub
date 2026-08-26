@@ -11,6 +11,9 @@ export function ErinnerungenLayout() {
         <NavLink to="/erinnerungen" end className={linkClass}>
           Erinnerungen
         </NavLink>
+        <NavLink to="/erinnerungen/todos" className={linkClass}>
+          ToDos
+        </NavLink>
         <NavLink to="/erinnerungen/geburtstage" className={linkClass}>
           Geburtstage
         </NavLink>

@@ -19,6 +19,18 @@ import type {
 
 const MODE_ORDER: FarsiKarteikartenMode[] = ['VOCAB', 'SCRIPT', 'LETTERS']
 
+// 0 steht für "ohne Bewertung" (noch nicht eingestufte Begriffe) — echte
+// Prioritäten sind 1 (am wichtigsten) bis 5 (am unwichtigsten).
+const PRIORITY_FILTER_OPTIONS = [1, 2, 3, 4, 5, 0]
+const PRIORITY_FILTER_LABELS: Record<number, string> = {
+  1: 'Priorität 1',
+  2: 'Priorität 2',
+  3: 'Priorität 3',
+  4: 'Priorität 4',
+  5: 'Priorität 5',
+  0: 'Ohne Bewertung',
+}
+
 const INELIGIBLE_HINTS: Record<FarsiStudyMode, (count: number) => string> = {
   VOCAB: (count) => `${count} Begriffe fehlt noch Deutsch oder Farsi (Lautschrift/Schrift) — im Wörterbuch ergänzen.`,
   SCRIPT: (count) => `${count} Begriffen fehlt noch die Originalschrift — im Wörterbuch ergänzen, um sie hier zu üben.`,
@@ -30,6 +42,8 @@ export function Karteikarten() {
   const [phase, setPhase] = useState<Phase>('setup')
   const [mode, setMode] = useState<FarsiKarteikartenMode>('VOCAB')
   const [direction, setDirection] = useState<FarsiStudyDirection>('MIXED')
+  const [priorityFilter, setPriorityFilter] = useState<number[]>([])
+  const [priorityPickerOpen, setPriorityPickerOpen] = useState(false)
   const [sessionData, setSessionData] = useState<FarsiStudySession | null>(null)
   const [letterProgress, setLetterProgress] = useState<FarsiLetterProgress[] | null>(null)
   const [streak, setStreak] = useState<FarsiStreak | null>(null)
@@ -41,7 +55,7 @@ export function Karteikarten() {
   const [flipped, setFlipped] = useState(false)
   const [results, setResults] = useState<boolean[]>([])
 
-  const loadSession = (forMode: FarsiKarteikartenMode) => {
+  const loadSession = (forMode: FarsiKarteikartenMode, forPriorities: number[]) => {
     setLoading(true)
     if (forMode === 'LETTERS') {
       farsiService
@@ -50,16 +64,21 @@ export function Karteikarten() {
         .finally(() => setLoading(false))
     } else {
       farsiService
-        .getStudySession(forMode)
+        .getStudySession(forMode, undefined, forPriorities)
         .then(({ data }) => setSessionData(data))
         .finally(() => setLoading(false))
     }
   }
 
   useEffect(() => {
-    loadSession(mode)
+    loadSession(mode, priorityFilter)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode])
+  }, [mode, priorityFilter])
+
+  const togglePriorityFilter = (option: number) =>
+    setPriorityFilter((current) =>
+      current.includes(option) ? current.filter((value) => value !== option) : [...current, option],
+    )
 
   useEffect(() => {
     farsiService.getStreak().then(({ data }) => setStreak(data))
@@ -104,12 +123,12 @@ export function Karteikarten() {
 
   const handleRestart = () => {
     setPhase('setup')
-    loadSession(mode)
+    loadSession(mode, priorityFilter)
   }
 
   const handleCancel = () => {
     setPhase('setup')
-    loadSession(mode)
+    loadSession(mode, priorityFilter)
   }
 
   const handleSwitchMode = (newMode: FarsiKarteikartenMode) => {
@@ -161,6 +180,7 @@ export function Karteikarten() {
           back={current.back}
           flipped={flipped}
           onFlip={() => setFlipped(true)}
+          onFlipBack={() => setFlipped(false)}
           onKnown={() => handleJudge(true)}
           onUnknown={() => handleJudge(false)}
         />
@@ -203,6 +223,7 @@ export function Karteikarten() {
   const canStart = mode === 'LETTERS' ? dueCount > 0 : !!sessionData && sessionData.cards.length > 0
 
   return (
+    <>
     <div className="farsi-study-setup">
       {!!streak && streak.currentStreak > 0 && (
         <p className="farsi-study-streak">🔥 {formatDays(streak.currentStreak)} in Folge</p>
@@ -220,6 +241,34 @@ export function Karteikarten() {
           </button>
         ))}
       </div>
+
+      {mode !== 'LETTERS' && (
+        <div className="farsi-sort-toggle" role="group" aria-label="Priorität">
+          <span className="farsi-sort-toggle__label farsi-sort-toggle__label--desktop">Priorität:</span>
+          <div className="farsi-filters__chips farsi-filters__chips--desktop">
+            <button
+              type="button"
+              className={`tool-chip ${priorityFilter.length === 0 ? 'is-active' : ''}`.trim()}
+              onClick={() => setPriorityFilter([])}
+            >
+              Alle
+            </button>
+            {PRIORITY_FILTER_OPTIONS.map((option) => (
+              <button
+                key={option}
+                type="button"
+                className={`tool-chip ${priorityFilter.includes(option) ? 'is-active' : ''}`.trim()}
+                onClick={() => togglePriorityFilter(option)}
+              >
+                {PRIORITY_FILTER_LABELS[option]}
+              </button>
+            ))}
+          </div>
+          <button type="button" className="farsi-filters__trigger" onClick={() => setPriorityPickerOpen(true)}>
+            Priorität{priorityFilter.length > 0 ? ` (${priorityFilter.length})` : ': Alle'} ▾
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <p>Lädt…</p>
@@ -253,5 +302,43 @@ export function Karteikarten() {
         </>
       )}
     </div>
+
+    {priorityPickerOpen && (
+      <div className="farsi-modal-backdrop" onClick={() => setPriorityPickerOpen(false)}>
+        <div
+          className="farsi-modal"
+          onClick={(event) => event.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Priorität auswählen"
+        >
+          <span className="farsi-modal__handle" aria-hidden="true" />
+          <div className="farsi-filters__list-header">
+            <span className="farsi-filters__list-title">Priorität</span>
+            <button
+              type="button"
+              className="farsi-filters__list-reset"
+              onClick={() => setPriorityFilter([])}
+              disabled={priorityFilter.length === 0}
+            >
+              Zurücksetzen
+            </button>
+          </div>
+          <div className="farsi-filters__list-body">
+            {PRIORITY_FILTER_OPTIONS.map((option) => (
+              <label key={option} className="farsi-filters__list-item">
+                <input
+                  type="checkbox"
+                  checked={priorityFilter.includes(option)}
+                  onChange={() => togglePriorityFilter(option)}
+                />
+                <span>{PRIORITY_FILTER_LABELS[option]}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   )
 }

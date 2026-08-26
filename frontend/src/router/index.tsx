@@ -7,7 +7,6 @@ import { Dashboard } from '@pages/Dashboard'
 import { Konto } from '@pages/Konto'
 import { AdminUsers } from '@pages/admin/Users'
 import { HomeofficeLayout } from '@pages/homeoffice/HomeofficeLayout'
-import { Woche } from '@pages/homeoffice/Woche'
 import { Monat } from '@pages/homeoffice/Monat'
 import { Jahr } from '@pages/homeoffice/Jahr'
 import { Einstellungen } from '@pages/homeoffice/Einstellungen'
@@ -20,6 +19,7 @@ import { Arbeitsflaeche } from '@pages/farsi/Arbeitsflaeche'
 import { Alphabet } from '@pages/farsi/AlphabetPage'
 import { ErinnerungenLayout } from '@pages/erinnerungen/ErinnerungenLayout'
 import { Erinnerungen } from '@pages/erinnerungen/Erinnerungen'
+import { ToDos } from '@pages/erinnerungen/ToDos'
 import { Geburtstage } from '@pages/erinnerungen/Geburtstage'
 
 export function AppRoutes() {
@@ -39,8 +39,7 @@ export function AppRoutes() {
 
           <Route path="/homeoffice" element={<ProtectedRoute requireTool="homeoffice" />}>
             <Route element={<HomeofficeLayout />}>
-              <Route index element={<Woche />} />
-              <Route path="monat" element={<Monat />} />
+              <Route index element={<Monat />} />
               <Route path="jahr" element={<Jahr />} />
               <Route path="einstellungen" element={<Einstellungen />} />
             </Route>
@@ -60,6 +59,7 @@ export function AppRoutes() {
           <Route path="/erinnerungen" element={<ProtectedRoute requireTool="erinnerungen" />}>
             <Route element={<ErinnerungenLayout />}>
               <Route index element={<Erinnerungen />} />
+              <Route path="todos" element={<ToDos />} />
               <Route path="geburtstage" element={<Geburtstage />} />
             </Route>
           </Route>

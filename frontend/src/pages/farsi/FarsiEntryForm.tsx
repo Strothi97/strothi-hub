@@ -12,7 +12,10 @@ const EMPTY_STATE = {
   meaning: '',
   verbStemLatin: '',
   verbStemScript: '',
+  priority: null as number | null,
 }
+
+const PRIORITY_OPTIONS = [1, 2, 3, 4, 5]
 
 interface FarsiEntryFormProps {
   entry: FarsiEntry | null // null = neuer Begriff
@@ -32,6 +35,7 @@ export function FarsiEntryForm({ entry, onSave, onDelete, onCancel }: FarsiEntry
   const [meaning, setMeaning] = useState(entry?.meaning ?? EMPTY_STATE.meaning)
   const [verbStemLatin, setVerbStemLatin] = useState(entry?.verbStemLatin ?? EMPTY_STATE.verbStemLatin)
   const [verbStemScript, setVerbStemScript] = useState(entry?.verbStemScript ?? EMPTY_STATE.verbStemScript)
+  const [priority, setPriority] = useState<number | null>(entry?.priority ?? EMPTY_STATE.priority)
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -54,6 +58,7 @@ export function FarsiEntryForm({ entry, onSave, onDelete, onCancel }: FarsiEntry
         meaning: meaning.trim() || null,
         verbStemLatin: verbStemLatin.trim() || null,
         verbStemScript: verbStemScript.trim() || null,
+        priority,
       })
       // Beim Neuanlegen (kein bestehender Eintrag) das Formular für den
       // nächsten Begriff leeren, statt es offen mit alten Werten stehen
@@ -66,6 +71,7 @@ export function FarsiEntryForm({ entry, onSave, onDelete, onCancel }: FarsiEntry
         setMeaning(EMPTY_STATE.meaning)
         setVerbStemLatin(EMPTY_STATE.verbStemLatin)
         setVerbStemScript(EMPTY_STATE.verbStemScript)
+        setPriority(EMPTY_STATE.priority)
       }
     } finally {
       setSaving(false)
@@ -112,6 +118,23 @@ export function FarsiEntryForm({ entry, onSave, onDelete, onCancel }: FarsiEntry
         >
           {type ? `${WORD_TYPE_META[type].icon} ${WORD_TYPE_META[type].label}` : 'Auswählen'} ▾
         </button>
+      </div>
+
+      <div className="form-group">
+        <span className="form-label">Priorität</span>
+        <div className="farsi-type-chips">
+          {PRIORITY_OPTIONS.map((option) => (
+            <button
+              key={option}
+              type="button"
+              className={`tool-chip ${priority === option ? 'is-active' : ''}`.trim()}
+              onClick={() => setPriority(priority === option ? null : option)}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+        <p className="form-hint">1 = am wichtigsten, 5 = am unwichtigsten. Ohne Angabe = noch nicht eingestuft.</p>
       </div>
 
       <div className="form-group">

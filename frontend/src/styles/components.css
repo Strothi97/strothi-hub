@@ -463,7 +463,11 @@
     font-size: 1.6rem;
   }
 
-  .tool-card__badge {
+  /* Nachträglich auf ".tool-card " (Nachfahre) verengt statt der reinen
+     Klasse — ".tool-card__badge" wird namensgleich auch für die Priorität-
+     /Kategorie-/Wortstamm-Badges im Farsi-Wörterbuch verwendet, die davon
+     unberührt bleiben sollen (Bug: verschwanden auf dem Handy komplett). */
+  .tool-card .tool-card__badge {
     display: none;
   }
 }

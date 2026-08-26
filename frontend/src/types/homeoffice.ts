@@ -26,12 +26,6 @@ export interface ResolvedDay {
   isAutoHoliday: boolean
 }
 
-export interface WeekResponse {
-  weekStart: string
-  weekEnd: string
-  days: ResolvedDay[]
-}
-
 export interface MonthResponse {
   monthStart: string
   monthEnd: string

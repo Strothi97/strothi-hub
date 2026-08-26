@@ -4,7 +4,7 @@ Persönliches Multi-Tool-Webportal von Felix (`felixstrothmann@t-online.de`), de
 Plesk-VPS unter **hub.strothi.de** (kein SSH, aber browser-basierte Root-Shell in Plesk).
 Ursprünglich Ein-Nutzer-Anwendung, seit Kurzem mehrnutzerfähig (E-Mail-Einladungen).
 
-Stand dieser Datei: 2026-08-17. Bei Widersprüchen zum tatsächlichen Code gewinnt der Code —
+Stand dieser Datei: 2026-08-26. Bei Widersprüchen zum tatsächlichen Code gewinnt der Code —
 diese Datei beschreibt den Stand zu einem Zeitpunkt, nicht live.
 
 ## Tech-Stack
@@ -63,7 +63,7 @@ Nutzern kann kurz das dunkle Default-Theme aufblitzen.
 |---|---|---|
 | `farsi` | Farsi-Lernapp | ✅ Fertig gebaut (Wörterbuch, Karteikarten/Leitner, Alphabet-Referenz, Arbeitsfläche) |
 | `homeoffice` | Arbeitsnachweis | ✅ Fertig gebaut (Woche/Monat/Jahr-Ansicht, Bundesland-Verwaltung, PDF-Export) |
-| `erinnerungen` | Erinnerungen | ✅ Fertig gebaut (Erinnerungen + Geburtstage, Web Push) |
+| `erinnerungen` | Erinnerungen | ✅ Fertig gebaut (Erinnerungen + ToDos + Geburtstage, Web Push) |
 | `haushaltsbuch` | Haushaltsbuch | 🚧 nur Registry-Stub, keine Implementierung |
 | `kleingewerbe` | Kleingewerbe | 🚧 nur Registry-Stub, keine Implementierung |
 | `notizen` | Notizen | 🚧 nur Registry-Stub, keine Implementierung |
@@ -83,6 +83,17 @@ Umzüge). Nur Wochentage werden betrachtet. Zwei bewusst getrennte Datums-Helfer
 (`toISODate`/`parseISODate` lokal vs. `toPrismaDate`/`fromPrismaDate` UTC) — Vermischen erzeugt
 Off-by-one-Day-Bugs. Jahresansicht vergleicht 3 Jahre per Balkendiagramm, hat PDF-Export
 (`jspdf`, lazy-`import()`ed) und manuelle Urlaubstage-Korrekturen (`VacationAdjustment`).
+
+### `erinnerungen` — ToDos sind kein eigenes Modell
+
+ToDos (`/erinnerungen/todos`) sind keine eigene Prisma-Tabelle, sondern dieselben `Reminder`-
+Zeilen mit `isTodo: true`, unterschieden über zwei zusätzliche Felder (`isTodo`, `completedAt`)
+auf demselben Modell. Grund: ToDos brauchen dieselbe Wiederholungs-/Uhrzeiten-/Push-Logik wie
+normale Erinnerungen (z.B. täglich nerven, bis erledigt), der einzige echte Unterschied ist der
+Erledigt-Status. `erinnerungen.service.ts`/`Erinnerungen.tsx`/`ToDos.tsx` filtern beim Lesen
+jeweils nach `isTodo`; der Scheduler (`scheduler.ts`) schließt zusätzlich `completedAt: null`
+aus der Push-Prüfung aus. Bei neuen Reminder-bezogenen Feldern immer daran denken, dass sie für
+beide Verwendungszwecke (Termin-Erinnerung und ToDo) sinnvoll sein müssen.
 
 ## Datenmodell
 

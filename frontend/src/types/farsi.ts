@@ -23,6 +23,8 @@ export interface FarsiEntry {
   meaning: string | null
   verbStemLatin: string | null
   verbStemScript: string | null
+  // 1 = am wichtigsten, 5 = am unwichtigsten, null = noch nicht eingestuft.
+  priority: number | null
   isComplete: boolean
   missingFields: string[]
   createdAt: string
@@ -38,6 +40,7 @@ export interface FarsiEntryInput {
   meaning: string | null
   verbStemLatin: string | null
   verbStemScript: string | null
+  priority: number | null
 }
 
 export interface FarsiImportResult {

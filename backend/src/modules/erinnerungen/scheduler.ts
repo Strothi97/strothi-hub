@@ -65,7 +65,7 @@ export async function runErinnerungenCheck(): Promise<void> {
     const todayUtcMidnight = new Date(Date.UTC(berlin.year, berlin.month - 1, berlin.day))
     const scheduledFor = `${berlin.dateKey} ${berlin.hhmm}`
 
-    const reminders = await prisma.reminder.findMany({ where: { active: true } })
+    const reminders = await prisma.reminder.findMany({ where: { active: true, completedAt: null } })
     for (const reminder of reminders) {
       const times = Array.isArray(reminder.times) ? (reminder.times as string[]) : []
       if (!times.includes(berlin.hhmm)) continue

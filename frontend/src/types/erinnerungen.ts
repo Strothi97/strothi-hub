@@ -15,8 +15,11 @@ export interface Reminder {
   weekdays: number[] | null // 0=So..6=Sa
   times: string[] // "HH:MM"
   active: boolean
+  isTodo: boolean
+  completed: boolean
   createdAt: string
   updatedAt: string
+  nextOccurrence: string | null // "YYYY-MM-DD", nächster fälliger Tag ab heute
 }
 
 export interface ReminderInput {
@@ -30,6 +33,8 @@ export interface ReminderInput {
   weekdays?: number[] | null
   times: string[]
   active?: boolean
+  isTodo?: boolean
+  completed?: boolean
 }
 
 export interface Person {

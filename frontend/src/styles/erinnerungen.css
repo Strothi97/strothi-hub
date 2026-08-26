@@ -172,6 +172,75 @@
   color: var(--color-primary);
 }
 
+/* ── ToDo-Karten ────────────────────────────────────────── */
+
+.erinnerungen-todo-show-done {
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: var(--space-3);
+}
+
+.erinnerungen-todo-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+}
+
+.erinnerungen-todo-card--done {
+  opacity: 0.55;
+}
+
+.erinnerungen-todo-card__check {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: none;
+  color: var(--color-background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.erinnerungen-todo-card__check:hover {
+  border-color: var(--color-primary);
+}
+
+.erinnerungen-todo-card__check.is-done {
+  border-color: var(--color-success);
+  background-color: var(--color-success);
+}
+
+.erinnerungen-todo-card__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.erinnerungen-todo-card__title {
+  font-weight: 600;
+}
+
+.erinnerungen-todo-card__title--done {
+  text-decoration: line-through;
+  color: var(--color-text-muted);
+}
+
+.erinnerungen-todo-card__meta {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
 /* ── Geburtstags-Karten ─────────────────────────────────── */
 
 .erinnerungen-person-card {

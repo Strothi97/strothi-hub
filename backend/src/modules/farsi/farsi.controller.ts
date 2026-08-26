@@ -47,7 +47,7 @@ export const importEntries = async (req: Request, res: Response) => {
 // ── Study / Leitner-Box ────────────────────────────────
 
 export const getStudySession = async (req: Request, res: Response) => {
-  const { mode, limit } = req.query as { mode?: string; limit?: string }
+  const { mode, limit, priorities } = req.query as { mode?: string; limit?: string; priorities?: string }
   if (!mode || !STUDY_MODES.includes(mode as FarsiStudyMode)) {
     return res.status(400).json({ message: 'Ungültiger oder fehlender "mode"-Parameter.' })
   }
@@ -55,6 +55,14 @@ export const getStudySession = async (req: Request, res: Response) => {
     req.user!.id,
     mode as FarsiStudyMode,
     limit ? Number(limit) : undefined,
+    {
+      priorities: priorities
+        ? priorities
+            .split(',')
+            .map(Number)
+            .filter((n) => Number.isInteger(n) && n >= 0 && n <= 5)
+        : undefined,
+    },
   )
   return res.json(session)
 }

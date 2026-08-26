@@ -4,15 +4,12 @@ import type {
   FederalStateEntry,
   MonthResponse,
   VacationAdjustment,
-  WeekResponse,
   WorkDayStatus,
   YearAggregation,
   Bundesland,
 } from '@app-types/homeoffice'
 
 export const homeofficeService = {
-  getWeek: (date: string) => api.get<WeekResponse>(API_ENDPOINTS.homeoffice.week, { params: { date } }),
-
   getMonth: (year: number, month: number) =>
     api.get<MonthResponse>(API_ENDPOINTS.homeoffice.month, { params: { year, month } }),
 

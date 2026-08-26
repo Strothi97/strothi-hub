@@ -27,7 +27,6 @@ export const API_ENDPOINTS = {
     subscription: (id: string) => `/push/subscriptions/${id}`,
   },
   homeoffice: {
-    week: '/homeoffice/week',
     day: '/homeoffice/day',
     month: '/homeoffice/month',
     year: '/homeoffice/year',

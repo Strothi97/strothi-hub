@@ -88,6 +88,21 @@ export function isDueOn(reminder: RecurrenceInput, date: Date): boolean {
   }
 }
 
+// Nächster fälliger Tag einer Erinnerung ab (inkl.) heute — für Sortierung
+// in der Liste ("was steht als Nächstes an"). Brute-force statt pro Typ
+// eigene Formel: robust gegenüber allen Wiederholungsarten (inkl. endDate),
+// bei der kleinen Datenmenge eines persönlichen Erinnerungs-Sets vernachlässigbar.
+const MAX_LOOKAHEAD_DAYS = 366 * 2
+
+function nextReminderOccurrence(reminder: RecurrenceInput, today: Date): Date | null {
+  const todayUtc = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()))
+  for (let i = 0; i <= MAX_LOOKAHEAD_DAYS; i++) {
+    const candidate = new Date(todayUtc.getTime() + i * 24 * 60 * 60 * 1000)
+    if (isDueOn(reminder, candidate)) return candidate
+  }
+  return null
+}
+
 // Nächstes Vorkommen eines Geburtstags ab (inkl.) heute — für Sortierung/Anzeige.
 function nextBirthdayOccurrence(birthday: Date, today: Date): Date {
   const todayUtc = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()))
@@ -118,8 +133,13 @@ export interface ReminderDTO {
   weekdays: number[] | null
   times: string[]
   active: boolean
+  isTodo: boolean
+  completed: boolean
   createdAt: Date
   updatedAt: Date
+  // Nächster fälliger Kalendertag ab heute (oder null, falls z.B. endDate
+  // in der Vergangenheit liegt) — für die "Nächstes Datum"-Sortierung.
+  nextOccurrence: string | null
 }
 
 function toReminderDTO(row: {
@@ -134,9 +154,17 @@ function toReminderDTO(row: {
   weekdays: unknown
   times: unknown
   active: boolean
+  isTodo: boolean
+  completedAt: Date | null
   createdAt: Date
   updatedAt: Date
 }): ReminderDTO {
+  const weekdays = Array.isArray(row.weekdays) ? (row.weekdays as number[]) : null
+  const nextOccurrence = nextReminderOccurrence(
+    { recurrence: row.recurrence, startDate: row.startDate, endDate: row.endDate, intervalN: row.intervalN, intervalUnit: row.intervalUnit, weekdays },
+    new Date(),
+  )
+
   return {
     id: row.id,
     title: row.title,
@@ -146,11 +174,14 @@ function toReminderDTO(row: {
     endDate: row.endDate ? toDateOnly(row.endDate) : null,
     intervalN: row.intervalN,
     intervalUnit: row.intervalUnit,
-    weekdays: Array.isArray(row.weekdays) ? (row.weekdays as number[]) : null,
+    weekdays,
     times: Array.isArray(row.times) ? (row.times as string[]) : [],
     active: row.active,
+    isTodo: row.isTodo,
+    completed: row.completedAt !== null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    nextOccurrence: nextOccurrence ? toDateOnly(nextOccurrence) : null,
   }
 }
 
@@ -170,6 +201,8 @@ export interface ReminderInput {
   weekdays?: number[] | null
   times: string[]
   active?: boolean
+  isTodo?: boolean
+  completed?: boolean
 }
 
 export async function createReminder(userId: string, input: ReminderInput): Promise<ReminderDTO> {
@@ -186,6 +219,8 @@ export async function createReminder(userId: string, input: ReminderInput): Prom
       weekdays: input.weekdays ?? undefined,
       times: input.times,
       active: input.active ?? true,
+      isTodo: input.isTodo ?? false,
+      completedAt: input.completed ? new Date() : null,
     },
   })
   return toReminderDTO(row)
@@ -212,6 +247,8 @@ export async function updateReminder(
       ...(input.weekdays !== undefined && { weekdays: input.weekdays ?? undefined }),
       ...(input.times !== undefined && { times: input.times }),
       ...(input.active !== undefined && { active: input.active }),
+      ...(input.isTodo !== undefined && { isTodo: input.isTodo }),
+      ...(input.completed !== undefined && { completedAt: input.completed ? new Date() : null }),
     },
   })
   return toReminderDTO(row)

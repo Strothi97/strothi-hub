@@ -34,11 +34,12 @@ interface StudyCardProps {
   back: FaceSide
   flipped: boolean
   onFlip: () => void
+  onFlipBack: () => void
   onKnown: () => void
   onUnknown: () => void
 }
 
-export function StudyCard({ entry, front, back, flipped, onFlip, onKnown, onUnknown }: StudyCardProps) {
+export function StudyCard({ entry, front, back, flipped, onFlip, onFlipBack, onKnown, onUnknown }: StudyCardProps) {
   return (
     <div>
       <div
@@ -49,6 +50,20 @@ export function StudyCard({ entry, front, back, flipped, onFlip, onKnown, onUnkn
           <div className="farsi-study-card__face farsi-study-card__face--front">{renderFace(entry, front)}</div>
           <div className="farsi-study-card__face farsi-study-card__face--back">{renderFace(entry, back)}</div>
         </div>
+        {flipped && (
+          <button
+            type="button"
+            className="farsi-study-card__flip-back"
+            onClick={(event) => {
+              event.stopPropagation()
+              onFlipBack()
+            }}
+            aria-label="Karte zurückdrehen"
+            title="Zurückdrehen"
+          >
+            🔄
+          </button>
+        )}
       </div>
 
       {!flipped ? (

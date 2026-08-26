@@ -210,6 +210,11 @@ export function Woerterbuch() {
                 <span className="farsi-entry-card__german">{entry.german.join(' / ') || '—'}</span>
               </div>
               <div className="farsi-entry-card__meta">
+                {entry.priority && (
+                  <span className="tool-card__badge" title="Priorität">
+                    🎯 P{entry.priority}
+                  </span>
+                )}
                 {entry.type && (
                   <span className="tool-card__badge">
                     {WORD_TYPE_META[entry.type].icon} {WORD_TYPE_META[entry.type].label}
