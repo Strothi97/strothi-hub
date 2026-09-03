@@ -1,5 +1,5 @@
 import { prisma } from '../../db'
-import { isDueOn, isLeapYear } from './erinnerungen.service'
+import { isDueOn, isLeapYear, parseLeadReminders, subtractOffset, describeLeadOffset } from './erinnerungen.service'
 import { sendPush, PushPayload } from '../../services/push.service'
 
 // Server läuft unter Passenger in Server-/UTC-Zeit, Uhrzeiten sind aber
@@ -75,6 +75,25 @@ export async function runErinnerungenCheck(): Promise<void> {
         body: reminder.note || 'Erinnerung',
         url: '/erinnerungen',
       })
+    }
+
+    // Vorab-Erinnerungen (nur ONCE, z.B. "6 Monate vorher: Hotel buchen")
+    // — unabhängig vom obigen Termin-Check, eigener refId pro Listenindex,
+    // damit mehrere Vorab-Erinnerungen derselben Erinnerung nicht kollidieren.
+    for (const reminder of reminders) {
+      if (reminder.recurrence !== 'ONCE') continue
+      const leads = parseLeadReminders(reminder.leadReminders)
+      for (let index = 0; index < leads.length; index++) {
+        const lead = leads[index]
+        if (lead.time !== berlin.hhmm) continue
+        const leadDate = subtractOffset(reminder.startDate, lead.offsetN, lead.offsetUnit)
+        if (leadDate.getTime() !== todayUtcMidnight.getTime()) continue
+        await fireOnce('reminder_lead', `${reminder.id}:${index}`, scheduledFor, reminder.userId, {
+          title: `📅 ${reminder.title}`,
+          body: `${describeLeadOffset(lead)} fällig${reminder.note ? ' — ' + reminder.note : ''}`,
+          url: '/erinnerungen',
+        })
+      }
     }
 
     if (berlin.hhmm === '10:00' || berlin.hhmm === '20:00') {

@@ -1,4 +1,4 @@
-import { ReminderRecurrence, IntervalUnit } from '@prisma/client'
+import { ReminderRecurrence, IntervalUnit, Prisma } from '@prisma/client'
 import fs from 'fs/promises'
 import path from 'path'
 import sharp from 'sharp'
@@ -21,6 +21,14 @@ export function isLeapYear(year: number): boolean {
   return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0
 }
 
+export function subtractOffset(date: Date, offsetN: number, unit: IntervalUnit): Date {
+  const result = new Date(date.getTime())
+  if (unit === 'DAY') result.setUTCDate(result.getUTCDate() - offsetN)
+  else if (unit === 'WEEK') result.setUTCDate(result.getUTCDate() - offsetN * 7)
+  else if (unit === 'MONTH') result.setUTCMonth(result.getUTCMonth() - offsetN)
+  return result
+}
+
 // Prisma-@db.Date-Felder als reines "YYYY-MM-DD" ausgeben, nicht als
 // vollen ISO-Zeitstempel (Express' res.json() würde sonst automatisch
 // Date.toISOString() aufrufen — das bricht <input type="date">-Bindungen
@@ -38,6 +46,42 @@ interface RecurrenceInput {
   intervalN: number | null
   intervalUnit: IntervalUnit | null
   weekdays: unknown
+  leadReminders?: unknown
+}
+
+// ── Vorab-Erinnerungen (nur ONCE) ────────────────────────
+// Zusätzlich zum Termin selbst (startDate + times) können bei einmaligen
+// Erinnerungen weitere, frühere Erinnerungspunkte definiert werden (z.B.
+// "6 Monate vorher: Hotel buchen"). Unabhängig von der normalen
+// Wiederholungs-Logik (isDueOn) — die bleibt unverändert für den Termin selbst.
+export interface LeadReminder {
+  offsetN: number
+  offsetUnit: IntervalUnit
+  time: string // "HH:MM"
+}
+
+const INTERVAL_UNITS = new Set(['DAY', 'WEEK', 'MONTH'])
+
+export function parseLeadReminders(value: unknown): LeadReminder[] {
+  if (!Array.isArray(value)) return []
+  return value.filter((item): item is LeadReminder => {
+    if (!item || typeof item !== 'object') return false
+    const candidate = item as Record<string, unknown>
+    return (
+      typeof candidate.offsetN === 'number' &&
+      candidate.offsetN >= 0 &&
+      typeof candidate.offsetUnit === 'string' &&
+      INTERVAL_UNITS.has(candidate.offsetUnit) &&
+      typeof candidate.time === 'string' &&
+      /^\d{2}:\d{2}$/.test(candidate.time)
+    )
+  })
+}
+
+export function describeLeadOffset(lead: LeadReminder): string {
+  if (lead.offsetN === 0) return 'am Tag selbst'
+  const unitLabel = { DAY: 'Tage', WEEK: 'Wochen', MONTH: 'Monate' }[lead.offsetUnit]
+  return `${lead.offsetN} ${unitLabel} vorher`
 }
 
 // Prüft, ob eine Erinnerung an einem bestimmten (kalendarischen) Tag fällig ist.
@@ -96,11 +140,27 @@ const MAX_LOOKAHEAD_DAYS = 366 * 2
 
 function nextReminderOccurrence(reminder: RecurrenceInput, today: Date): Date | null {
   const todayUtc = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()))
+  let best: Date | null = null
   for (let i = 0; i <= MAX_LOOKAHEAD_DAYS; i++) {
     const candidate = new Date(todayUtc.getTime() + i * 24 * 60 * 60 * 1000)
-    if (isDueOn(reminder, candidate)) return candidate
+    if (isDueOn(reminder, candidate)) {
+      best = candidate
+      break
+    }
   }
-  return null
+
+  // Vorab-Erinnerungen können früher fällig sein als der Termin selbst
+  // (z.B. "Hotel buchen" 6 Monate vor dem Konzert) — für "Nächstes Datum"
+  // soll der wirklich nächste Push zählen, nicht nur der Termintag.
+  if (reminder.recurrence === 'ONCE') {
+    for (const lead of parseLeadReminders(reminder.leadReminders)) {
+      const leadDate = subtractOffset(reminder.startDate, lead.offsetN, lead.offsetUnit)
+      if (daysBetween(todayUtc, leadDate) < 0) continue
+      if (!best || leadDate < best) best = leadDate
+    }
+  }
+
+  return best
 }
 
 // Nächstes Vorkommen eines Geburtstags ab (inkl.) heute — für Sortierung/Anzeige.
@@ -132,6 +192,7 @@ export interface ReminderDTO {
   intervalUnit: IntervalUnit | null
   weekdays: number[] | null
   times: string[]
+  leadReminders: LeadReminder[]
   active: boolean
   isTodo: boolean
   completed: boolean
@@ -153,6 +214,7 @@ function toReminderDTO(row: {
   intervalUnit: IntervalUnit | null
   weekdays: unknown
   times: unknown
+  leadReminders: unknown
   active: boolean
   isTodo: boolean
   completedAt: Date | null
@@ -160,8 +222,17 @@ function toReminderDTO(row: {
   updatedAt: Date
 }): ReminderDTO {
   const weekdays = Array.isArray(row.weekdays) ? (row.weekdays as number[]) : null
+  const leadReminders = parseLeadReminders(row.leadReminders)
   const nextOccurrence = nextReminderOccurrence(
-    { recurrence: row.recurrence, startDate: row.startDate, endDate: row.endDate, intervalN: row.intervalN, intervalUnit: row.intervalUnit, weekdays },
+    {
+      recurrence: row.recurrence,
+      startDate: row.startDate,
+      endDate: row.endDate,
+      intervalN: row.intervalN,
+      intervalUnit: row.intervalUnit,
+      weekdays,
+      leadReminders,
+    },
     new Date(),
   )
 
@@ -176,6 +247,7 @@ function toReminderDTO(row: {
     intervalUnit: row.intervalUnit,
     weekdays,
     times: Array.isArray(row.times) ? (row.times as string[]) : [],
+    leadReminders,
     active: row.active,
     isTodo: row.isTodo,
     completed: row.completedAt !== null,
@@ -200,6 +272,7 @@ export interface ReminderInput {
   intervalUnit?: IntervalUnit | null
   weekdays?: number[] | null
   times: string[]
+  leadReminders?: LeadReminder[] | null
   active?: boolean
   isTodo?: boolean
   completed?: boolean
@@ -218,6 +291,7 @@ export async function createReminder(userId: string, input: ReminderInput): Prom
       intervalUnit: input.intervalUnit ?? null,
       weekdays: input.weekdays ?? undefined,
       times: input.times,
+      leadReminders: (input.leadReminders ?? undefined) as Prisma.InputJsonValue | undefined,
       active: input.active ?? true,
       isTodo: input.isTodo ?? false,
       completedAt: input.completed ? new Date() : null,
@@ -246,6 +320,9 @@ export async function updateReminder(
       ...(input.intervalUnit !== undefined && { intervalUnit: input.intervalUnit }),
       ...(input.weekdays !== undefined && { weekdays: input.weekdays ?? undefined }),
       ...(input.times !== undefined && { times: input.times }),
+      ...(input.leadReminders !== undefined && {
+        leadReminders: (input.leadReminders ?? []) as unknown as Prisma.InputJsonValue,
+      }),
       ...(input.active !== undefined && { active: input.active }),
       ...(input.isTodo !== undefined && { isTodo: input.isTodo }),
       ...(input.completed !== undefined && { completedAt: input.completed ? new Date() : null }),

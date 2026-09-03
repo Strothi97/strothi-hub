@@ -42,19 +42,26 @@ function toStringArray(value: unknown): string[] {
   return []
 }
 
-function computeCompleteness(german: string[], persianLatin: string[], persianScript: string | null, type: FarsiWordType | null) {
+function computeCompleteness(
+  german: string[],
+  persianLatin: string[],
+  persianScript: string | null,
+  type: FarsiWordType | null,
+  priority: number | null,
+) {
   const missingFields: string[] = []
   if (german.length === 0) missingFields.push('german')
   if (persianLatin.length === 0) missingFields.push('persianLatin')
   if (!persianScript) missingFields.push('persianScript')
   if (!type) missingFields.push('type')
+  if (priority === null || priority === undefined) missingFields.push('priority')
   return { isComplete: missingFields.length === 0, missingFields }
 }
 
 function toDTO(row: RawEntry, vocabBox: number | null = null): FarsiEntryDTO {
   const german = toStringArray(row.german)
   const persianLatin = toStringArray(row.persianLatin)
-  const { isComplete, missingFields } = computeCompleteness(german, persianLatin, row.persianScript, row.type)
+  const { isComplete, missingFields } = computeCompleteness(german, persianLatin, row.persianScript, row.type, row.priority)
 
   return {
     id: row.id,

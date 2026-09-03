@@ -3,6 +3,7 @@ import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
 import { TimesInput } from './TimesInput'
 import { NumberStepper } from './NumberStepper'
+import { LeadRemindersInput } from './LeadRemindersInput'
 import {
   RECURRENCE_LABELS,
   RECURRENCE_ORDER,
@@ -10,7 +11,7 @@ import {
   INTERVAL_UNIT_ORDER,
   WEEKDAY_LABELS,
 } from './recurrence'
-import type { IntervalUnit, Reminder, ReminderInput, ReminderRecurrence } from '@app-types/erinnerungen'
+import type { IntervalUnit, LeadReminder, Reminder, ReminderInput, ReminderRecurrence } from '@app-types/erinnerungen'
 
 interface ReminderFormProps {
   reminder: Reminder | null // null = neue Erinnerung/neues ToDo
@@ -34,6 +35,7 @@ export function ReminderForm({ reminder, isTodo, onSave, onDelete, onCancel }: R
   const [intervalUnit, setIntervalUnit] = useState<IntervalUnit>(reminder?.intervalUnit ?? 'MONTH')
   const [weekdays, setWeekdays] = useState<number[]>(reminder?.weekdays ?? [])
   const [times, setTimes] = useState<string[]>(reminder?.times ?? ['09:00'])
+  const [leadReminders, setLeadReminders] = useState<LeadReminder[]>(reminder?.leadReminders ?? [])
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -78,6 +80,7 @@ export function ReminderForm({ reminder, isTodo, onSave, onDelete, onCancel }: R
         intervalUnit: recurrence === 'CUSTOM_INTERVAL' ? intervalUnit : null,
         weekdays: recurrence === 'WEEKDAYS' ? weekdays : null,
         times,
+        leadReminders: recurrence === 'ONCE' ? leadReminders : null,
         isTodo,
       })
     } finally {
@@ -192,9 +195,19 @@ export function ReminderForm({ reminder, isTodo, onSave, onDelete, onCancel }: R
       )}
 
       <div className="form-group">
-        <span className="form-label">Uhrzeiten</span>
+        <span className="form-label">{recurrence === 'ONCE' ? 'Uhrzeit des Termins' : 'Uhrzeiten'}</span>
         <TimesInput value={times} onChange={setTimes} />
       </div>
+
+      {recurrence === 'ONCE' && (
+        <div className="form-group">
+          <span className="form-label">Vorab erinnern (optional)</span>
+          <p className="form-hint">
+            Zusätzliche, frühere Erinnerungen vor dem Termin — z.B. "6 Monate vorher: Hotel buchen".
+          </p>
+          <LeadRemindersInput value={leadReminders} onChange={setLeadReminders} />
+        </div>
+      )}
 
       {error && <p className="form-error">{error}</p>}
 

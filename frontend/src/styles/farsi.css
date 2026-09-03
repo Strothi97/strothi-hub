@@ -551,6 +551,25 @@
   color: var(--color-primary);
 }
 
+/* Gleiches Prinzip wie .farsi-study-card__flip-back — sitzt außerhalb von
+   .farsi-study-card__inner, dreht sich also nicht mit. Oben links statt
+   oben rechts, damit sie nicht mit dem Zurückdrehen-Button kollidiert. */
+.farsi-study-card__type-badge {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-alt);
+  font-size: 1.1rem;
+}
+
 .farsi-study-card.is-clickable {
   cursor: pointer;
 }
@@ -603,6 +622,29 @@
 
 .farsi-study-flip-btn {
   width: 100%;
+}
+
+.farsi-study-note {
+  margin-bottom: var(--space-3);
+}
+
+.farsi-study-note__toggle {
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.farsi-study-note__text {
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-alt);
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  white-space: pre-wrap;
 }
 
 .farsi-study-actions {

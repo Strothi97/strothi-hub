@@ -3,7 +3,7 @@ import { erinnerungenService } from '@services/erinnerungen.service'
 import { Card } from '@components/ui/Card'
 import { Button } from '@components/ui/Button'
 import { ReminderModal } from './ReminderModal'
-import { describeRecurrence, RECURRENCE_ORDER } from './recurrence'
+import { describeRecurrence, RECURRENCE_LABELS, RECURRENCE_ORDER, timeSortKey, weekdaySortKey } from './recurrence'
 import type { Reminder, ReminderInput } from '@app-types/erinnerungen'
 
 type SortMode = 'next' | 'frequency'
@@ -61,12 +61,18 @@ export function Erinnerungen() {
 
   // "Nächstes Datum": nach nextOccurrence, ohne weitere Fälligkeit (endDate
   // in der Vergangenheit) ans Ende. "Häufigkeit": nach Wiederholungsart
-  // gruppiert (RECURRENCE_ORDER), innerhalb der Gruppe wieder nach Fälligkeit.
+  // gruppiert (RECURRENCE_ORDER), innerhalb der Gruppe stets Mo→So und
+  // 00:00→23:59 (weekdaySortKey/timeSortKey) statt nach Erstellungsdatum
+  // oder relativ zu heute — die Reihenfolge soll unabhängig vom aktuellen
+  // Datum stabil bleiben.
   const sortedReminders = useMemo(() => {
     return [...reminders].sort((a, b) => {
       if (sortMode === 'frequency') {
         const typeDiff = RECURRENCE_ORDER.indexOf(a.recurrence) - RECURRENCE_ORDER.indexOf(b.recurrence)
         if (typeDiff !== 0) return typeDiff
+        const weekdayDiff = weekdaySortKey(a) - weekdaySortKey(b)
+        if (weekdayDiff !== 0) return weekdayDiff
+        return timeSortKey(a).localeCompare(timeSortKey(b))
       }
       if (!a.nextOccurrence && !b.nextOccurrence) return 0
       if (!a.nextOccurrence) return 1
@@ -109,31 +115,47 @@ export function Erinnerungen() {
         <p className="admin-empty-state">Noch keine Erinnerungen angelegt.</p>
       ) : (
         <div className="farsi-entry-list">
-          {sortedReminders.map((reminder) => (
-            <Card
-              key={reminder.id}
-              className={`erinnerungen-reminder-card ${!reminder.active ? 'erinnerungen-reminder-card--paused' : ''}`.trim()}
-              onClick={() => setEditing(reminder)}
-            >
-              <div className="erinnerungen-reminder-card__main">
-                <span className="erinnerungen-reminder-card__title">{reminder.title}</span>
-                <span className="erinnerungen-reminder-card__meta">
-                  {describeRecurrence(reminder)} · {reminder.times.join(', ')} Uhr
-                </span>
-                {reminder.note && <p className="farsi-entry-card__note">{reminder.note}</p>}
+          {sortedReminders.map((reminder, index) => {
+            // Nur im "Häufigkeit"-Sortiermodus sind gleichartige Erinnerungen
+            // überhaupt benachbart (siehe sortedReminders oben) — dort vor
+            // jeder neuen Wiederholungsart eine Trennzeile einfügen, damit
+            // z.B. "wöchentlich" und "täglich" nicht optisch verschmelzen.
+            const showDivider =
+              sortMode === 'frequency' && (index === 0 || sortedReminders[index - 1].recurrence !== reminder.recurrence)
+            return (
+              <div key={reminder.id}>
+                {showDivider && (
+                  <div className="erinnerungen-group-divider">
+                    <span>{RECURRENCE_LABELS[reminder.recurrence]}</span>
+                  </div>
+                )}
+                <Card
+                  className={`erinnerungen-reminder-card ${!reminder.active ? 'erinnerungen-reminder-card--paused' : ''}`.trim()}
+                  onClick={() => setEditing(reminder)}
+                >
+                  <div className="erinnerungen-reminder-card__main">
+                    <span className="erinnerungen-reminder-card__title">{reminder.title}</span>
+                    <span className="erinnerungen-reminder-card__meta">
+                      {describeRecurrence(reminder)} · {reminder.times.join(', ')} Uhr
+                      {reminder.leadReminders.length > 0 &&
+                        ` · ${reminder.leadReminders.length} Vorab-Erinnerung${reminder.leadReminders.length > 1 ? 'en' : ''}`}
+                    </span>
+                    {reminder.note && <p className="farsi-entry-card__note">{reminder.note}</p>}
+                  </div>
+                  <button
+                    type="button"
+                    className="erinnerungen-reminder-card__toggle"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      toggleActive(reminder)
+                    }}
+                  >
+                    {reminder.active ? 'Pausieren' : 'Aktivieren'}
+                  </button>
+                </Card>
               </div>
-              <button
-                type="button"
-                className="erinnerungen-reminder-card__toggle"
-                onClick={(event) => {
-                  event.stopPropagation()
-                  toggleActive(reminder)
-                }}
-              >
-                {reminder.active ? 'Pausieren' : 'Aktivieren'}
-              </button>
-            </Card>
-          ))}
+            )
+          })}
         </div>
       )}
 
