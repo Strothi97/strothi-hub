@@ -1,6 +1,6 @@
 import api from './api'
 import { API_ENDPOINTS } from '@config/api'
-import type { ImportedRecipe, ImportUsage, Recipe, RecipeInput } from '@app-types/kochbuch'
+import type { ExportFile, ImportedRecipe, ImportUsage, Recipe, RecipeInput } from '@app-types/kochbuch'
 
 export const kochbuchService = {
   listRecipes: (params?: { search?: string; tag?: string }) =>
@@ -14,6 +14,11 @@ export const kochbuchService = {
     api.put<{ recipe: Recipe }>(API_ENDPOINTS.kochbuch.recipe(id), input),
 
   deleteRecipe: (id: string) => api.delete(API_ENDPOINTS.kochbuch.recipe(id)),
+
+  // Einzelnes Rezept als Export-JSON abrufen — Grundlage für den Download-
+  // und den Kopieren-Button auf der Rezeptkarte (siehe TransferPanel-artiger
+  // Copy-Paste-Import auf einem anderen Kochbuch).
+  exportRecipe: (id: string) => api.get<ExportFile>(API_ENDPOINTS.kochbuch.exportRecipe(id)),
 
   uploadRecipePhoto: (id: string, file: File) => {
     const formData = new FormData()
@@ -44,4 +49,25 @@ export const kochbuchService = {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
+
+  analyzeTextImport: (html: string) =>
+    api.post<{ recipe: ImportedRecipe; usage: ImportUsage }>(API_ENDPOINTS.kochbuch.importAnalyzeText, { html }),
+
+  // Rezepte zwischen zwei Hub-Instanzen mitnehmen (siehe Gespräch: lokal
+  // getestete Rezepte auf die Produktivinstanz übernehmen) — eine JSON-Datei
+  // mit allen Rezepten inkl. Fotos als Base64, kein ZIP nötig.
+  exportRecipes: () => api.get<ExportFile>(API_ENDPOINTS.kochbuch.export),
+
+  importRecipesFile: (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post<{ imported: number; skipped: number }>(API_ENDPOINTS.kochbuch.importFile, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
+
+  // Gegenstück zum Kopieren-Button: per Strg+V eingefügtes Rezept-JSON
+  // (ein Rezept, dasselbe Datei-Format wie exportRecipes) importieren.
+  importRecipesText: (json: string) =>
+    api.post<{ imported: number; skipped: number }>(API_ENDPOINTS.kochbuch.importText, { json }),
 }

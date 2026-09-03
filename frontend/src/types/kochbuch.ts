@@ -89,3 +89,12 @@ export interface ImportUsage {
   outputTokens: number
   estimatedCostUsd: number
 }
+
+// Export-Datei zum Mitnehmen der Rezepte zwischen zwei Hub-Instanzen (siehe
+// Gespräch) — Struktur ähnlich Recipe, aber mit eingebetteten Fotos (Base64)
+// statt photoUrl. Wird im Frontend nur durchgereicht (Download/Upload),
+// nicht inhaltlich interpretiert, daher lose typisiert.
+export interface ExportFile {
+  exportedAt: string
+  recipes: Record<string, unknown>[]
+}

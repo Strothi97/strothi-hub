@@ -5,6 +5,7 @@ import { Input } from '@components/ui/Input'
 import { Card } from '@components/ui/Card'
 import { kochbuchService } from '@services/kochbuch.service'
 import { TagInput } from './TagInput'
+import { getImageFromClipboard } from './clipboard'
 import type { ImportedRecipe, ImportUsage, Recipe, RecipeIngredient, RecipeStep } from '@app-types/kochbuch'
 
 const SERVING_SIZE_OPTIONS = [2, 3, 4, 5, 6]
@@ -77,6 +78,13 @@ export function RezeptForm() {
   const [saving, setSaving] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Welcher Bild-Picker gerade unter der Maus liegt — Strg+V ohne vorheriges
+  // Klicken/Fokussieren geht sonst nicht sinnvoll auf, wenn es mehrere
+  // Bild-Ziele gibt (Hauptbild + je ein Bild pro Schritt). Kein Klick nötig,
+  // nur Maus drüber halten und einfügen (siehe Gespräch: Klicken öffnete
+  // vorher zusätzlich ungewollt den Datei-Dialog).
+  const [hoveredPhotoTarget, setHoveredPhotoTarget] = useState<'main' | number | null>(null)
+
   useEffect(() => {
     if (!id) return
     kochbuchService
@@ -142,19 +150,40 @@ export function RezeptForm() {
       ),
     )
 
-  const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+  const applyPhoto = (file: File) => {
     setPendingPhoto(file)
     setPhotoPreview(URL.createObjectURL(file))
   }
-
-  const handleStepPhotoChange = (index: number, event: ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (!file) return
+    if (file) applyPhoto(file)
+  }
+
+  const applyStepPhoto = (index: number, file: File) => {
     setPendingStepPhotos((current) => ({ ...current, [index]: file }))
     setStepPhotoPreviews((current) => ({ ...current, [index]: URL.createObjectURL(file) }))
   }
+  const handleStepPhotoChange = (index: number, event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) applyStepPhoto(index, file)
+  }
+
+  // Strg+V funktioniert überall auf der Seite, sobald die Maus über einem
+  // Bild-Picker steht (kein Klick/Fokus nötig) — ohne Hover fällt es auf
+  // das Hauptbild zurück, damit Einfügen nie einfach folgenlos bleibt.
+  useEffect(() => {
+    const handleGlobalPaste = (event: globalThis.ClipboardEvent) => {
+      const file = getImageFromClipboard(event)
+      if (!file) return
+      event.preventDefault()
+      const target = hoveredPhotoTarget ?? 'main'
+      if (target === 'main') applyPhoto(file)
+      else applyStepPhoto(target, file)
+    }
+    window.addEventListener('paste', handleGlobalPaste)
+    return () => window.removeEventListener('paste', handleGlobalPaste)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hoveredPhotoTarget])
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -216,7 +245,7 @@ export function RezeptForm() {
     <form onSubmit={handleSubmit} className="kochbuch-form">
       {imported && (
         <p className="kochbuch-import-banner">
-          ✨ Per Foto importiert — bitte alle Felder prüfen, bevor du speicherst.
+          ✨ Per KI importiert — bitte alle Felder prüfen, bevor du speicherst.
           {importUsage && (
             <span className="kochbuch-import-banner__cost">
               {importUsage.inputTokens.toLocaleString('de-DE')} Input- / {importUsage.outputTokens.toLocaleString('de-DE')}{' '}
@@ -225,11 +254,17 @@ export function RezeptForm() {
           )}
         </p>
       )}
-      <div className="kochbuch-photo-picker" onClick={() => fileInputRef.current?.click()}>
+      <div
+        className="kochbuch-photo-picker"
+        title="Klicken zum Auswählen, oder Maus hier drüber halten und Strg+V"
+        onClick={() => fileInputRef.current?.click()}
+        onMouseEnter={() => setHoveredPhotoTarget('main')}
+        onMouseLeave={() => setHoveredPhotoTarget((current) => (current === 'main' ? null : current))}
+      >
         {photoPreview ? (
           <img src={photoPreview} alt="" onError={() => setPhotoPreview(null)} />
         ) : (
-          <span className="kochbuch-photo-picker__placeholder">📷 Foto hinzufügen</span>
+          <span className="kochbuch-photo-picker__placeholder">📷 Foto hinzufügen oder einfügen (Strg+V)</span>
         )}
         <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handlePhotoChange} />
       </div>
@@ -355,7 +390,12 @@ export function RezeptForm() {
                 </button>
               </div>
               <div className="kochbuch-step-edit__body">
-                <label className="kochbuch-step-edit__photo-picker">
+                <label
+                  className="kochbuch-step-edit__photo-picker"
+                  title="Klicken zum Auswählen, oder Maus hier drüber halten und Strg+V"
+                  onMouseEnter={() => setHoveredPhotoTarget(index)}
+                  onMouseLeave={() => setHoveredPhotoTarget((current) => (current === index ? null : current))}
+                >
                   {stepPhotoPreviews[index] ?? step.photoUrl ? (
                     <img src={stepPhotoPreviews[index] ?? step.photoUrl ?? undefined} alt="" />
                   ) : (

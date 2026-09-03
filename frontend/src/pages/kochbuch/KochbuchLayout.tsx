@@ -12,7 +12,7 @@ export function KochbuchLayout() {
           Rezepte
         </NavLink>
         <NavLink to="/kochbuch/import" className={linkClass}>
-          Foto-Import
+          Import
         </NavLink>
       </nav>
       <div className="farsi-content">

@@ -128,6 +128,14 @@
   margin-bottom: var(--space-3);
 }
 
+/* Hover statt Fokus signalisiert das Strg+V-Ziel — Maus drüber halten
+   reicht, kein Klick nötig (siehe RezeptForm.tsx: globaler paste-Listener
+   folgt dem gerade gehoverten Bild-Picker). */
+.kochbuch-photo-picker:hover,
+.kochbuch-step-edit__photo-picker:hover {
+  border-color: var(--color-primary);
+}
+
 .kochbuch-photo-picker img {
   width: 100%;
   height: 100%;
@@ -148,10 +156,21 @@
   gap: var(--space-3);
 }
 
+.kochbuch-import--text {
+  max-width: 720px;
+}
+
 .kochbuch-import-photos {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-3);
+}
+
+.kochbuch-import-textarea {
+  width: 100%;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.8rem;
+  resize: vertical;
 }
 
 .kochbuch-import-photos__slot {
@@ -190,6 +209,32 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ── Transfer (Export/Import zwischen zwei Hub-Instanzen) ──── */
+
+.kochbuch-transfer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-width: 480px;
+}
+
+.kochbuch-transfer__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+
+.kochbuch-transfer__section h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.kochbuch-transfer__section input[type='file'] {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
 }
 
 .kochbuch-ingredient-list {

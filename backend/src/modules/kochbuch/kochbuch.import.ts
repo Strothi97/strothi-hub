@@ -68,7 +68,7 @@ function estimateCost(inputTokens: number, outputTokens: number): number {
   return (inputTokens / 1_000_000) * PRICE_PER_MTOK_INPUT_USD + (outputTokens / 1_000_000) * PRICE_PER_MTOK_OUTPUT_USD
 }
 
-const PROMPT = `Du bekommst zwei Fotos einer HelloFresh-Rezeptkarte: Vorderseite (Gerichtname, Untertitel, Tags, Zeit/kcal, großes Foto) und Rückseite (Zutatentabelle über mehrere Personenzahlen, "Basiszutaten aus Deiner Küche", nummerierte Zubereitungsschritte, Allergen-Legende unten).
+const PHOTO_PROMPT = `Du bekommst zwei Fotos einer HelloFresh-Rezeptkarte: Vorderseite (Gerichtname, Untertitel, Tags, Zeit/kcal, großes Foto) und Rückseite (Zutatentabelle über mehrere Personenzahlen, "Basiszutaten aus Deiner Küche", nummerierte Zubereitungsschritte, Allergen-Legende unten).
 
 Extrahiere die Rezeptdaten strukturiert. Wichtig:
 - Übernimm Mengenangaben exakt wie abgedruckt (inkl. Einheit, Komma-Schreibweise und Fußnoten-Sternchen wie "**"), rechne nichts um.
@@ -76,23 +76,24 @@ Extrahiere die Rezeptdaten strukturiert. Wichtig:
 - Erfinde keine Felder, die auf der Karte nicht zu erkennen sind — nutze null bzw. ein leeres Array.
 - Zubereitungsschritte: ein instructions-Eintrag pro einzelnem Satz/Zeile, nicht ein einziger langer Block.`
 
+const TEXT_PROMPT = `Du bekommst den (aus HTML extrahierten) Text einer Rezept-Detailseite, z.B. von hellofresh.de. Er enthält meist Titel, Untertitel, Zeit-/Kalorienangaben, Schwierigkeitsgrad, Zutatenliste (oft für eine feste Personenzahl, manchmal mit einer Auswahl wie "pro Portion"/"pro 100g"), einen Abschnitt "Nicht in Deiner Lieferung enthalten" (Basiszutaten), eine Allergen-Liste und eine Zubereitungsanleitung mit nummerierten Schritten.
+
+Extrahiere die Rezeptdaten strukturiert. Wichtig:
+- Übernimm Mengenangaben exakt wie im Text (inkl. Einheit), rechne nichts um. Ist nur eine Personenzahl angegeben, hat servingSizes genau einen Eintrag.
+- Einen Schwierigkeitsgrad (z.B. "Mittel") falls vorhanden als zusätzlichen Tag aufnehmen.
+- Erfinde keine Felder, die im Text nicht vorkommen — nutze null bzw. ein leeres Array.
+- Zubereitungsschritte: ein instructions-Eintrag pro einzelnem Satz/Zeile, nicht ein einziger langer Block. Fehlen die Zubereitungsschritte im Text komplett (z.B. weil sie auf der Seite hinter einem Klick versteckt waren), lass steps als leeres Array statt zu raten.
+- Ignoriere Navigations-/Werbetext, Cookie-Hinweise, Teilen-/Download-Buttons und ähnliches, das nichts mit dem Rezept selbst zu tun hat.`
+
 export interface AnalyzeResult {
   recipe: ImportedRecipe
   usage: ImportUsage
 }
 
-// Zwei Kartenfotos (Vorder-/Rückseite) an Claude schicken und als
-// strukturiertes Rezept zurückbekommen — noch NICHT gespeichert, der
-// Nutzer prüft/korrigiert das Ergebnis im Formular vor dem Speichern
-// (siehe Import.tsx, "Gegenprüfung und händische Nacharbeit"). Gibt zusätzlich
-// die Token-Nutzung/geschätzten Kosten zurück (Wunsch: Kostenbewusstsein).
-export async function analyzeRecipePhotos(
-  front: { buffer: Buffer; mimeType: string },
-  back: { buffer: Buffer; mimeType: string },
-): Promise<AnalyzeResult> {
+async function runExtraction(content: Anthropic.MessageCreateParams['messages'][0]['content']): Promise<AnalyzeResult> {
   if (!isImportConfigured()) {
     throw new AppError(
-      'Kein Anthropic-API-Key konfiguriert (ANTHROPIC_API_KEY in der .env fehlt) — der Foto-Import ist noch nicht eingerichtet.',
+      'Kein Anthropic-API-Key konfiguriert (ANTHROPIC_API_KEY in der .env fehlt) — der Import ist noch nicht eingerichtet.',
       503,
     )
   }
@@ -102,31 +103,14 @@ export async function analyzeRecipePhotos(
   const response = await client.messages.parse({
     model: 'claude-opus-5',
     max_tokens: 8000,
-    messages: [
-      {
-        role: 'user',
-        content: [
-          { type: 'text', text: PROMPT },
-          { type: 'text', text: 'Vorderseite:' },
-          {
-            type: 'image',
-            source: { type: 'base64', media_type: front.mimeType as 'image/jpeg', data: front.buffer.toString('base64') },
-          },
-          { type: 'text', text: 'Rückseite:' },
-          {
-            type: 'image',
-            source: { type: 'base64', media_type: back.mimeType as 'image/jpeg', data: back.buffer.toString('base64') },
-          },
-        ],
-      },
-    ],
+    messages: [{ role: 'user', content }],
     output_config: {
       format: zodOutputFormat(ImportedRecipeSchema),
     },
   })
 
   if (!response.parsed_output) {
-    throw new AppError('Die Rezeptkarte konnte nicht ausgelesen werden. Bitte Fotos prüfen und erneut versuchen.', 422)
+    throw new AppError('Das Rezept konnte nicht ausgelesen werden. Bitte Eingabe prüfen und erneut versuchen.', 422)
   }
 
   const inputTokens = response.usage?.input_tokens ?? 0
@@ -140,4 +124,69 @@ export async function analyzeRecipePhotos(
       estimatedCostUsd: estimateCost(inputTokens, outputTokens),
     },
   }
+}
+
+// Zwei Kartenfotos (Vorder-/Rückseite) an Claude schicken und als
+// strukturiertes Rezept zurückbekommen — noch NICHT gespeichert, der
+// Nutzer prüft/korrigiert das Ergebnis im Formular vor dem Speichern
+// (siehe Import.tsx, "Gegenprüfung und händische Nacharbeit"). Gibt zusätzlich
+// die Token-Nutzung/geschätzten Kosten zurück (Wunsch: Kostenbewusstsein).
+export async function analyzeRecipePhotos(
+  front: { buffer: Buffer; mimeType: string },
+  back: { buffer: Buffer; mimeType: string },
+): Promise<AnalyzeResult> {
+  return runExtraction([
+    { type: 'text', text: PHOTO_PROMPT },
+    { type: 'text', text: 'Vorderseite:' },
+    {
+      type: 'image',
+      source: { type: 'base64', media_type: front.mimeType as 'image/jpeg', data: front.buffer.toString('base64') },
+    },
+    { type: 'text', text: 'Rückseite:' },
+    {
+      type: 'image',
+      source: { type: 'base64', media_type: back.mimeType as 'image/jpeg', data: back.buffer.toString('base64') },
+    },
+  ])
+}
+
+const MAX_HTML_LENGTH = 300_000 // Sicherheitsnetz gegen versehentlich riesige Pastes
+
+// Groben Tag-Strip statt vollem HTML-Parser (keine neue Abhängigkeit nötig) —
+// bei den stark verschachtelten, klassennamen-lastigen React-Seiten (siehe
+// Gespräch: HelloFresh-Website) spart das massiv Tokens gegenüber rohem HTML,
+// ohne die für die Extraktion relevanten sichtbaren Texte zu verlieren.
+function htmlToText(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<(h1|h2|h3|h4|p|div|li|tr|br)[^>]*>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/[ \t]+/g, ' ')
+    .replace(/[ \t]*\n[ \t]*/g, '\n')
+    .replace(/\n{2,}/g, '\n')
+    .trim()
+}
+
+// Text/HTML einer Rezept-Webseite (statt Fotos) an Claude schicken — deutlich
+// günstiger als zwei Bilder (reiner Text statt Bild-Tokens) und potenziell
+// genauer, da es exakter Quelltext statt eines aus einem Foto gelesenen
+// Textes ist. Gleiches Schema/Rückgabeformat wie analyzeRecipePhotos, landet
+// genauso zur Prüfung im Formular statt direkt in der Datenbank.
+export async function analyzeRecipeHtml(html: string): Promise<AnalyzeResult> {
+  if (html.length > MAX_HTML_LENGTH) {
+    throw new AppError(`Eingabe ist zu lang (max. ${MAX_HTML_LENGTH.toLocaleString('de-DE')} Zeichen).`, 400)
+  }
+  const text = htmlToText(html)
+  if (!text) {
+    throw new AppError('Kein auswertbarer Text gefunden — bitte den HTML-Quelltext der Seite einfügen.', 400)
+  }
+  return runExtraction([
+    { type: 'text', text: TEXT_PROMPT },
+    { type: 'text', text },
+  ])
 }

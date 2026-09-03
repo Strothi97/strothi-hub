@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { Button } from '@components/ui/Button'
 import { kochbuchService } from '@services/kochbuch.service'
 import { useAuth } from '@context/AuthContext'
-import { formatTime } from './format'
+import { formatTime, slugify } from './format'
 import { StarRating } from './StarRating'
 import { RatingStars } from './RatingStars'
 import type { Recipe } from '@app-types/kochbuch'
@@ -15,6 +15,8 @@ export function RezeptDetail() {
   const [recipe, setRecipe] = useState<Recipe | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeServings, setActiveServings] = useState<number | null>(null)
+  const [transferBusy, setTransferBusy] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const load = () =>
     kochbuchService.listRecipes().then(({ data }) => {
@@ -37,6 +39,43 @@ export function RezeptDetail() {
     setRecipe(data.recipe)
   }
 
+  // Download- und Kopieren-Button: beide holen dasselbe Export-JSON dieses
+  // einen Rezepts (inkl. Foto als Base64) vom Backend — Download löst einen
+  // Datei-Download aus, Kopieren legt denselben Text in die Zwischenablage.
+  // Gegenstück ist das Einfüge-Feld auf der Import-Seite (TransferPanel.tsx),
+  // das exakt dieses Format per Strg+V erwartet.
+  const handleDownload = async () => {
+    if (!recipe || transferBusy) return
+    setTransferBusy(true)
+    try {
+      const { data } = await kochbuchService.exportRecipe(recipe.id)
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${slugify(recipe.title)}.json`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+    } finally {
+      setTransferBusy(false)
+    }
+  }
+
+  const handleCopy = async () => {
+    if (!recipe || transferBusy) return
+    setTransferBusy(true)
+    try {
+      const { data } = await kochbuchService.exportRecipe(recipe.id)
+      await navigator.clipboard.writeText(JSON.stringify(data))
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } finally {
+      setTransferBusy(false)
+    }
+  }
+
   if (loading) return <p>Lädt…</p>
   if (!recipe) return <p className="admin-empty-state">Rezept nicht gefunden.</p>
 
@@ -49,6 +88,17 @@ export function RezeptDetail() {
         <div className="kochbuch-detail__header-actions">
           <Button variant="secondary" onClick={() => navigate(`/kochbuch/rezept/${recipe.id}/bearbeiten`)}>
             Bearbeiten
+          </Button>
+          <Button variant="secondary" onClick={handleDownload} disabled={transferBusy} title="Als Datei herunterladen">
+            ⬇️ Herunterladen
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={handleCopy}
+            disabled={transferBusy}
+            title="In Zwischenablage kopieren — zum Einfügen in einem anderen Kochbuch"
+          >
+            {copied ? '✅ Kopiert' : '📋 Kopieren'}
           </Button>
           <Button onClick={() => navigate(`/kochbuch/rezept/${recipe.id}/kochen`)}>▶️ Kochen starten</Button>
         </div>

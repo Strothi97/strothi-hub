@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import * as kochbuchService from './kochbuch.service'
-import { analyzeRecipePhotos, isImportConfigured } from './kochbuch.import'
+import { analyzeRecipeHtml, analyzeRecipePhotos, isImportConfigured } from './kochbuch.import'
+import { exportAllRecipes, exportSingleRecipe, importRecipesFromFile } from './kochbuch.transfer'
 import { AppError } from '../../utils/appError'
 
 export const listRecipes = async (req: Request, res: Response) => {
@@ -73,4 +74,56 @@ export const analyzeImport = async (req: Request, res: Response) => {
     { buffer: back.buffer, mimeType: back.mimetype },
   )
   return res.json({ recipe, usage })
+}
+
+export const analyzeTextImport = async (req: Request, res: Response) => {
+  const { html } = req.body as { html?: string }
+  if (!html || !html.trim()) {
+    throw new AppError('Bitte den Seitentext bzw. HTML-Quelltext einfügen.', 400)
+  }
+  const { recipe, usage } = await analyzeRecipeHtml(html)
+  return res.json({ recipe, usage })
+}
+
+// Rezepte "mitnehmen" zwischen zwei getrennten Hub-Instanzen (siehe
+// kochbuch.transfer.ts) — eine JSON-Datei mit allen Rezepten inkl. Fotos
+// (Base64), zum Download auf der einen und Upload auf der anderen Instanz.
+export const exportRecipesFile = async (_req: Request, res: Response) => {
+  const file = await exportAllRecipes()
+  return res.json(file)
+}
+
+export const importRecipesFile = async (req: Request, res: Response) => {
+  if (!req.file) return res.status(400).json({ message: 'Keine Datei hochgeladen' })
+  try {
+    const result = await importRecipesFromFile(req.user!.id, req.file.buffer)
+    return res.json(result)
+  } catch (error) {
+    throw new AppError(error instanceof Error ? error.message : 'Import fehlgeschlagen.', 400)
+  }
+}
+
+// Ein einzelnes Rezept exportieren (Download-/Kopieren-Button auf der
+// Rezeptkarte) — gleiches Datei-Format wie exportRecipesFile, nur mit genau
+// einem Eintrag im recipes-Array (siehe kochbuch.transfer.ts).
+export const exportSingleRecipeFile = async (req: Request, res: Response) => {
+  const file = await exportSingleRecipe(req.params.id)
+  if (!file) return res.status(404).json({ message: 'Rezept nicht gefunden' })
+  return res.json(file)
+}
+
+// Ein per Copy-Paste eingefügtes Rezept-JSON importieren (Gegenstück zum
+// Kopieren-Button) — nutzt denselben Parser/dieselbe Import-Logik wie der
+// Datei-Import, nur dass der Text direkt im Body statt als Datei-Upload kommt.
+export const importRecipesText = async (req: Request, res: Response) => {
+  const { json } = req.body as { json?: string }
+  if (!json || !json.trim()) {
+    throw new AppError('Bitte den kopierten Rezept-Text einfügen.', 400)
+  }
+  try {
+    const result = await importRecipesFromFile(req.user!.id, Buffer.from(json, 'utf-8'))
+    return res.json(result)
+  } catch (error) {
+    throw new AppError(error instanceof Error ? error.message : 'Import fehlgeschlagen.', 400)
+  }
 }

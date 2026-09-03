@@ -254,6 +254,16 @@ export async function updateRecipe(id: string, input: Partial<RecipeInput>): Pro
   return toDTO(row)
 }
 
+// Einzelnes Rezept lesen (z.B. für den Rezept-Export/Kopieren-Button, wo
+// nur ein Rezept statt der ganzen Liste gebraucht wird).
+export async function getRecipe(id: string): Promise<RecipeDTO | null> {
+  const row = await prisma.recipe.findUnique({
+    where: { id },
+    include: { user: { select: { name: true } }, ...RATINGS_INCLUDE },
+  })
+  return row ? toDTO(row) : null
+}
+
 export async function deleteRecipe(id: string): Promise<boolean> {
   const existing = await prisma.recipe.findUnique({ where: { id } })
   if (!existing) return false
@@ -270,7 +280,7 @@ export async function deleteRecipe(id: string): Promise<boolean> {
 // und Nutzer getrennter Upload-Ordner, komprimiertes WebP. Anders als beim
 // runden Personenfoto aber ohne quadratischen Zuschnitt (fit: 'inside' statt
 // 'cover') — ein Gericht-Foto soll nicht beschnitten werden.
-const UPLOADS_BASE = path.join(__dirname, '..', '..', '..', process.env.UPLOAD_DIR || 'uploads')
+export const UPLOADS_BASE = path.join(__dirname, '..', '..', '..', process.env.UPLOAD_DIR || 'uploads')
 const PHOTO_UPLOAD_ROOT = path.join(UPLOADS_BASE, 'kochbuch')
 
 async function deletePhotoFile(photoUrl: string) {

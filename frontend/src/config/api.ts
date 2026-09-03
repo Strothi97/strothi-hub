@@ -58,12 +58,17 @@ export const API_ENDPOINTS = {
   kochbuch: {
     recipes: '/kochbuch/recipes',
     recipe: (id: string) => `/kochbuch/recipes/${id}`,
+    exportRecipe: (id: string) => `/kochbuch/recipes/${id}/export`,
     recipePhoto: (id: string) => `/kochbuch/recipes/${id}/photo`,
     stepPhoto: (id: string, index: number) => `/kochbuch/recipes/${id}/steps/${index}/photo`,
     recipeRating: (id: string) => `/kochbuch/recipes/${id}/rating`,
     tags: '/kochbuch/tags',
     importStatus: '/kochbuch/import/status',
     importAnalyze: '/kochbuch/import/analyze',
+    importAnalyzeText: '/kochbuch/import/analyze-text',
+    export: '/kochbuch/export',
+    importFile: '/kochbuch/import-file',
+    importText: '/kochbuch/import-text',
   },
   // Weitere Endpunkte hier ergänzen
 } as const
