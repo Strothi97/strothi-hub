@@ -22,7 +22,16 @@ app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   credentials: true,
 }))
-app.use(express.json())
+// Express' Default-Limit für express.json() ist 100kb. Das ist ein globaler
+// Parser, der VOR dem Router läuft — ein größeres Limit auf einer einzelnen
+// Route (z.B. via json({ limit: '...' }) direkt vor einem Controller) hat
+// dagegen KEINEN Effekt, weil dieser globale Parser den Request schon
+// vorher mit seinem eigenen (kleineren) Limit ablehnt, bevor die
+// routenspezifische Middleware überhaupt erreicht wird (führte zu einem
+// "request entity too large"-Bug beim Kochbuch-Rezept-Copy-Paste-Import,
+// wo ein Rezeptfoto als Base64 im Body steckt). Daher hier großzügig genug
+// fürs größte real vorkommende JSON (ein Rezept mit mehreren Fotos).
+app.use(express.json({ limit: '25mb' }))
 app.use(express.urlencoded({ extended: true }))
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'))
 

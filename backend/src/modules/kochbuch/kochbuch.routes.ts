@@ -1,4 +1,4 @@
-import { Router, json } from 'express'
+import { Router } from 'express'
 import multer from 'multer'
 import { authenticate } from '../../middleware/authenticate'
 import { requireTool } from '../../middleware/authorize'
@@ -43,9 +43,7 @@ router.post(
   ]),
   kochbuchController.analyzeImport,
 )
-// Höheres Body-Limit nur für diese Route (Standard ist 100kb, siehe
-// index.ts) — ein HTML-Seitenquelltext sprengt das locker.
-router.post('/import/analyze-text', json({ limit: '2mb' }), kochbuchController.analyzeTextImport)
+router.post('/import/analyze-text', kochbuchController.analyzeTextImport)
 
 // Rezepte zwischen zwei Hub-Instanzen mitnehmen (siehe kochbuch.transfer.ts)
 // — eigene Multer-Instanz ohne Bild-fileFilter (die Datei ist JSON, kein
@@ -53,8 +51,9 @@ router.post('/import/analyze-text', json({ limit: '2mb' }), kochbuchController.a
 const uploadTransferFile = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } })
 router.get('/export', kochbuchController.exportRecipesFile)
 router.post('/import-file', uploadTransferFile.single('file'), kochbuchController.importRecipesFile)
-// Copy-Paste-Gegenstück zu /import-file (Rezept-JSON im Body statt als
-// Datei) — höheres Body-Limit, da ein Rezeptfoto als Base64 eingebettet ist.
-router.post('/import-text', json({ limit: '25mb' }), kochbuchController.importRecipesText)
+// Copy-Paste-Gegenstück zu /import-file: Rezept-JSON im Body statt als
+// Datei (globales Body-Limit siehe index.ts — groß genug für ein
+// eingebettetes Base64-Foto).
+router.post('/import-text', kochbuchController.importRecipesText)
 
 export default router
