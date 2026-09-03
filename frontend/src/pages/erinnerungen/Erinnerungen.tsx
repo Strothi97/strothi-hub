@@ -13,11 +13,19 @@ const SORT_LABELS: Record<SortMode, string> = {
   frequency: 'Häufigkeit',
 }
 const SORT_ORDER: SortMode[] = ['next', 'frequency']
+const SORT_MODE_STORAGE_KEY = 'erinnerungen-sort-mode'
+
+// Zuletzt gewählte Sortierung wird pro Gerät gemerkt (localStorage), Default
+// ist "Häufigkeit" statt "Nächstes Datum".
+function loadStoredSortMode(): SortMode {
+  const stored = localStorage.getItem(SORT_MODE_STORAGE_KEY)
+  return stored === 'next' || stored === 'frequency' ? stored : 'frequency'
+}
 
 export function Erinnerungen() {
   const [allReminders, setAllReminders] = useState<Reminder[]>([])
   const [loading, setLoading] = useState(true)
-  const [sortMode, setSortMode] = useState<SortMode>('next')
+  const [sortMode, setSortMode] = useState<SortMode>(loadStoredSortMode)
   const [sortPickerOpen, setSortPickerOpen] = useState(false)
   const [editing, setEditing] = useState<Reminder | null>(null)
   const [creating, setCreating] = useState(false)
@@ -35,6 +43,10 @@ export function Erinnerungen() {
   useEffect(() => {
     load()
   }, [])
+
+  useEffect(() => {
+    localStorage.setItem(SORT_MODE_STORAGE_KEY, sortMode)
+  }, [sortMode])
 
   const handleSave = async (input: ReminderInput) => {
     if (editing) {
