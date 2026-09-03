@@ -126,17 +126,29 @@ export function RezeptForm() {
       .finally(() => setLoading(false))
   }, [id])
 
+  // Personenzahlen sind optional (Wunsch: manche Rezepte, z.B. ein Kuchen,
+  // werden nicht "pro Person" skaliert) — ist keine ausgewählt, braucht die
+  // Zutaten-Mengen-Eingabe trotzdem eine Spalte, dafür fällt sie intern auf
+  // eine einzelne implizite "Menge" zurück (servings: 1, nie als "1P"
+  // auswählbar), ohne das in der UI als Personenzahl zu beschriften. Prüft
+  // gezielt gegen SERVING_SIZE_OPTIONS (nicht nur "Array nicht leer"), damit
+  // ein zuvor ohne Auswahl gespeichertes Rezept (servingSizes: [1] aus der
+  // DB) beim erneuten Bearbeiten wieder korrekt als "keine Auswahl" erkannt
+  // wird statt fälschlich als "1P ausgewählt".
+  const hasExplicitServingSizes = servingSizes.some((size) => SERVING_SIZE_OPTIONS.includes(size))
+  const effectiveServingSizes = hasExplicitServingSizes ? servingSizes : [1]
+
   const toggleServingSize = (size: number) => {
     setServingSizes((current) => {
       const next = current.includes(size)
         ? current.filter((s) => s !== size)
         : [...current, size].sort((a, b) => a - b)
-      setIngredients((ing) => syncIngredientAmounts(ing, next))
+      setIngredients((ing) => syncIngredientAmounts(ing, next.length > 0 ? next : [1]))
       return next
     })
   }
 
-  const addIngredient = () => setIngredients((current) => [...current, emptyIngredient(servingSizes)])
+  const addIngredient = () => setIngredients((current) => [...current, emptyIngredient(effectiveServingSizes)])
   const removeIngredient = (index: number) => setIngredients((current) => current.filter((_, i) => i !== index))
   const updateIngredientName = (index: number, name: string) =>
     setIngredients((current) => current.map((ing, i) => (i === index ? { ...ing, name } : ing)))
@@ -211,10 +223,6 @@ export function RezeptForm() {
       setError('Bitte eine Essensart wählen.')
       return
     }
-    if (servingSizes.length === 0) {
-      setError('Bitte mindestens eine Personenzahl wählen.')
-      return
-    }
 
     setSaving(true)
     try {
@@ -230,7 +238,12 @@ export function RezeptForm() {
         category,
         categoryNote: categoryNote.trim() || null,
         mealType,
-        servingSizes,
+        // Rezepte ohne Personen-Skalierung (z.B. ein Kuchen, der als Ganzes
+        // gebacken wird) brauchen keine echte Personenzahl — ohne Auswahl
+        // wird intern eine einzelne Menge pro Zutat gespeichert (siehe
+        // effectiveServingSizes), damit Zutatenmengen trotzdem einen
+        // Platz zum Eintragen haben.
+        servingSizes: effectiveServingSizes,
         pantryStaples,
         ingredients: ingredients.filter((ing) => ing.name.trim()),
         steps,
@@ -364,7 +377,7 @@ export function RezeptForm() {
       </div>
 
       <div className="form-group">
-        <span className="form-label">Personenzahlen</span>
+        <span className="form-label">Personenzahlen (optional)</span>
         <div className="farsi-filters">
           {SERVING_SIZE_OPTIONS.map((size) => (
             <button
@@ -377,6 +390,10 @@ export function RezeptForm() {
             </button>
           ))}
         </div>
+        <p className="form-hint">
+          Nichts auswählen bei Rezepten ohne Portionsskalierung (z.B. ein Kuchen) — Zutaten bekommen dann eine
+          einzelne Menge statt einer Menge pro Personenzahl.
+        </p>
       </div>
 
       <div className="form-group">
@@ -401,12 +418,12 @@ export function RezeptForm() {
                 value={ingredient.name}
                 onChange={(e) => updateIngredientName(index, e.target.value)}
               />
-              {servingSizes.map((size) => (
+              {effectiveServingSizes.map((size) => (
                 <input
                   key={size}
                   type="text"
                   className="input kochbuch-ingredient-row__amount"
-                  placeholder={`${size}P`}
+                  placeholder={hasExplicitServingSizes ? `${size}P` : 'Menge'}
                   value={ingredient.amounts.find((a) => a.servings === size)?.amount ?? ''}
                   onChange={(e) => updateIngredientAmount(index, size, e.target.value)}
                 />
