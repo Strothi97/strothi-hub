@@ -1,9 +1,17 @@
 import api from './api'
 import { API_ENDPOINTS } from '@config/api'
-import type { ExportFile, ImportedRecipe, ImportUsage, Recipe, RecipeInput } from '@app-types/kochbuch'
+import type {
+  ExportFile,
+  ImportedRecipe,
+  ImportUsage,
+  Recipe,
+  RecipeCategory,
+  RecipeInput,
+  RecipeMealType,
+} from '@app-types/kochbuch'
 
 export const kochbuchService = {
-  listRecipes: (params?: { search?: string; tag?: string }) =>
+  listRecipes: (params?: { search?: string; tag?: string; category?: RecipeCategory; mealType?: RecipeMealType }) =>
     api.get<{ recipes: Recipe[] }>(API_ENDPOINTS.kochbuch.recipes, { params }),
 
   listTags: () => api.get<{ tags: string[] }>(API_ENDPOINTS.kochbuch.tags),

@@ -23,6 +23,16 @@ export interface RecipeRatingEntry {
   value: number
 }
 
+// Grobe Diät-Kategorie (Wunsch: auf einen Blick/beim Filtern sehen, ob ein
+// Rezept z.B. vegetarisch ist) — eigenes, eingeschränktes Feld statt ein
+// weiterer freier Tag. null = keine Angabe.
+export type RecipeCategory = 'fleisch' | 'fisch' | 'vegetarisch' | 'vegan'
+
+// Essensart/Gang — anders als category ein Pflichtfeld im Formular (Wunsch:
+// jedes Rezept soll wissen, ob es z.B. Vorspeise oder Hauptgericht ist).
+// null nur bei Altbestand/Transfer-Import ohne Angabe.
+export type RecipeMealType = 'vorspeise' | 'hauptgericht' | 'beilage' | 'dessert' | 'snack'
+
 export interface Recipe {
   id: string
   title: string
@@ -33,6 +43,11 @@ export interface Recipe {
   prepTimeMinMinutes: number | null
   prepTimeMaxMinutes: number | null
   kcal: number | null
+  category: RecipeCategory | null
+  // Freie "Erweiterung" zur Kategorie, z.B. "geht auch vegetarisch, wenn
+  // man Hähnchen durch Tofu ersetzt".
+  categoryNote: string | null
+  mealType: RecipeMealType | null
   // Bewertung ist personenbezogen (siehe Gespräch) — jede/r im geteilten
   // Kochbuch bewertet für sich, averageRating wird daraus berechnet.
   ratings: RecipeRatingEntry[]
@@ -59,6 +74,9 @@ export interface RecipeInput {
   prepTimeMinMinutes?: number | null
   prepTimeMaxMinutes?: number | null
   kcal?: number | null
+  category?: RecipeCategory | null
+  categoryNote?: string | null
+  mealType?: RecipeMealType | null
   servingSizes: number[]
   pantryStaples?: string[] | null
   ingredients: RecipeIngredient[]
@@ -72,6 +90,8 @@ export interface RecipeInput {
 export interface ImportedRecipe {
   title: string
   subtitle: string | null
+  category: RecipeCategory | null
+  mealType: RecipeMealType | null
   tags: string[]
   allergens: string[]
   prepTimeMinMinutes: number | null

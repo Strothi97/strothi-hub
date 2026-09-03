@@ -39,6 +39,22 @@ const ImportedStepSchema = z.object({
 const ImportedRecipeSchema = z.object({
   title: z.string(),
   subtitle: z.string().nullable().describe('Zusatzzeile unter dem Titel, z.B. "dazu frischer Salat" — sonst null'),
+  category: z
+    .enum(['fleisch', 'fisch', 'vegetarisch', 'vegan'])
+    .nullable()
+    .describe(
+      'Diät-Kategorie anhand der Zutaten: "fleisch" bei Fleisch/Geflügel, "fisch" bei Fisch/Meeresfrüchten, ' +
+        '"vegetarisch" bei Ei/Milchprodukten aber ohne Fleisch/Fisch, "vegan" ohne jegliche Tierprodukte. ' +
+        'Bei Unklarheit null statt zu raten.',
+    ),
+  mealType: z
+    .enum(['vorspeise', 'hauptgericht', 'beilage', 'dessert', 'snack'])
+    .nullable()
+    .describe(
+      'Gang/Essensart des Gerichts. Diese Rezeptkarten sind fast immer komplette Hauptgerichte — "hauptgericht" ' +
+        'ist daher der naheliegende Standard, außer es ist klar erkennbar eine Vorspeise, Beilage, ein Dessert ' +
+        'oder ein Snack (z.B. Süßspeise, kleine Portion als Beilage gedacht). Bei echter Unklarheit null statt zu raten.',
+    ),
   tags: z.array(z.string()).describe('Kurze Schlagwort-Chips unter dem Titel, z.B. "Vegetarisch", "Viel Gemüse"'),
   allergens: z.array(z.string()).describe('Allergene aus der Fußnoten-Legende, ausgeschriebener Name ohne Nummer'),
   prepTimeMinMinutes: z.number().nullable().describe('Untere Grenze der Zubereitungszeit in Minuten, z.B. 40 bei "40–50 Min"'),

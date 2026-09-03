@@ -5,8 +5,19 @@ import { exportAllRecipes, exportSingleRecipe, importRecipesFromFile } from './k
 import { AppError } from '../../utils/appError'
 
 export const listRecipes = async (req: Request, res: Response) => {
-  const { search, tag } = req.query as { search?: string; tag?: string }
-  const recipes = await kochbuchService.listRecipes({ search, tag })
+  const { search, tag, category, mealType } = req.query as {
+    search?: string
+    tag?: string
+    category?: string
+    mealType?: string
+  }
+  const parsedCategory = category && (kochbuchService.RECIPE_CATEGORIES as string[]).includes(category)
+    ? (category as kochbuchService.RecipeCategory)
+    : undefined
+  const parsedMealType = mealType && (kochbuchService.RECIPE_MEAL_TYPES as string[]).includes(mealType)
+    ? (mealType as kochbuchService.RecipeMealType)
+    : undefined
+  const recipes = await kochbuchService.listRecipes({ search, tag, category: parsedCategory, mealType: parsedMealType })
   return res.json({ recipes })
 }
 
@@ -15,12 +26,29 @@ export const listTags = async (_req: Request, res: Response) => {
   return res.json({ tags })
 }
 
+// category/mealType kommen aus einer festen Auswahl im Formular (siehe
+// RezeptForm.tsx) — trotzdem serverseitig geprüft, damit kein beliebiger
+// String in der DB landet (gleiche Haltung wie die value-Prüfung in
+// rateRecipe unten). mealType ist im Formular ein Pflichtfeld, wird hier
+// aber wie category nur bei Vorhandensein geprüft (nicht erzwungen) — die
+// Pflicht gilt fürs manuelle Anlegen/Bearbeiten, nicht für Transfer-Importe
+// von Altbestand ohne mealType (siehe kochbuch.transfer.ts).
+function assertValidChoice(value: unknown, allowed: readonly string[], label: string): void {
+  if (value !== undefined && value !== null && !allowed.includes(value as string)) {
+    throw new AppError(`${label} muss eine von ${allowed.join(', ')} sein (oder leer).`, 400)
+  }
+}
+
 export const createRecipe = async (req: Request, res: Response) => {
+  assertValidChoice(req.body?.category, kochbuchService.RECIPE_CATEGORIES, 'Kategorie')
+  assertValidChoice(req.body?.mealType, kochbuchService.RECIPE_MEAL_TYPES, 'Essensart')
   const recipe = await kochbuchService.createRecipe(req.user!.id, req.body)
   return res.status(201).json({ recipe })
 }
 
 export const updateRecipe = async (req: Request, res: Response) => {
+  assertValidChoice(req.body?.category, kochbuchService.RECIPE_CATEGORIES, 'Kategorie')
+  assertValidChoice(req.body?.mealType, kochbuchService.RECIPE_MEAL_TYPES, 'Essensart')
   const recipe = await kochbuchService.updateRecipe(req.params.id, req.body)
   if (!recipe) return res.status(404).json({ message: 'Rezept nicht gefunden' })
   return res.json({ recipe })

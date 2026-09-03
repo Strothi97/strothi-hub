@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { Button } from '@components/ui/Button'
 import { kochbuchService } from '@services/kochbuch.service'
 import { useAuth } from '@context/AuthContext'
-import { formatTime, slugify } from './format'
+import { CATEGORY_META, formatTime, getCompleteness, MEAL_TYPE_META, slugify } from './format'
 import { StarRating } from './StarRating'
 import { RatingStars } from './RatingStars'
 import type { Recipe } from '@app-types/kochbuch'
@@ -79,18 +79,42 @@ export function RezeptDetail() {
   if (loading) return <p>Lädt…</p>
   if (!recipe) return <p className="admin-empty-state">Rezept nicht gefunden.</p>
 
+  const completeness = getCompleteness(recipe)
+
   return (
     <div className="kochbuch-detail">
+      {!completeness.isComplete && (
+        <p className="kochbuch-incomplete-banner">
+          ⚠️ Unfertiges Rezept — fehlt noch: {completeness.missing.join(', ')}.{' '}
+          <button
+            type="button"
+            className="kochbuch-incomplete-banner__action"
+            onClick={() => navigate(`/kochbuch/rezept/${recipe.id}/bearbeiten`)}
+          >
+            Jetzt ergänzen
+          </button>
+        </p>
+      )}
       <div className="kochbuch-detail__header">
         <Link to="/kochbuch" className="kochbuch-detail__back">
           ← Zurück
         </Link>
+        {/* Auf dem Handy ist hier zu wenig Platz für vier Buttons mit vollem
+            Text — die rechten (u.a. "Kochen starten") liefen komplett aus dem
+            sichtbaren Bereich raus, ohne Möglichkeit hinzuscrollen (siehe
+            .kochbuch-detail__header-actions in kochbuch.css). Ab 640px
+            werden daher nur noch die Icons gezeigt, der Text bleibt für
+            Screenreader/Hover via aria-label bzw. title erhalten. */}
         <div className="kochbuch-detail__header-actions">
-          <Button variant="secondary" onClick={() => navigate(`/kochbuch/rezept/${recipe.id}/bearbeiten`)}>
-            Bearbeiten
+          <Button
+            variant="secondary"
+            onClick={() => navigate(`/kochbuch/rezept/${recipe.id}/bearbeiten`)}
+            title="Bearbeiten"
+          >
+            ✏️ <span className="kochbuch-detail__action-label">Bearbeiten</span>
           </Button>
           <Button variant="secondary" onClick={handleDownload} disabled={transferBusy} title="Als Datei herunterladen">
-            ⬇️ Herunterladen
+            ⬇️ <span className="kochbuch-detail__action-label">Herunterladen</span>
           </Button>
           <Button
             variant="secondary"
@@ -98,9 +122,11 @@ export function RezeptDetail() {
             disabled={transferBusy}
             title="In Zwischenablage kopieren — zum Einfügen in einem anderen Kochbuch"
           >
-            {copied ? '✅ Kopiert' : '📋 Kopieren'}
+            {copied ? '✅' : '📋'} <span className="kochbuch-detail__action-label">{copied ? 'Kopiert' : 'Kopieren'}</span>
           </Button>
-          <Button onClick={() => navigate(`/kochbuch/rezept/${recipe.id}/kochen`)}>▶️ Kochen starten</Button>
+          <Button onClick={() => navigate(`/kochbuch/rezept/${recipe.id}/kochen`)} title="Kochen starten">
+            ▶️ <span className="kochbuch-detail__action-label">Kochen starten</span>
+          </Button>
         </div>
       </div>
 
@@ -137,8 +163,18 @@ export function RezeptDetail() {
           .join(' · ')}
       </p>
 
-      {recipe.tags.length > 0 && (
+      {(recipe.mealType || recipe.category || recipe.tags.length > 0) && (
         <div className="kochbuch-detail__tags">
+          {recipe.mealType && (
+            <span className="tool-card__badge kochbuch-detail__category-badge">
+              {MEAL_TYPE_META[recipe.mealType].icon} {MEAL_TYPE_META[recipe.mealType].label}
+            </span>
+          )}
+          {recipe.category && (
+            <span className="tool-card__badge kochbuch-detail__category-badge">
+              {CATEGORY_META[recipe.category].icon} {CATEGORY_META[recipe.category].label}
+            </span>
+          )}
           {recipe.tags.map((tag) => (
             <span key={tag} className="tool-card__badge">
               {tag}
@@ -146,6 +182,7 @@ export function RezeptDetail() {
           ))}
         </div>
       )}
+      {recipe.categoryNote && <p className="kochbuch-detail__category-note">💡 {recipe.categoryNote}</p>}
 
       {recipe.allergens.length > 0 && (
         <p className="kochbuch-detail__allergens">⚠️ Enthält: {recipe.allergens.join(', ')}</p>

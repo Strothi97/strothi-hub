@@ -67,6 +67,24 @@ export interface RecipeRatingDTO {
   value: number
 }
 
+// Grobe Diät-Kategorie pro Rezept (Wunsch: auf einen Blick/beim Filtern
+// sehen, ob ein Rezept z.B. vegetarisch ist) — bewusst ein eigenes,
+// eingeschränktes Feld statt ein weiterer freier Tag, damit Filtern/
+// Anzeige verlässlich funktionieren (Tags sind Freitext und nicht
+// normiert). null = keine Angabe (z.B. Altbestand vor Einführung dieses
+// Felds). categoryNote ist die vom Nutzer gewünschte "Erweiterung" dazu,
+// z.B. "geht auch vegetarisch, wenn man Hähnchen durch Tofu ersetzt".
+export type RecipeCategory = 'fleisch' | 'fisch' | 'vegetarisch' | 'vegan'
+export const RECIPE_CATEGORIES: RecipeCategory[] = ['fleisch', 'fisch', 'vegetarisch', 'vegan']
+
+// Essensart/Gang (Wunsch: Pflichtangabe im Formular). Anders als category
+// DB-seitig ebenfalls nullable (Altbestand/Transfer-Import dürfen es noch
+// nicht haben, siehe getCompleteness im Frontend), aber im
+// Neu-Anlegen-/Bearbeiten-Formular durch Client-Validierung erzwungen
+// (gleiches Muster wie das Pflichtfeld "Titel").
+export type RecipeMealType = 'vorspeise' | 'hauptgericht' | 'beilage' | 'dessert' | 'snack'
+export const RECIPE_MEAL_TYPES: RecipeMealType[] = ['vorspeise', 'hauptgericht', 'beilage', 'dessert', 'snack']
+
 export interface RecipeDTO {
   id: string
   title: string
@@ -77,6 +95,9 @@ export interface RecipeDTO {
   prepTimeMinMinutes: number | null
   prepTimeMaxMinutes: number | null
   kcal: number | null
+  category: RecipeCategory | null
+  categoryNote: string | null
+  mealType: RecipeMealType | null
   ratings: RecipeRatingDTO[]
   averageRating: number | null
   photoUrl: string | null
@@ -90,6 +111,14 @@ export interface RecipeDTO {
   updatedAt: Date
 }
 
+function toCategory(value: string | null): RecipeCategory | null {
+  return value !== null && (RECIPE_CATEGORIES as string[]).includes(value) ? (value as RecipeCategory) : null
+}
+
+function toMealType(value: string | null): RecipeMealType | null {
+  return value !== null && (RECIPE_MEAL_TYPES as string[]).includes(value) ? (value as RecipeMealType) : null
+}
+
 function toDTO(row: {
   id: string
   title: string
@@ -100,6 +129,9 @@ function toDTO(row: {
   prepTimeMinMinutes: number | null
   prepTimeMaxMinutes: number | null
   kcal: number | null
+  category: string | null
+  categoryNote: string | null
+  mealType: string | null
   photoUrl: string | null
   servingSizes: unknown
   pantryStaples: unknown
@@ -125,6 +157,9 @@ function toDTO(row: {
     prepTimeMinMinutes: row.prepTimeMinMinutes,
     prepTimeMaxMinutes: row.prepTimeMaxMinutes,
     kcal: row.kcal,
+    category: toCategory(row.category),
+    categoryNote: row.categoryNote,
+    mealType: toMealType(row.mealType),
     ratings,
     averageRating,
     photoUrl: row.photoUrl,
@@ -144,6 +179,8 @@ const RATINGS_INCLUDE = { ratings: { include: { user: { select: { name: true } }
 interface ListFilters {
   search?: string
   tag?: string
+  category?: RecipeCategory
+  mealType?: RecipeMealType
 }
 
 // Kochbuch ist bewusst NICHT nutzerisoliert wie die übrigen Tools (siehe
@@ -162,6 +199,14 @@ export async function listRecipes(filters: ListFilters): Promise<RecipeDTO[]> {
 
   if (filters.tag) {
     recipes = recipes.filter((r) => r.tags.includes(filters.tag!))
+  }
+
+  if (filters.category) {
+    recipes = recipes.filter((r) => r.category === filters.category)
+  }
+
+  if (filters.mealType) {
+    recipes = recipes.filter((r) => r.mealType === filters.mealType)
   }
 
   const needle = filters.search?.trim().toLowerCase()
@@ -195,6 +240,9 @@ export interface RecipeInput {
   prepTimeMinMinutes?: number | null
   prepTimeMaxMinutes?: number | null
   kcal?: number | null
+  category?: RecipeCategory | null
+  categoryNote?: string | null
+  mealType?: RecipeMealType | null
   servingSizes: number[]
   pantryStaples?: string[] | null
   ingredients: RecipeIngredient[]
@@ -215,6 +263,9 @@ export async function createRecipe(userId: string, input: RecipeInput): Promise<
       prepTimeMinMinutes: input.prepTimeMinMinutes ?? null,
       prepTimeMaxMinutes: input.prepTimeMaxMinutes ?? null,
       kcal: input.kcal ?? null,
+      category: input.category ?? null,
+      categoryNote: input.categoryNote || null,
+      mealType: input.mealType ?? null,
       servingSizes: input.servingSizes,
       pantryStaples: input.pantryStaples ?? [],
       ingredients: input.ingredients as unknown as object,
@@ -244,6 +295,9 @@ export async function updateRecipe(id: string, input: Partial<RecipeInput>): Pro
       ...(input.prepTimeMinMinutes !== undefined && { prepTimeMinMinutes: input.prepTimeMinMinutes }),
       ...(input.prepTimeMaxMinutes !== undefined && { prepTimeMaxMinutes: input.prepTimeMaxMinutes }),
       ...(input.kcal !== undefined && { kcal: input.kcal }),
+      ...(input.category !== undefined && { category: input.category }),
+      ...(input.categoryNote !== undefined && { categoryNote: input.categoryNote || null }),
+      ...(input.mealType !== undefined && { mealType: input.mealType }),
       ...(input.servingSizes !== undefined && { servingSizes: input.servingSizes }),
       ...(input.pantryStaples !== undefined && { pantryStaples: input.pantryStaples ?? [] }),
       ...(input.ingredients !== undefined && { ingredients: input.ingredients as unknown as object }),

@@ -4,6 +4,64 @@
 
 /* ── Rezeptliste ────────────────────────────────────────── */
 
+.kochbuch-category-filter {
+  margin-bottom: var(--space-3);
+}
+
+/* Fünf Filter-Gruppen (Essensart, Kategorie, Tags, Sterne, Unfertig)
+   nebeneinander als volle Chip-Zeilen waren auch auf dem Desktop zu viel
+   ("zu viele Filter ganz oben") — jede Gruppe kollabiert daher immer (nicht
+   nur auf dem Handy) auf einen einzelnen Auslöse-Knopf, der die Auswahl als
+   Popup öffnet (gleiches .farsi-filters__trigger-Muster wie das bisher nur
+   mobile Verhalten in farsi.css, hier aber unconditional erzwungen statt nur
+   per @media). Die Knöpfe selbst landen dank display:contents auf den
+   .farsi-filters-Wrappern direkt als Kinder dieser einen umbrechenden
+   Flex-Zeile und reihen sich dadurch kompakt aneinander statt jeder in
+   seinem eigenen vollen Block untereinander zu stehen. */
+.kochbuch-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.kochbuch-filter-bar .farsi-filters,
+.kochbuch-filter-bar .kochbuch-category-filter {
+  display: contents;
+}
+
+.kochbuch-filter-bar .farsi-filters__chips.farsi-filters__chips--desktop {
+  display: none;
+}
+
+.kochbuch-filter-bar .farsi-filters__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.4em 0.85em;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-alt);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Gleiches Gold wie die Sternebewertung (siehe .kochbuch-star-rating__fill
+   weiter unten) — eigenständig genug von den Kategorie-Chips daneben, ohne
+   eine ganz neue Warnfarbe einzuführen. */
+.kochbuch-incomplete-chip {
+  border-color: #f5b400;
+  color: #f5b400;
+}
+
+.kochbuch-incomplete-chip.is-active {
+  background-color: #f5b400;
+  color: #111;
+}
+
 .kochbuch-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -16,6 +74,20 @@
   padding: 0;
   overflow: hidden;
   cursor: pointer;
+  position: relative;
+}
+
+.kochbuch-recipe-card__incomplete {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 1;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #111;
+  background-color: #f5b400;
+  padding: 3px var(--space-2);
+  border-radius: 999px;
 }
 
 .kochbuch-recipe-card__photo {
@@ -193,6 +265,28 @@
   color: var(--color-text-muted);
 }
 
+/* Gleiches Muster wie .kochbuch-import-banner, nur mit dem Gold-Ton der
+   Sternebewertung statt --color-primary (siehe .kochbuch-incomplete-chip). */
+.kochbuch-incomplete-banner {
+  background-color: color-mix(in srgb, #f5b400 15%, transparent);
+  border: 1px solid #f5b400;
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.85rem;
+  margin-bottom: var(--space-3);
+}
+
+.kochbuch-incomplete-banner__action {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #f5b400;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: inherit;
+}
+
 .kochbuch-spinner {
   display: inline-block;
   width: 14px;
@@ -258,6 +352,17 @@
 .kochbuch-ingredient-row__amount {
   flex: 1;
   min-width: 70px;
+}
+
+/* Auf dem Handy passen Zutat-Name + mehrere Mengen-Felder + Löschen-Button
+   nicht in eine Zeile — mit reinem flex-wrap landet dann (unschön) fast
+   jedes Feld einzeln auf einer eigenen Zeile. Stattdessen: Name bekommt
+   erzwungen eine eigene volle Zeile, die Mengen-Felder + Löschen-Button
+   rutschen gemeinsam als Gruppe in die Zeile darunter. */
+@media (max-width: 640px) {
+  .kochbuch-ingredient-row input[type='text']:first-child {
+    flex-basis: 100%;
+  }
 }
 
 .kochbuch-step-list {
@@ -349,6 +454,22 @@
 .kochbuch-detail__header-actions {
   display: flex;
   gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+/* Auf dem Handy ist neben "Bearbeiten" nicht genug Platz für alle vier
+   Buttons mit vollem Text — nur noch die Icons zeigen (Text bleibt per
+   title-Attribut als Tooltip/Screenreader-Info erhalten), damit z.B.
+   "Kochen starten" nicht mehr aus dem sichtbaren Bereich rausläuft. */
+@media (max-width: 640px) {
+  .kochbuch-detail__action-label {
+    display: none;
+  }
+
+  .kochbuch-detail__header-actions .btn {
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
+  }
 }
 
 .kochbuch-detail__photo {
@@ -440,6 +561,18 @@
 .kochbuch-detail__allergens {
   font-size: 0.85rem;
   color: var(--color-error);
+  margin-top: var(--space-2);
+}
+
+.kochbuch-detail__category-badge {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.kochbuch-detail__category-note {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-style: italic;
   margin-top: var(--space-2);
 }
 

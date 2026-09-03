@@ -6,7 +6,16 @@ import { Card } from '@components/ui/Card'
 import { kochbuchService } from '@services/kochbuch.service'
 import { TagInput } from './TagInput'
 import { getImageFromClipboard } from './clipboard'
-import type { ImportedRecipe, ImportUsage, Recipe, RecipeIngredient, RecipeStep } from '@app-types/kochbuch'
+import { CATEGORY_META, MEAL_TYPE_META, RECIPE_CATEGORIES, RECIPE_MEAL_TYPES } from './format'
+import type {
+  ImportedRecipe,
+  ImportUsage,
+  Recipe,
+  RecipeCategory,
+  RecipeIngredient,
+  RecipeMealType,
+  RecipeStep,
+} from '@app-types/kochbuch'
 
 const SERVING_SIZE_OPTIONS = [2, 3, 4, 5, 6]
 
@@ -63,6 +72,9 @@ export function RezeptForm() {
   const [prepTimeMin, setPrepTimeMin] = useState<string>(imported?.prepTimeMinMinutes?.toString() ?? '')
   const [prepTimeMax, setPrepTimeMax] = useState<string>(imported?.prepTimeMaxMinutes?.toString() ?? '')
   const [kcal, setKcal] = useState<string>(imported?.kcal?.toString() ?? '')
+  const [category, setCategory] = useState<RecipeCategory | null>(imported?.category ?? null)
+  const [categoryNote, setCategoryNote] = useState('')
+  const [mealType, setMealType] = useState<RecipeMealType | null>(imported?.mealType ?? null)
   const [servingSizes, setServingSizes] = useState<number[]>(imported?.servingSizes ?? [2, 4])
   const [pantryStaples, setPantryStaples] = useState<string[]>(imported?.pantryStaples ?? [])
   const [ingredients, setIngredients] = useState<RecipeIngredient[]>(imported?.ingredients ?? [])
@@ -101,6 +113,9 @@ export function RezeptForm() {
         setPrepTimeMin(existing.prepTimeMinMinutes?.toString() ?? '')
         setPrepTimeMax(existing.prepTimeMaxMinutes?.toString() ?? '')
         setKcal(existing.kcal?.toString() ?? '')
+        setCategory(existing.category)
+        setCategoryNote(existing.categoryNote ?? '')
+        setMealType(existing.mealType)
         setServingSizes(existing.servingSizes)
         setPantryStaples(existing.pantryStaples)
         setIngredients(existing.ingredients)
@@ -192,6 +207,10 @@ export function RezeptForm() {
       setError('Bitte einen Titel angeben.')
       return
     }
+    if (!mealType) {
+      setError('Bitte eine Essensart wählen.')
+      return
+    }
     if (servingSizes.length === 0) {
       setError('Bitte mindestens eine Personenzahl wählen.')
       return
@@ -208,6 +227,9 @@ export function RezeptForm() {
         prepTimeMinMinutes: prepTimeMin ? Number(prepTimeMin) : null,
         prepTimeMaxMinutes: prepTimeMax ? Number(prepTimeMax) : null,
         kcal: kcal ? Number(kcal) : null,
+        category,
+        categoryNote: categoryNote.trim() || null,
+        mealType,
         servingSizes,
         pantryStaples,
         ingredients: ingredients.filter((ing) => ing.name.trim()),
@@ -280,8 +302,47 @@ export function RezeptForm() {
       <Input id="rezept-source" label="Quelle (optional)" value={source} onChange={(e) => setSource(e.target.value)} />
 
       <div className="form-group">
+        <span className="form-label">Essensart *</span>
+        <div className="farsi-filters__chips">
+          {RECIPE_MEAL_TYPES.map((option) => (
+            <button
+              key={option}
+              type="button"
+              className={`tool-chip ${mealType === option ? 'is-active' : ''}`.trim()}
+              onClick={() => setMealType((current) => (current === option ? null : option))}
+            >
+              {MEAL_TYPE_META[option].icon} {MEAL_TYPE_META[option].label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="form-group">
         <span className="form-label">Tags</span>
         <TagInput value={tags} onChange={setTags} placeholder="z.B. Vegetarisch, Viel Gemüse" />
+      </div>
+
+      <div className="form-group">
+        <span className="form-label">Kategorie (optional)</span>
+        <div className="farsi-filters__chips">
+          {RECIPE_CATEGORIES.map((option) => (
+            <button
+              key={option}
+              type="button"
+              className={`tool-chip ${category === option ? 'is-active' : ''}`.trim()}
+              onClick={() => setCategory((current) => (current === option ? null : option))}
+            >
+              {CATEGORY_META[option].icon} {CATEGORY_META[option].label}
+            </button>
+          ))}
+        </div>
+        <input
+          type="text"
+          className="input"
+          placeholder='Hinweis/Alternative, z.B. "geht auch vegetarisch, wenn man Hähnchen durch Tofu ersetzt"'
+          value={categoryNote}
+          onChange={(e) => setCategoryNote(e.target.value)}
+        />
       </div>
 
       <div className="kochbuch-form__row">

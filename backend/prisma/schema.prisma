@@ -375,6 +375,9 @@ model Recipe {
   prepTimeMaxMinutes Int?
   kcal               Int?
   rating             Float? // veraltet, durch RecipeRating (pro Nutzer + Durchschnitt) ersetzt — Spalte bleibt für Altbestand, wird nicht mehr beschrieben
+  category           String? // 'fleisch' | 'fisch' | 'vegetarisch' | 'vegan' — null = keine Angabe, siehe RecipeCategory in kochbuch.service.ts
+  categoryNote       String? // z.B. "geht auch vegetarisch, wenn man Hähnchen durch Tofu ersetzt" — freie Erweiterung zur Kategorie
+  mealType           String? // 'vorspeise' | 'hauptgericht' | 'beilage' | 'dessert' | 'snack' — Pflichtfeld im Formular (RezeptForm.tsx), DB-seitig aber nullable wie category (Altbestand/Transfer-Import dürfen es (noch) nicht haben, siehe getCompleteness in format.ts)
   photoUrl           String?
   servingSizes       Json // number[], z.B. [2, 3, 4] — welche Personenzahlen die Karte angibt
   pantryStaples      Json? // string[], z.B. ["Salz", "Olivenöl", "Pfeffer"] — nicht mitgeliefert

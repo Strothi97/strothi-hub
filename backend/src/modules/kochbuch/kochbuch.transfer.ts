@@ -15,10 +15,14 @@ import {
   createRecipe,
   getRecipe,
   listRecipes,
+  RECIPE_CATEGORIES,
+  RECIPE_MEAL_TYPES,
   saveRecipePhoto,
   saveStepPhoto,
   UPLOADS_BASE,
+  type RecipeCategory,
   type RecipeDTO,
+  type RecipeMealType,
 } from './kochbuch.service'
 
 interface ExportedPhoto {
@@ -35,6 +39,9 @@ interface ExportedRecipe {
   prepTimeMinMinutes: number | null
   prepTimeMaxMinutes: number | null
   kcal: number | null
+  category: RecipeCategory | null
+  categoryNote: string | null
+  mealType: RecipeMealType | null
   servingSizes: number[]
   pantryStaples: string[]
   ingredients: RecipeDTO['ingredients']
@@ -81,6 +88,9 @@ async function toExportedRecipe(recipe: RecipeDTO): Promise<ExportedRecipe> {
     prepTimeMinMinutes: recipe.prepTimeMinMinutes,
     prepTimeMaxMinutes: recipe.prepTimeMaxMinutes,
     kcal: recipe.kcal,
+    category: recipe.category,
+    categoryNote: recipe.categoryNote,
+    mealType: recipe.mealType,
     servingSizes: recipe.servingSizes,
     pantryStaples: recipe.pantryStaples,
     ingredients: recipe.ingredients,
@@ -125,6 +135,9 @@ const ImportFileSchema = z.object({
       prepTimeMinMinutes: z.number().nullable().optional(),
       prepTimeMaxMinutes: z.number().nullable().optional(),
       kcal: z.number().nullable().optional(),
+      category: z.enum(RECIPE_CATEGORIES as [RecipeCategory, ...RecipeCategory[]]).nullable().optional(),
+      categoryNote: z.string().nullable().optional(),
+      mealType: z.enum(RECIPE_MEAL_TYPES as [RecipeMealType, ...RecipeMealType[]]).nullable().optional(),
       servingSizes: z.array(z.number()),
       pantryStaples: z.array(z.string()).optional(),
       ingredients: z.array(
@@ -190,6 +203,9 @@ export async function importRecipesFromFile(userId: string, buffer: Buffer): Pro
       prepTimeMinMinutes: recipe.prepTimeMinMinutes ?? null,
       prepTimeMaxMinutes: recipe.prepTimeMaxMinutes ?? null,
       kcal: recipe.kcal ?? null,
+      category: recipe.category ?? null,
+      categoryNote: recipe.categoryNote ?? null,
+      mealType: recipe.mealType ?? null,
       servingSizes: recipe.servingSizes,
       pantryStaples: recipe.pantryStaples ?? [],
       ingredients: recipe.ingredients,
