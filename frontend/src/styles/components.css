@@ -104,6 +104,32 @@
   border-color: var(--color-error);
 }
 
+/* Anzeigen/Verbergen-Knopf für Passwort-Felder (siehe Input.tsx) — Knopf
+   sitzt absolut im Feld, das Feld selbst bekommt rechts Platz dafür. */
+.input-password {
+  position: relative;
+  width: 100%;
+}
+
+.input-password__field {
+  width: 100%;
+  padding-right: calc(var(--space-3) + 28px);
+}
+
+.input-password__toggle {
+  position: absolute;
+  top: 50%;
+  right: var(--space-2);
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--color-text-muted);
+}
+
 .form-error {
   color: var(--color-error);
   font-size: 0.85rem;
