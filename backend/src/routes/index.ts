@@ -4,6 +4,7 @@ import adminRoutes from './admin.routes'
 import homeofficeRoutes from '../modules/homeoffice/homeoffice.routes'
 import farsiRoutes from '../modules/farsi/farsi.routes'
 import erinnerungenRoutes from '../modules/erinnerungen/erinnerungen.routes'
+import kochbuchRoutes from '../modules/kochbuch/kochbuch.routes'
 import preferencesRoutes from './preferences.routes'
 import pushRoutes from './push.routes'
 import { authenticate } from '../middleware/authenticate'
@@ -23,6 +24,7 @@ router.use('/admin', adminRoutes)
 router.use('/homeoffice', homeofficeRoutes)
 router.use('/farsi', farsiRoutes)
 router.use('/erinnerungen', erinnerungenRoutes)
+router.use('/kochbuch', kochbuchRoutes)
 router.use('/preferences', preferencesRoutes)
 router.use('/push', pushRoutes)
 router.get('/tools', authenticate, listTools)

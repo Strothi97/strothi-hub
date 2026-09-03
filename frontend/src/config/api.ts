@@ -55,5 +55,15 @@ export const API_ENDPOINTS = {
     personPhoto: (id: string) => `/erinnerungen/people/${id}/photo`,
     personCongrats: (id: string) => `/erinnerungen/people/${id}/congrats`,
   },
+  kochbuch: {
+    recipes: '/kochbuch/recipes',
+    recipe: (id: string) => `/kochbuch/recipes/${id}`,
+    recipePhoto: (id: string) => `/kochbuch/recipes/${id}/photo`,
+    stepPhoto: (id: string, index: number) => `/kochbuch/recipes/${id}/steps/${index}/photo`,
+    recipeRating: (id: string) => `/kochbuch/recipes/${id}/rating`,
+    tags: '/kochbuch/tags',
+    importStatus: '/kochbuch/import/status',
+    importAnalyze: '/kochbuch/import/analyze',
+  },
   // Weitere Endpunkte hier ergänzen
 } as const

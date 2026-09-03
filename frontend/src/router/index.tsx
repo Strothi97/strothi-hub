@@ -21,6 +21,12 @@ import { ErinnerungenLayout } from '@pages/erinnerungen/ErinnerungenLayout'
 import { Erinnerungen } from '@pages/erinnerungen/Erinnerungen'
 import { ToDos } from '@pages/erinnerungen/ToDos'
 import { Geburtstage } from '@pages/erinnerungen/Geburtstage'
+import { KochbuchLayout } from '@pages/kochbuch/KochbuchLayout'
+import { Rezepte } from '@pages/kochbuch/Rezepte'
+import { RezeptForm } from '@pages/kochbuch/RezeptForm'
+import { RezeptDetail } from '@pages/kochbuch/RezeptDetail'
+import { Kochen } from '@pages/kochbuch/Kochen'
+import { Import as KochbuchImport } from '@pages/kochbuch/Import'
 
 export function AppRoutes() {
   return (
@@ -61,6 +67,17 @@ export function AppRoutes() {
               <Route index element={<Erinnerungen />} />
               <Route path="todos" element={<ToDos />} />
               <Route path="geburtstage" element={<Geburtstage />} />
+            </Route>
+          </Route>
+
+          <Route path="/kochbuch" element={<ProtectedRoute requireTool="kochbuch" />}>
+            <Route element={<KochbuchLayout />}>
+              <Route index element={<Rezepte />} />
+              <Route path="import" element={<KochbuchImport />} />
+              <Route path="neu" element={<RezeptForm />} />
+              <Route path="rezept/:id" element={<RezeptDetail />} />
+              <Route path="rezept/:id/bearbeiten" element={<RezeptForm />} />
+              <Route path="rezept/:id/kochen" element={<Kochen />} />
             </Route>
           </Route>
 

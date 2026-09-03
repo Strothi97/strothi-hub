@@ -42,6 +42,8 @@ model User {
   people              Person[]
   pushSubscriptions   PushSubscription[]
   inviteTokens        InviteToken[]
+  recipes             Recipe[]
+  recipeRatings       RecipeRating[]
 
   @@map("users")
 }
@@ -345,6 +347,65 @@ model NotificationLog {
 
   @@unique([kind, refId, scheduledFor])
   @@map("notification_logs")
+}
+
+// ── Kochbuch ──────────────────────────────────────────────
+
+// Flach modelliert wie FarsiEntry/Reminder: Zutaten und Schritte leben als
+// Json-Array direkt auf dem Rezept statt in eigenen Tabellen — sie werden
+// nie unabhängig vom Rezept abgefragt, und die Datenmenge eines privaten
+// Kochbuchs ist klein. Struktur der Json-Felder (siehe kochbuch.service.ts):
+//   ingredients: Array<{ name: string; amounts: Array<{ servings: number; amount: string }> }>
+//   steps:       Array<{ stepNumber: number; title: string | null; instructions: string[]; photoUrl: string | null }>
+// Mengenangaben bleiben als Roh-String je Personenzahl erhalten (z.B. "1,5 **"
+// bei HelloFresh-Karten) statt rechnerisch skaliert — die Originalwerte sind
+// nicht immer exakt linear und Fußnoten (**) lassen sich so verlustfrei mit
+// übernehmen. Jeder Schritt kann optional ein eigenes Foto haben (Upload je
+// Schritt, siehe kochbuch.service.ts saveStepPhoto) — unabhängig vom
+// Titelbild (photoUrl auf dem Rezept selbst).
+model Recipe {
+  id                 String    @id @default(cuid())
+  userId             String
+  title              String
+  subtitle           String?
+  source             String? // z.B. "HelloFresh", frei befüllbar
+  tags               Json? // string[], z.B. ["Vegetarisch", "Viel Gemüse"]
+  allergens          Json? // string[], z.B. ["Milch", "Sellerie"]
+  prepTimeMinMinutes Int?
+  prepTimeMaxMinutes Int?
+  kcal               Int?
+  rating             Float? // veraltet, durch RecipeRating (pro Nutzer + Durchschnitt) ersetzt — Spalte bleibt für Altbestand, wird nicht mehr beschrieben
+  photoUrl           String?
+  servingSizes       Json // number[], z.B. [2, 3, 4] — welche Personenzahlen die Karte angibt
+  pantryStaples      Json? // string[], z.B. ["Salz", "Olivenöl", "Pfeffer"] — nicht mitgeliefert
+  ingredients        Json // siehe Kommentar oben
+  steps              Json // siehe Kommentar oben (inkl. optionalem photoUrl je Schritt)
+  note               String? // freie Notiz (z.B. eigene Anpassungen)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ratings RecipeRating[]
+
+  @@map("recipes")
+}
+
+// Bewertung ist personenbezogen (jeder im geteilten Kochbuch bewertet für
+// sich) — Durchschnitt wird zur Anzeige aus diesen Zeilen berechnet, nicht
+// gespeichert. Eigenes Modell statt Json-Array auf Recipe (anders als
+// ingredients/steps oben), weil pro (Rezept, Nutzer) genau ein Wert gilt
+// (@@unique) und das Setzen/Ändern so ohne Read-Modify-Write auskommt.
+model RecipeRating {
+  id       String @id @default(cuid())
+  recipeId String
+  userId   String
+  value    Float // 0–5, Nachkommastellen erlaubt (z.B. 3.5, 3.3)
+
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([recipeId, userId])
+  @@map("recipe_ratings")
 }
 
 // Weitere Modelle hier ergänzen:

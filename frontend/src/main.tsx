@@ -7,6 +7,7 @@ import './styles/components.css'
 import './styles/homeoffice.css'
 import './styles/farsi.css'
 import './styles/erinnerungen.css'
+import './styles/kochbuch.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

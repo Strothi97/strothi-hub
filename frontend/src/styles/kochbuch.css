@@ -1,0 +1,622 @@
+/* ================================
+   TOOL: Kochbuch
+   ================================ */
+
+/* ── Rezeptliste ────────────────────────────────────────── */
+
+.kochbuch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-3);
+}
+
+.kochbuch-recipe-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.kochbuch-recipe-card__photo {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background-color: var(--color-surface-alt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.kochbuch-recipe-card__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.kochbuch-recipe-card__photo-placeholder {
+  font-size: 2.5rem;
+  opacity: 0.4;
+}
+
+.kochbuch-recipe-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3);
+}
+
+.kochbuch-recipe-card__title {
+  font-weight: 600;
+}
+
+.kochbuch-recipe-card__subtitle {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.kochbuch-recipe-card__meta {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* ── Sternebewertung (StarRating.tsx) ───────────────────── */
+
+.kochbuch-star-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 0.9rem;
+}
+
+.kochbuch-star-rating__track {
+  position: relative;
+  display: inline-block;
+  color: var(--color-border);
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.kochbuch-star-rating__fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  color: #f5b400;
+}
+
+.kochbuch-star-rating__value {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.kochbuch-recipe-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+/* ── Formular ───────────────────────────────────────────── */
+
+.kochbuch-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: 720px;
+}
+
+.kochbuch-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.kochbuch-photo-picker {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-color: var(--color-surface-alt);
+  border: 1px dashed var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-bottom: var(--space-3);
+}
+
+.kochbuch-photo-picker img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.kochbuch-photo-picker__placeholder {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+/* ── Foto-Import ────────────────────────────────────────── */
+
+.kochbuch-import {
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.kochbuch-import-photos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.kochbuch-import-photos__slot {
+  aspect-ratio: 3 / 4;
+  margin-bottom: 0;
+}
+
+.kochbuch-import-banner {
+  background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.85rem;
+}
+
+.kochbuch-import-banner__cost {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+}
+
+.kochbuch-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  margin-right: var(--space-2);
+  vertical-align: -2px;
+  animation: kochbuch-spin 0.7s linear infinite;
+}
+
+@keyframes kochbuch-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.kochbuch-ingredient-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.kochbuch-ingredient-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.kochbuch-ingredient-row input[type='text']:first-child {
+  flex: 2;
+  min-width: 140px;
+}
+
+.kochbuch-ingredient-row__amount {
+  flex: 1;
+  min-width: 70px;
+}
+
+.kochbuch-step-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.kochbuch-step-edit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.kochbuch-step-edit__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.kochbuch-step-edit__number {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: var(--color-surface-alt);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.kochbuch-step-edit__header input {
+  flex: 1;
+}
+
+.kochbuch-step-edit__body {
+  display: flex;
+  gap: var(--space-2);
+  align-items: stretch;
+}
+
+.kochbuch-step-edit__body textarea {
+  flex: 1;
+}
+
+.kochbuch-step-edit__photo-picker {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--color-surface-alt);
+  border: 1px dashed var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.3rem;
+}
+
+.kochbuch-step-edit__photo-picker img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Detailansicht ──────────────────────────────────────── */
+
+.kochbuch-detail {
+  max-width: 720px;
+}
+
+.kochbuch-detail__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.kochbuch-detail__back {
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.kochbuch-detail__header-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.kochbuch-detail__photo {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--space-3);
+}
+
+.kochbuch-detail__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.kochbuch-detail__title {
+  margin: 0;
+}
+
+.kochbuch-detail__subtitle {
+  color: var(--color-text-muted);
+  margin: 2px 0 0;
+}
+
+.kochbuch-detail__rating-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.kochbuch-detail__average-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.kochbuch-detail__my-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.kochbuch-detail__my-rating .form-label {
+  margin: 0;
+}
+
+.kochbuch-rating-stars {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.kochbuch-rating-stars__star {
+  border: none;
+  background: none;
+  color: var(--color-border);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.kochbuch-rating-stars__star:hover {
+  color: #f5b400;
+  opacity: 0.7;
+}
+
+.kochbuch-rating-stars__star.is-filled {
+  color: #f5b400;
+}
+
+.kochbuch-detail__meta {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin: var(--space-1) 0 0;
+}
+
+.kochbuch-detail__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.kochbuch-detail__allergens {
+  font-size: 0.85rem;
+  color: var(--color-error);
+  margin-top: var(--space-2);
+}
+
+.kochbuch-detail__section {
+  margin-top: var(--space-5);
+}
+
+.kochbuch-detail__section h3 {
+  margin: 0 0 var(--space-2);
+}
+
+.kochbuch-detail__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.kochbuch-detail__section-header h3 {
+  margin: 0;
+}
+
+.kochbuch-detail__pantry {
+  margin-top: var(--space-2);
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.kochbuch-ingredient-view-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.kochbuch-ingredient-view-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.kochbuch-ingredient-view-list__amount {
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.kochbuch-step-view-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  counter-reset: kochbuch-step;
+}
+
+.kochbuch-step-view-list > li {
+  position: relative;
+  padding-left: 40px;
+}
+
+.kochbuch-step-view-list > li::before {
+  counter-increment: kochbuch-step;
+  content: counter(kochbuch-step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: white;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.kochbuch-step-view-list__title {
+  display: block;
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+}
+
+.kochbuch-step-view-list__photo {
+  display: block;
+  max-width: 240px;
+  width: 100%;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+}
+
+.kochbuch-step-view-list ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--color-text-muted);
+}
+
+/* ── Kochen-Starten-Modus ───────────────────────────────── */
+
+.kochbuch-kochen {
+  max-width: 640px;
+}
+
+.kochbuch-kochen__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.kochbuch-kochen__ingredients-btn {
+  border: 1px solid var(--color-border);
+  background: none;
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.kochbuch-kochen__ingredients-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.kochbuch-kochen__photo {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--space-4);
+}
+
+.kochbuch-kochen__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.kochbuch-kochen__step {
+  text-align: center;
+  margin-bottom: var(--space-5);
+}
+
+.kochbuch-kochen__step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: var(--space-3);
+}
+
+.kochbuch-kochen__step h2 {
+  margin: 0 0 var(--space-3);
+}
+
+.kochbuch-kochen__step ul {
+  text-align: left;
+  max-width: 480px;
+  margin: 0 auto;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.kochbuch-kochen__nav {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.kochbuch-kochen__nav button {
+  flex: 1;
+}
+
+/* ── "Was koche ich heute?"-Vorschlag ──────────────────── */
+
+.kochbuch-suggestion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+  padding: var(--space-4) 0;
+}
+
+.kochbuch-suggestion__photo {
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.kochbuch-suggestion__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.kochbuch-suggestion__title {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.kochbuch-suggestion__meta {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}

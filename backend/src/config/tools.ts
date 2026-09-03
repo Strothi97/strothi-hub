@@ -61,7 +61,6 @@ export const TOOLS: ToolDefinition[] = [
     description: 'Sammlung der HelloFresh-Rezepte',
     icon: '🍳',
     path: '/kochbuch',
-    comingSoon: true,
   },
 ]
 
