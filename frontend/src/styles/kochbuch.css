@@ -360,7 +360,12 @@
    erzwungen eine eigene volle Zeile, die Mengen-Felder + Löschen-Button
    rutschen gemeinsam als Gruppe in die Zeile darunter. */
 @media (max-width: 640px) {
-  .kochbuch-ingredient-row input[type='text']:first-child {
+  /* Nur erzwingen, wenn wirklich mehrere Mengen-Spalten nebeneinander um
+     Platz konkurrieren (siehe Kommentar oben) — bei genau einer Menge
+     (Rezept ohne Personenzahlen, oder nur eine gewählt) passen Name+Menge
+     wie am Desktop problemlos in eine Zeile; erzwungener Umbruch wäre dort
+     nur unnötig verwirrende Leerzeile (Feedback: "etwas verwirrend"). */
+  .kochbuch-ingredient-row:not(.kochbuch-ingredient-row--single-amount) input[type='text']:first-child {
     flex-basis: 100%;
   }
 }

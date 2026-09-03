@@ -24,16 +24,21 @@ function emptyIngredient(servingSizes: number[]): RecipeIngredient {
 }
 
 // Ingredient-Mengen an eine geänderte servingSizes-Auswahl anpassen: fehlende
-// Personenzahlen ergänzen (leerer Wert), nicht mehr gewählte entfernen,
-// vorhandene Werte bleiben erhalten.
+// Personenzahlen ergänzen (leerer Wert). Bewusst NICHT destruktiv — Mengen zu
+// gerade abgewählten Personenzahlen bleiben im Hintergrund erhalten statt
+// gelöscht zu werden (Wunsch: P5 abwählen, P2 ausfüllen, wieder zu P5
+// wechseln soll den vorher eingetragenen P5-Wert nicht verlieren). Welche
+// Spalten sichtbar sind, steuert allein das Rendering (effectiveServingSizes)
+// — beim Speichern werden nicht mehr aktive Mengen ohnehin rausgefiltert
+// (siehe handleSubmit), sie sind also nur eine Zwischenspeicherung fürs
+// Formular, nicht Teil der gespeicherten Daten.
 function syncIngredientAmounts(ingredients: RecipeIngredient[], servingSizes: number[]): RecipeIngredient[] {
-  return ingredients.map((ingredient) => ({
-    ...ingredient,
-    amounts: servingSizes.map((servings) => {
-      const existing = ingredient.amounts.find((a) => a.servings === servings)
-      return existing ?? { servings, amount: '' }
-    }),
-  }))
+  return ingredients.map((ingredient) => {
+    const missing = servingSizes
+      .filter((servings) => !ingredient.amounts.some((a) => a.servings === servings))
+      .map((servings) => ({ servings, amount: '' }))
+    return missing.length > 0 ? { ...ingredient, amounts: [...ingredient.amounts, ...missing] } : ingredient
+  })
 }
 
 // Wird ein Schritt entfernt, rutschen alle folgenden Indizes um eins nach
@@ -245,7 +250,17 @@ export function RezeptForm() {
         // Platz zum Eintragen haben.
         servingSizes: effectiveServingSizes,
         pantryStaples,
-        ingredients: ingredients.filter((ing) => ing.name.trim()),
+        // syncIngredientAmounts hält Mengen zu zwischenzeitlich abgewählten
+        // Personenzahlen im Formular zurück (siehe dortiger Kommentar) —
+        // beim Speichern werden nur die aktuell aktiven Spalten übernommen,
+        // damit keine "toten" Mengen für nicht mehr gewählte Personenzahlen
+        // in der DB landen.
+        ingredients: ingredients
+          .filter((ing) => ing.name.trim())
+          .map((ing) => ({
+            ...ing,
+            amounts: ing.amounts.filter((a) => effectiveServingSizes.includes(a.servings)),
+          })),
         steps,
         note: note.trim() || null,
       }
@@ -410,7 +425,10 @@ export function RezeptForm() {
         <span className="form-label">Zutaten</span>
         <div className="kochbuch-ingredient-list">
           {ingredients.map((ingredient, index) => (
-            <div key={index} className="kochbuch-ingredient-row">
+            <div
+              key={index}
+              className={`kochbuch-ingredient-row ${effectiveServingSizes.length <= 1 ? 'kochbuch-ingredient-row--single-amount' : ''}`.trim()}
+            >
               <input
                 type="text"
                 className="input"

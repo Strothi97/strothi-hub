@@ -121,13 +121,18 @@
   top: 50%;
   right: var(--space-2);
   transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
-  font-size: 1rem;
-  line-height: 1;
   padding: 4px;
   cursor: pointer;
   color: var(--color-text-muted);
+}
+
+.input-password__toggle:hover {
+  color: var(--color-text);
 }
 
 .form-error {
