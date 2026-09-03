@@ -73,17 +73,19 @@ function mondayFirstWeekday(day: number): number {
   return (day + 6) % 7
 }
 
-// Sortierschlüssel für die "Häufigkeit"-Gruppierung: innerhalb derselben
-// Wiederholungsart soll stets Mo→So gelten (bei WEEKDAYS der früheste
-// gewählte Tag), statt der Erstellungsreihenfolge. Zweites Kriterium ist
-// die früheste Uhrzeit (siehe timeSortKey unten).
+// Sortierschlüssel für die "Häufigkeit"-Gruppierung bei WEEKDAYS (und
+// WEEKLY-Altbestand): stets Mo→So, unabhängig vom aktuellen Datum — dort
+// ist der Wochentag der eigentliche, wiederkehrende Anker. NUR für diese
+// beiden Arten sinnvoll: bei ONCE/MONTHLY/YEARLY/CUSTOM_INTERVAL ignoriert
+// eine reine Wochentags-Sortierung das Jahr und reißt z.B. zwei einmalige
+// Termine in unterschiedlichen Jahren auseinander (Bug: 10.08.2027 landete
+// vor 28.08.2026, weil Dienstag vor Freitag kommt) — für die zählt in
+// Erinnerungen.tsx stattdessen das tatsächliche Datum (startDate, inkl. Jahr).
 export function weekdaySortKey(reminder: Reminder): number {
-  if (reminder.recurrence === 'DAILY') return 0 // feuert jeden Tag, kein Wochentag unterscheidet hier
-  if (reminder.recurrence === 'WEEKDAYS') {
-    const days = reminder.weekdays ?? []
-    if (days.length === 0) return 7
-    return Math.min(...days.map(mondayFirstWeekday))
-  }
+  const days = reminder.weekdays ?? []
+  if (days.length > 0) return Math.min(...days.map(mondayFirstWeekday))
+  // WEEKLY-Altbestand ohne weekdays-Feld (vor der Migration) — Fallback auf
+  // den Wochentag des Startdatums.
   const startDay = new Date(`${reminder.startDate}T00:00:00`).getDay()
   return mondayFirstWeekday(startDay)
 }

@@ -61,17 +61,22 @@ export function Erinnerungen() {
 
   // "Nächstes Datum": nach nextOccurrence, ohne weitere Fälligkeit (endDate
   // in der Vergangenheit) ans Ende. "Häufigkeit": nach Wiederholungsart
-  // gruppiert (RECURRENCE_ORDER), innerhalb der Gruppe stets Mo→So und
-  // 00:00→23:59 (weekdaySortKey/timeSortKey) statt nach Erstellungsdatum
-  // oder relativ zu heute — die Reihenfolge soll unabhängig vom aktuellen
-  // Datum stabil bleiben.
+  // gruppiert (RECURRENCE_ORDER); innerhalb der Gruppe zählt bei WEEKDAYS
+  // (wochentagsbasiert, kein festes Datum) stets Mo→So — bei allen anderen
+  // Arten (allen voran ONCE) dagegen das tatsächliche Datum inkl. Jahr,
+  // sonst würden z.B. zwei einmalige Termine nach ihrem zufälligen
+  // Wochentag statt chronologisch sortiert.
   const sortedReminders = useMemo(() => {
     return [...reminders].sort((a, b) => {
       if (sortMode === 'frequency') {
         const typeDiff = RECURRENCE_ORDER.indexOf(a.recurrence) - RECURRENCE_ORDER.indexOf(b.recurrence)
         if (typeDiff !== 0) return typeDiff
-        const weekdayDiff = weekdaySortKey(a) - weekdaySortKey(b)
-        if (weekdayDiff !== 0) return weekdayDiff
+        if (a.recurrence === 'WEEKDAYS' || a.recurrence === 'WEEKLY') {
+          const weekdayDiff = weekdaySortKey(a) - weekdaySortKey(b)
+          if (weekdayDiff !== 0) return weekdayDiff
+        } else if (a.startDate !== b.startDate) {
+          return a.startDate.localeCompare(b.startDate)
+        }
         return timeSortKey(a).localeCompare(timeSortKey(b))
       }
       if (!a.nextOccurrence && !b.nextOccurrence) return 0
@@ -80,6 +85,15 @@ export function Erinnerungen() {
       return a.nextOccurrence.localeCompare(b.nextOccurrence)
     })
   }, [reminders, sortMode])
+
+  const today = new Date().toISOString().slice(0, 10)
+  const isPastOnce = (reminder: Reminder) => reminder.recurrence === 'ONCE' && reminder.startDate < today
+
+  const handleQuickDelete = async (reminder: Reminder) => {
+    if (!window.confirm(`"${reminder.title}" wirklich löschen?`)) return
+    await erinnerungenService.deleteReminder(reminder.id)
+    await load()
+  }
 
   return (
     <div>
@@ -130,7 +144,9 @@ export function Erinnerungen() {
                   </div>
                 )}
                 <Card
-                  className={`erinnerungen-reminder-card ${!reminder.active ? 'erinnerungen-reminder-card--paused' : ''}`.trim()}
+                  className={`erinnerungen-reminder-card ${!reminder.active ? 'erinnerungen-reminder-card--paused' : ''} ${
+                    isPastOnce(reminder) ? 'erinnerungen-reminder-card--past' : ''
+                  }`.trim()}
                   onClick={() => setEditing(reminder)}
                 >
                   <div className="erinnerungen-reminder-card__main">
@@ -139,19 +155,36 @@ export function Erinnerungen() {
                       {describeRecurrence(reminder)} · {reminder.times.join(', ')} Uhr
                       {reminder.leadReminders.length > 0 &&
                         ` · ${reminder.leadReminders.length} Vorab-Erinnerung${reminder.leadReminders.length > 1 ? 'en' : ''}`}
+                      {isPastOnce(reminder) && ' · vergangen'}
                     </span>
                     {reminder.note && <p className="farsi-entry-card__note">{reminder.note}</p>}
                   </div>
-                  <button
-                    type="button"
-                    className="erinnerungen-reminder-card__toggle"
-                    onClick={(event) => {
-                      event.stopPropagation()
-                      toggleActive(reminder)
-                    }}
-                  >
-                    {reminder.active ? 'Pausieren' : 'Aktivieren'}
-                  </button>
+                  <div className="erinnerungen-reminder-card__icon-actions">
+                    <button
+                      type="button"
+                      className="erinnerungen-reminder-card__icon-btn"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        toggleActive(reminder)
+                      }}
+                      aria-label={reminder.active ? 'Pausieren' : 'Aktivieren'}
+                      title={reminder.active ? 'Pausieren' : 'Aktivieren'}
+                    >
+                      {reminder.active ? '⏸️' : '▶️'}
+                    </button>
+                    <button
+                      type="button"
+                      className="erinnerungen-reminder-card__icon-btn erinnerungen-reminder-card__icon-btn--delete"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        handleQuickDelete(reminder)
+                      }}
+                      aria-label="Löschen"
+                      title="Löschen"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </Card>
               </div>
             )
