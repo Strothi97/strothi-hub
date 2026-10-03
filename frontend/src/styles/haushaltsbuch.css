@@ -1,0 +1,941 @@
+/* ── Haushaltsbuch ───────────────────────────────────────── */
+
+:root {
+  --haushalt-einnahme: #22c55e;
+  --haushalt-ausgabe: #ef4444;
+}
+
+
+.haushalt-monat-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.haushalt-monat-nav h2 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.haushalt-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-alt);
+  color: var(--color-text);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.haushalt-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.haushalt-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface-alt);
+  min-width: 0;
+}
+
+.haushalt-tile--einnahmen {
+  border-left: 3px solid var(--haushalt-einnahme);
+  background-color: color-mix(in srgb, var(--haushalt-einnahme) 14%, var(--color-surface-alt));
+}
+
+.haushalt-tile--ausgaben {
+  border-left: 3px solid var(--haushalt-ausgabe);
+  background-color: color-mix(in srgb, var(--haushalt-ausgabe) 14%, var(--color-surface-alt));
+}
+
+.haushalt-tile__label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.haushalt-tile__value {
+  font-weight: 700;
+  font-size: 1.05rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.haushalt-tile__hint {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+.is-negativ {
+  color: var(--haushalt-ausgabe);
+}
+
+.haushalt-balken-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.haushalt-balken__kopf {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 0.9rem;
+}
+
+.haushalt-balken__spur {
+  height: 8px;
+  margin-top: 4px;
+  border-radius: 4px;
+  background-color: var(--color-surface-alt);
+  overflow: hidden;
+}
+
+.haushalt-balken__fuellung {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.haushalt-balken__fuellung.is-ausgabe {
+  background-color: var(--haushalt-ausgabe);
+}
+
+.haushalt-balken__fuellung.is-einnahme {
+  background-color: var(--haushalt-einnahme);
+}
+
+.haushalt-konto-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.haushalt-konto-liste li {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.haushalt-toolbar {
+  align-items: center;
+}
+
+.haushalt-typ-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+}
+
+.haushalt-typ-wahl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.haushalt-buchungen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.haushalt-tag__datum {
+  margin: 0 0 var(--space-1);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.haushalt-buchung-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.haushalt-buchung {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-alt);
+  color: var(--color-text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.haushalt-buchung:hover {
+  border-color: var(--color-primary);
+}
+
+.haushalt-buchung__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.haushalt-buchung__titel {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.haushalt-buchung__unter {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.haushalt-buchung__betrag {
+  flex-shrink: 0;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.haushalt-buchung__betrag.is-einnahme {
+  color: #4ade80;
+}
+
+.haushalt-buchung__betrag.is-ausgabe {
+  color: #f87171;
+}
+
+.haushalt-buchung__betrag.is-umbuchung {
+  color: var(--color-text-muted);
+}
+
+.haushalt-jahr-tabelle-wrap {
+  overflow-x: auto;
+}
+
+.haushalt-jahr-tabelle {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.haushalt-jahr-tabelle th,
+.haushalt-jahr-tabelle td {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.haushalt-jahr-tabelle th:first-child,
+.haushalt-jahr-tabelle td:first-child {
+  text-align: left;
+}
+
+.haushalt-verwaltung-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.haushalt-verwaltung-liste li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-alt);
+}
+
+.haushalt-verwaltung-liste__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.haushalt-nav {
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.haushalt-nav .farsi-nav__link {
+  padding: 8px 10px;
+  font-size: 0.9rem;
+}
+
+.haushalt-zwei-spalten {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.haushalt-zwei-spalten > * {
+  min-width: 0;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .haushalt-tiles {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Typ-Tabs Ausgaben/Einnahmen in der Kategorieverwaltung */
+
+.haushalt-typ-tabs {
+  display: flex;
+  gap: var(--space-1);
+  margin: var(--space-2) 0 var(--space-3);
+}
+
+.haushalt-typ-tab {
+  flex: 1;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-alt);
+  color: var(--color-text-muted);
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.haushalt-typ-tab--ausgabe.is-active {
+  background-color: color-mix(in srgb, var(--haushalt-ausgabe) 22%, var(--color-surface-alt));
+  border-color: var(--haushalt-ausgabe);
+  color: #f87171;
+}
+
+.haushalt-typ-tab--einnahme.is-active {
+  background-color: color-mix(in srgb, var(--haushalt-einnahme) 22%, var(--color-surface-alt));
+  border-color: var(--haushalt-einnahme);
+  color: #4ade80;
+}
+
+/* Kategorie-Baum */
+
+.haushalt-tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.haushalt-tree__node {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-alt);
+  overflow: hidden;
+}
+
+.haushalt-tree--ausgabe .haushalt-tree__node {
+  border-left: 3px solid var(--haushalt-ausgabe);
+}
+
+.haushalt-tree--einnahme .haushalt-tree__node {
+  border-left: 3px solid var(--haushalt-einnahme);
+}
+
+.haushalt-tree__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+}
+
+.haushalt-tree__sub {
+  border-top: 1px solid var(--color-border);
+}
+
+.haushalt-tree__row--kind {
+  padding: 6px var(--space-2);
+}
+
+.haushalt-tree__name {
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.haushalt-tree__row--kind .haushalt-tree__name {
+  font-weight: 500;
+}
+
+
+.haushalt-tree__actions {
+  display: flex;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.haushalt-tree__kinder {
+  list-style: none;
+  margin: 0 0 0 var(--space-2);
+  padding: 0 0 0 var(--space-2);
+  border-left: 1px solid var(--color-border);
+}
+
+.haushalt-tree__row--form {
+  display: block;
+  padding-right: var(--space-3);
+}
+
+.haushalt-tree__add {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+}
+
+.haushalt-tree__add-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.haushalt-icon-action {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.haushalt-icon-action:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.haushalt-icon-action--delete:hover:not(:disabled) {
+  border-color: var(--haushalt-ausgabe);
+  color: #f87171;
+}
+
+.haushalt-icon-action:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Kategorie-Baum, klare Darstellung: Hauptkategorien als Zeilen, Unterkategorien mit └ */
+
+.haushalt-kat-kopf {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 var(--space-3);
+}
+
+.haushalt-kat-kopf .haushalt-typ-tabs {
+  margin: 0;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.haushalt-add-btn {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-primary);
+  background: none;
+  color: var(--color-primary);
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.haushalt-tree-scroll {
+  max-height: 50vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.haushalt-tree-scroll .haushalt-tree {
+  gap: 0;
+}
+
+.haushalt-tree__form-root {
+  margin-bottom: var(--space-2);
+}
+
+.haushalt-tree__node {
+  border: none;
+  background: none;
+  border-radius: 0;
+  overflow: visible;
+  border-top: 1px solid var(--color-border);
+  padding-top: 2px;
+}
+
+.haushalt-tree--ausgabe .haushalt-tree__node,
+.haushalt-tree--einnahme .haushalt-tree__node {
+  border-left: none;
+}
+
+.haushalt-tree__node > .haushalt-tree__row {
+  font-weight: 700;
+}
+
+.haushalt-tree__row {
+  padding: 8px 4px;
+}
+
+.haushalt-tree__row--kind {
+  padding: 6px 4px;
+}
+
+.haushalt-tree__row--kind .haushalt-tree__name::before {
+  content: '└ ';
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.haushalt-tree__kinder {
+  margin: 0 0 4px 6px;
+  padding: 0 0 0 14px;
+  border-left: 1px solid var(--color-border);
+}
+
+.haushalt-tree__sub {
+  border-top: none;
+}
+
+/* Kategoriefeld mit Suche */
+
+.haushalt-combo {
+  position: relative;
+  min-width: 0;
+}
+
+.haushalt-combo__input {
+  width: 100%;
+}
+
+.haushalt-combo__liste {
+  position: absolute;
+  z-index: 10;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.haushalt-combo__option {
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.haushalt-combo__option:hover,
+.haushalt-combo__option.is-active {
+  background-color: var(--color-surface-alt);
+}
+
+.haushalt-combo__leer {
+  padding: 8px 10px;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+/* Schnellerfassung */
+
+.haushalt-schnell {
+  max-width: 960px;
+}
+
+.haushalt-schnell__kopf {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.haushalt-schnell__kopf > * {
+  min-width: 0;
+}
+
+.haushalt-schnell__tabelle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.haushalt-schnell__head {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1.4fr) minmax(0, 1fr) 110px minmax(0, 1fr) 30px;
+  gap: var(--space-2);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.haushalt-schnell__zeile {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1.4fr) minmax(0, 1fr) 110px minmax(0, 1fr) 30px;
+  gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-alt);
+}
+
+.haushalt-schnell__zeile.is-umbuchung {
+  grid-template-columns: 130px minmax(0, 1fr) 110px minmax(0, 1fr) 30px;
+}
+
+.haushalt-schnell__head.is-umbuchung {
+  grid-template-columns: 130px minmax(0, 1fr) 110px minmax(0, 1fr) 30px;
+}
+
+.haushalt-schnell__zeile input,
+.haushalt-schnell__zeile .haushalt-combo {
+  min-width: 0;
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 0.9rem;
+}
+
+.haushalt-schnell__betrag {
+  text-align: right;
+}
+
+.haushalt-schnell__zeile .haushalt-icon-action {
+  width: 26px;
+  height: 26px;
+  font-size: 1rem;
+}
+
+@media (max-width: 720px) {
+  .haushalt-schnell__head {
+    display: none;
+  }
+
+  .haushalt-schnell__zeile,
+  .haushalt-schnell__zeile.is-umbuchung {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .haushalt-schnell__zeile > .haushalt-combo,
+  .haushalt-schnell__zeile > input[aria-label='Kategorie'] {
+    grid-column: 1 / -1;
+  }
+
+  .haushalt-schnell__zeile > input[aria-label='Datum'],
+  .haushalt-schnell__zeile > input[aria-label='Betrag'] {
+    grid-column: auto;
+  }
+
+  .haushalt-schnell__zeile .haushalt-icon-action {
+    justify-self: end;
+  }
+
+  .haushalt-schnell__zeile::before {
+    content: '';
+  }
+}
+
+@media (max-width: 480px) {
+  .haushalt-schnell__kopf {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* "+ Mehrere" neben "+ Buchung": eigene Farbe, damit beide klar unterscheidbar sind */
+.haushalt-btn-mehrere {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid #a78bfa;
+  background-color: color-mix(in srgb, #a78bfa 18%, transparent);
+  color: #c4b5fd;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.haushalt-btn-mehrere:hover:not(:disabled) {
+  background-color: color-mix(in srgb, #a78bfa 30%, transparent);
+}
+
+.haushalt-btn-mehrere:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.haushalt-aktionen {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* Haushaltskasse, Verschiebungen, Statistik-Schalter */
+
+.haushalt-kasse {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-alt);
+}
+
+.haushalt-kasse__wert {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.is-einnahme-text {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.is-ausgabe-text {
+  color: #f87171;
+  font-weight: 600;
+}
+
+.haushalt-chip-verschiebung {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid #a78bfa;
+  color: #c4b5fd;
+  font-size: 0.7rem;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.haushalt-statistik-btn {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #a78bfa;
+  background: none;
+  color: #c4b5fd;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.haushalt-statistik-btn.is-an {
+  border-color: var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text-muted);
+}
+
+.haushalt-tree__name.is-aus {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* Ohne dünne Trennlinien: Einrückung und └ reichen als Struktur */
+.haushalt-tree__node {
+  border-top: none;
+}
+
+.haushalt-tree__kinder {
+  border-left: none;
+}
+
+.haushalt-tree__sub {
+  border-top: none;
+}
+
+/* Hauptkategorien als eigene Karten, damit die Gruppen klar getrennt sind */
+.haushalt-tree__node {
+  margin-bottom: 12px;
+  padding: 6px 4px;
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface-alt);
+}
+
+.haushalt-tree--ausgabe > .haushalt-tree__node {
+  border-left-color: var(--haushalt-ausgabe);
+}
+
+.haushalt-tree--einnahme > .haushalt-tree__node {
+  border-left-color: var(--haushalt-einnahme);
+}
+
+.haushalt-tree__verschieben-box {
+  padding: 4px 8px 8px;
+}
+
+.haushalt-tree__verschieben select {
+  width: 100%;
+}
+
+/* Drag and drop innerhalb einer Ebene */
+.haushalt-tree__ziehgriff {
+  cursor: grab;
+  color: var(--color-text-muted);
+  padding: 0 2px;
+  user-select: none;
+}
+
+.haushalt-tree__row.is-ziehen {
+  opacity: 0.4;
+}
+
+.haushalt-tree__row.is-drop-vor {
+  box-shadow: inset 0 2px 0 var(--color-primary);
+}
+
+.haushalt-tree__row.is-drop-nach {
+  box-shadow: inset 0 -2px 0 var(--color-primary);
+}
+
+/* Zeilen-Layout: Name links, Aktionen rechts, ruhigere Buttons */
+.haushalt-tree__row {
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.haushalt-tree__name {
+  flex: 1 1 auto;
+  text-align: left;
+}
+
+.haushalt-tree__actions {
+  gap: 6px;
+  align-items: center;
+}
+
+.haushalt-tree__actions .haushalt-icon-action {
+  width: 26px;
+  height: 26px;
+  font-size: 0.85rem;
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+  background-color: transparent;
+}
+
+.haushalt-tree__actions .haushalt-icon-action:hover:not(:disabled) {
+  color: var(--color-text);
+  border-color: var(--color-text-muted);
+}
+
+.haushalt-tree__actions .haushalt-statistik-btn {
+  padding: 3px 9px;
+  font-size: 0.72rem;
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.haushalt-tree__actions .haushalt-statistik-btn.is-an {
+  color: var(--color-text);
+}
+
+/* Platz für den Griff immer reservieren, damit Unterkategorien auf einer Linie stehen */
+.haushalt-tree__ziehgriff.is-leer {
+  visibility: hidden;
+}
+
+.haushalt-tree__ziehgriff {
+  touch-action: none;
+  cursor: grab;
+}
+
+/* Monatssummen und Gruppenköpfe in der Buchungsliste */
+.haushalt-monats-summen {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.haushalt-tag__kopf {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.haushalt-tag__kopf .haushalt-tag__datum {
+  margin: 0;
+}
+
+.haushalt-tag__summe {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.haushalt-tag__summe > span {
+  margin-left: var(--space-2);
+}
+
+.haushalt-tag__datum--kat {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.95rem;
+  color: var(--color-text);
+}
+
+@media (max-width: 480px) {
+  .haushalt-monats-summen {
+    grid-template-columns: 1fr;
+  }
+}

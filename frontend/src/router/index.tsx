@@ -30,6 +30,11 @@ import { Import as KochbuchImport } from '@pages/kochbuch/Import'
 import { TrainingsplanLayout } from '@pages/trainingsplan/TrainingsplanLayout'
 import { Uebersicht as TrainingsplanUebersicht } from '@pages/trainingsplan/Uebersicht'
 import { EinheitDetail } from '@pages/trainingsplan/EinheitDetail'
+import { HaushaltsbuchLayout } from '@pages/haushaltsbuch/HaushaltsbuchLayout'
+import { Uebersicht as HaushaltUebersicht } from '@pages/haushaltsbuch/Uebersicht'
+import { Buchungen as HaushaltBuchungen } from '@pages/haushaltsbuch/Buchungen'
+import { Jahr as HaushaltJahr } from '@pages/haushaltsbuch/Jahr'
+import { Verwaltung as HaushaltVerwaltung } from '@pages/haushaltsbuch/Verwaltung'
 import { Uebungen } from '@pages/trainingsplan/Uebungen'
 import { UebungForm } from '@pages/trainingsplan/UebungForm'
 import { UebungDetail } from '@pages/trainingsplan/UebungDetail'
@@ -95,6 +100,15 @@ export function AppRoutes() {
               <Route path="uebungen/neu" element={<UebungForm />} />
               <Route path="uebungen/:id" element={<UebungDetail />} />
               <Route path="uebungen/:id/bearbeiten" element={<UebungForm />} />
+            </Route>
+          </Route>
+
+          <Route path="/haushaltsbuch" element={<ProtectedRoute requireTool="haushaltsbuch" />}>
+            <Route element={<HaushaltsbuchLayout />}>
+              <Route index element={<HaushaltUebersicht />} />
+              <Route path="buchungen" element={<HaushaltBuchungen />} />
+              <Route path="jahr" element={<HaushaltJahr />} />
+              <Route path="verwaltung" element={<HaushaltVerwaltung />} />
             </Route>
           </Route>
 

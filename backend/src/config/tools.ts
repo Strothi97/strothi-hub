@@ -23,8 +23,7 @@ export const TOOLS: ToolDefinition[] = [
     description: 'Einnahmen und Ausgaben im Blick behalten',
     icon: '💶',
     path: '/haushaltsbuch',
-    comingSoon: true,
-  },
+      },
   {
     key: 'erinnerungen',
     name: 'Erinnerungen',

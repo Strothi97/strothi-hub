@@ -70,6 +70,15 @@ export const API_ENDPOINTS = {
     importFile: '/kochbuch/import-file',
     importText: '/kochbuch/import-text',
   },
+  haushaltsbuch: {
+    kasse: '/haushaltsbuch/kasse',
+    kategorien: '/haushaltsbuch/kategorien',
+    kategorie: (id: string) => `/haushaltsbuch/kategorien/${id}`,
+    buchungen: '/haushaltsbuch/buchungen',
+    buchung: (id: string) => `/haushaltsbuch/buchungen/${id}`,
+    uebersichtMonat: '/haushaltsbuch/uebersicht/monat',
+    uebersichtJahr: '/haushaltsbuch/uebersicht/jahr',
+  },
   trainingsplan: {
     equipment: '/trainingsplan/equipment',
     equipmentItem: (id: string) => `/trainingsplan/equipment/${id}`,

@@ -9,6 +9,7 @@ import './styles/farsi.css'
 import './styles/erinnerungen.css'
 import './styles/kochbuch.css'
 import './styles/trainingsplan.css'
+import './styles/haushaltsbuch.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
