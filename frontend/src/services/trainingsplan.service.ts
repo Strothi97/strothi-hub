@@ -1,6 +1,7 @@
 import api from './api'
 import { API_ENDPOINTS } from '@config/api'
 import type {
+  Equipment,
   Exercise,
   FocusArea,
   ExerciseHistoryEntry,
@@ -11,6 +12,16 @@ import type {
 } from '@app-types/trainingsplan'
 
 export const trainingsplanService = {
+  listEquipment: () => api.get<{ equipment: Equipment[] }>(API_ENDPOINTS.trainingsplan.equipment),
+
+  createEquipment: (input: { name: string }) =>
+    api.post<{ equipment: Equipment }>(API_ENDPOINTS.trainingsplan.equipment, input),
+
+  updateEquipment: (id: string, input: { name?: string }) =>
+    api.put<{ equipment: Equipment }>(API_ENDPOINTS.trainingsplan.equipmentItem(id), input),
+
+  deleteEquipment: (id: string) => api.delete(API_ENDPOINTS.trainingsplan.equipmentItem(id)),
+
   listFocusAreas: () => api.get<{ focusAreas: FocusArea[] }>(API_ENDPOINTS.trainingsplan.focusAreas),
 
   createFocusArea: (input: { name: string; icon: string }) =>

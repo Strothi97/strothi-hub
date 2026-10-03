@@ -47,6 +47,7 @@ model User {
   exercises           Exercise[]
   trainingSessions    TrainingSession[]
   focusAreas          FocusArea[]
+  equipment           Equipment[]
 
   @@map("users")
 }
@@ -446,6 +447,23 @@ model FocusArea {
   @@map("focus_areas")
 }
 
+// Trainingsgerät pro Nutzer (Rückengerät, Butterfly, ...). key ist stabil und wird
+// in Exercise.equipmentKey gespeichert — Umbenennen ändert nur name.
+model Equipment {
+  id        String   @id @default(cuid())
+  userId    String
+  key       String
+  name      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+  @@map("equipment")
+}
+
 // Katalog-Eintrag einer Übung. Anders als Kochbuchs category/mealType (die
 // wegen Altbestand nullable bleiben mussten) sind focusAreas und unit hier
 // Pflichtfelder — neues Tool, kein Altbestand, kein Migrationsschmerz.
@@ -467,6 +485,8 @@ model Exercise {
   // Beim Loggen einer Runde gibt es dann ein zusätzliches Wertefeld
   // (SetEntry.secondaryValue). Nicht gesetzt = einwertige Übung (Normalfall).
   secondaryUnit ExerciseUnit?
+  // Schlüssel eines Trainingsgeräts des Nutzers, null = kein Gerät (freie Übung)
+  equipmentKey  String?
   imageUrl      String?
   // Array<{ title: string; text: string; imageUrl: string | null }> — flach
   // wie RecipeStep bei Kochbuch, nie unabhängig von der Übung abgefragt.

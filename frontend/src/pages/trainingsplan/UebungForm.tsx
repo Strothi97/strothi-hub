@@ -7,6 +7,7 @@ import { trainingsplanService } from '@services/trainingsplan.service'
 import { getImageFromClipboard } from './clipboard'
 import { EXERCISE_UNITS, UNIT_META } from './format'
 import { useFocusAreas } from './useFocusAreas'
+import { useEquipment } from './useEquipment'
 import type { Exercise, ExerciseInfoSection, ExerciseUnit } from '@app-types/trainingsplan'
 
 // Wird ein Abschnitt entfernt, rutschen alle folgenden Indizes um eins nach
@@ -35,6 +36,8 @@ export function UebungForm() {
   const { areas } = useFocusAreas()
   const [unit, setUnit] = useState<ExerciseUnit | null>(null)
   const [secondaryUnit, setSecondaryUnit] = useState<ExerciseUnit | null>(null)
+  const [equipmentKey, setEquipmentKey] = useState<string | null>(null)
+  const { items: equipmentItems } = useEquipment()
   const [infoSections, setInfoSections] = useState<ExerciseInfoSection[]>([])
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [pendingPhoto, setPendingPhoto] = useState<File | null>(null)
@@ -61,6 +64,7 @@ export function UebungForm() {
         setFocusAreas(data.exercise.focusAreas)
         setUnit(data.exercise.unit)
         setSecondaryUnit(data.exercise.secondaryUnit)
+        setEquipmentKey(data.exercise.equipmentKey)
         setInfoSections(data.exercise.infoSections)
         setPhotoPreview(data.exercise.imageUrl)
       })
@@ -149,6 +153,7 @@ export function UebungForm() {
         focusAreas,
         unit,
         secondaryUnit,
+        equipmentKey,
         infoSections: infoSections.map((s) => ({ ...s, title: s.title.trim(), text: s.text.trim() })),
       }
 
@@ -192,7 +197,7 @@ export function UebungForm() {
   return (
     <form onSubmit={handleSubmit} className="trainingsplan-form">
       <div
-        className="kochbuch-photo-picker"
+        className="kochbuch-photo-picker trainingsplan-photo-picker"
         title="Klicken zum Auswählen, oder Maus hier drüber halten und Strg+V"
         onClick={() => fileInputRef.current?.click()}
         onMouseEnter={() => setHoveredPhotoTarget('main')}
@@ -223,6 +228,32 @@ export function UebungForm() {
           ))}
         </div>
         <p className="form-hint">Mehrfachauswahl möglich, z.B. Kreuzheben = Rücken + Beine.</p>
+      </div>
+
+      <div className="form-group">
+        <span className="form-label">Trainingsgerät (optional)</span>
+        <div className="farsi-filters__chips">
+          <button
+            type="button"
+            className={`tool-chip ${equipmentKey === null ? 'is-active' : ''}`.trim()}
+            onClick={() => setEquipmentKey(null)}
+          >
+            Kein Gerät
+          </button>
+          {equipmentItems.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`tool-chip ${equipmentKey === item.key ? 'is-active' : ''}`.trim()}
+              onClick={() => setEquipmentKey(item.key)}
+            >
+              {item.name}
+            </button>
+          ))}
+        </div>
+        {equipmentItems.length === 0 && (
+          <p className="form-hint">Noch keine Geräte angelegt — in der Übungsliste unter "Geräte verwalten".</p>
+        )}
       </div>
 
       <div className="form-group">

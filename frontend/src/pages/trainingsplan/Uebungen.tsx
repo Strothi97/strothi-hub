@@ -4,7 +4,9 @@ import { trainingsplanService } from '@services/trainingsplan.service'
 import { Card } from '@components/ui/Card'
 import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
-import { UNIT_META } from './format'
+import { EQUIPMENT_ALL, NO_EQUIPMENT, UNIT_META, matchesExerciseFilter } from './format'
+import { useEquipment } from './useEquipment'
+import { EquipmentModal } from './EquipmentModal'
 import { useFocusAreas } from './useFocusAreas'
 import { BereicheModal } from './BereicheModal'
 import type { Exercise } from '@app-types/trainingsplan'
@@ -19,6 +21,9 @@ export function Uebungen() {
   // Kategorie-Filter im Kochbuch.
   const [focusFilter, setFocusFilter] = useState<string[]>([])
   const [areasModalOpen, setAreasModalOpen] = useState(false)
+  const [equipmentModalOpen, setEquipmentModalOpen] = useState(false)
+  const [equipmentFilter, setEquipmentFilter] = useState(EQUIPMENT_ALL)
+  const { items: equipmentItems, nameFor, reload: reloadEquipment } = useEquipment()
   const { areas, metaFor, reload: reloadAreas } = useFocusAreas()
   const [showArchived, setShowArchived] = useState(false)
   const [focusPickerOpen, setFocusPickerOpen] = useState(false)
@@ -41,15 +46,13 @@ export function Uebungen() {
     if (!showArchived) {
       result = result.filter((e) => !e.isArchived)
     }
-    if (focusFilter.length > 0) {
-      result = result.filter((e) => e.focusAreas.some((f) => focusFilter.includes(f)))
-    }
+    result = result.filter((e) => matchesExerciseFilter(e, focusFilter, equipmentFilter))
     const needle = search.trim().toLowerCase()
     if (needle) {
       result = result.filter((e) => e.name.toLowerCase().includes(needle))
     }
     return result
-  }, [exercises, showArchived, focusFilter, search])
+  }, [exercises, showArchived, focusFilter, equipmentFilter, search])
 
   return (
     <div>
@@ -64,6 +67,9 @@ export function Uebungen() {
         <div className="trainingsplan-toolbar-actions">
           <Button variant="secondary" onClick={() => setAreasModalOpen(true)}>
             Bereiche verwalten
+          </Button>
+          <Button variant="secondary" onClick={() => setEquipmentModalOpen(true)}>
+            Geräte verwalten
           </Button>
           <Button onClick={() => navigate('/trainingsplan/uebungen/neu')}>+ Neue Übung</Button>
         </div>
@@ -94,6 +100,35 @@ export function Uebungen() {
             Fokus{focusFilter.length > 0 ? ` (${focusFilter.length})` : ''} ▾
           </button>
         </div>
+
+        {equipmentItems.length > 0 && (
+          <div className="trainingsplan-equipment-filter">
+            <button
+              type="button"
+              className={`tool-chip ${equipmentFilter === EQUIPMENT_ALL ? 'is-active' : ''}`.trim()}
+              onClick={() => setEquipmentFilter(EQUIPMENT_ALL)}
+            >
+              Alle Geräte
+            </button>
+            {equipmentItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`tool-chip ${equipmentFilter === item.key ? 'is-active' : ''}`.trim()}
+                onClick={() => setEquipmentFilter(item.key)}
+              >
+                {item.name}
+              </button>
+            ))}
+            <button
+              type="button"
+              className={`tool-chip ${equipmentFilter === NO_EQUIPMENT ? 'is-active' : ''}`.trim()}
+              onClick={() => setEquipmentFilter(NO_EQUIPMENT)}
+            >
+              Ohne Gerät
+            </button>
+          </div>
+        )}
 
         <div className="trainingsplan-category-filter">
           <button
@@ -130,7 +165,10 @@ export function Uebungen() {
               </div>
               <div className="trainingsplan-exercise-card__body">
                 <span className="trainingsplan-exercise-card__title">{exercise.name}</span>
-                <span className="trainingsplan-exercise-card__meta">Einheit: {UNIT_META[exercise.unit].label}</span>
+                <span className="trainingsplan-exercise-card__meta">
+                  Einheit: {UNIT_META[exercise.unit].label}
+                  {exercise.equipmentKey && ` · ${nameFor(exercise.equipmentKey)}`}
+                </span>
                 <div className="trainingsplan-exercise-card__tags">
                   {exercise.focusAreas.map((focus) => (
                     <span key={focus} className="tool-card__badge">
@@ -142,6 +180,10 @@ export function Uebungen() {
             </Card>
           ))}
         </div>
+      )}
+
+      {equipmentModalOpen && (
+        <EquipmentModal onClose={() => setEquipmentModalOpen(false)} onChanged={() => reloadEquipment()} />
       )}
 
       {areasModalOpen && <BereicheModal onClose={() => setAreasModalOpen(false)} onChanged={() => reloadAreas()} />}

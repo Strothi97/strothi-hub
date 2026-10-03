@@ -97,7 +97,7 @@ export function UebungDetail() {
       </div>
 
       {exercise.imageUrl && (
-        <div className="kochbuch-detail__photo">
+        <div className="trainingsplan-detail-photo">
           <img src={exercise.imageUrl} alt={exercise.name} />
         </div>
       )}

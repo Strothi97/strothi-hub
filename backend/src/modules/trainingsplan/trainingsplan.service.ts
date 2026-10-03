@@ -116,7 +116,7 @@ export async function getFocusAreaKeys(userId: string): Promise<string[]> {
 }
 
 // Schlüssel bleibt nach dem Anlegen stabil, auch wenn der Name später geändert wird.
-function createFocusAreaKey(name: string): string {
+function createKeyFromName(name: string): string {
   const slug =
     name
       .toLowerCase()
@@ -139,7 +139,7 @@ export async function createFocusArea(userId: string, input: { name: string; ico
   const row = await prisma.focusArea.create({
     data: {
       userId,
-      key: createFocusAreaKey(input.name),
+      key: createKeyFromName(input.name),
       name: input.name,
       icon: input.icon,
       sortOrder: (last?.sortOrder ?? -1) + 1,
@@ -182,6 +182,97 @@ export async function deleteFocusArea(userId: string, id: string): Promise<boole
   return true
 }
 
+// ── Trainingsgeräte (pro Nutzer) ─────────────────────────
+
+export interface EquipmentDTO {
+  id: string
+  key: string
+  name: string
+  sortOrder: number
+  usageCount: number
+}
+
+function toEquipmentDTO(
+  row: { id: string; key: string; name: string; sortOrder: number },
+  usageCount: number,
+): EquipmentDTO {
+  return { id: row.id, key: row.key, name: row.name, sortOrder: row.sortOrder, usageCount }
+}
+
+async function countEquipmentUsage(userId: string): Promise<Map<string, number>> {
+  const rows = await prisma.exercise.findMany({
+    where: { userId, equipmentKey: { not: null } },
+    select: { equipmentKey: true },
+  })
+  const counts = new Map<string, number>()
+  for (const row of rows) {
+    if (row.equipmentKey) counts.set(row.equipmentKey, (counts.get(row.equipmentKey) ?? 0) + 1)
+  }
+  return counts
+}
+
+export async function listEquipment(userId: string): Promise<EquipmentDTO[]> {
+  const [items, usage] = await Promise.all([
+    prisma.equipment.findMany({ where: { userId }, orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }] }),
+    countEquipmentUsage(userId),
+  ])
+  return items.map((item) => toEquipmentDTO(item, usage.get(item.key) ?? 0))
+}
+
+// Gültige Gerätschlüssel des Nutzers — dagegen wird equipmentKey bei Übungen geprüft.
+export async function getEquipmentKeys(userId: string): Promise<string[]> {
+  const items = await prisma.equipment.findMany({ where: { userId }, select: { key: true } })
+  return items.map((item) => item.key)
+}
+
+export async function createEquipment(userId: string, input: { name: string }): Promise<EquipmentDTO> {
+  const last = await prisma.equipment.findFirst({
+    where: { userId },
+    orderBy: { sortOrder: 'desc' },
+    select: { sortOrder: true },
+  })
+  const row = await prisma.equipment.create({
+    data: {
+      userId,
+      key: createKeyFromName(input.name),
+      name: input.name,
+      sortOrder: (last?.sortOrder ?? -1) + 1,
+    },
+  })
+  return toEquipmentDTO(row, 0)
+}
+
+export async function updateEquipment(
+  userId: string,
+  id: string,
+  input: { name?: string },
+): Promise<EquipmentDTO | null> {
+  const existing = await prisma.equipment.findFirst({ where: { id, userId } })
+  if (!existing) return null
+  const row = await prisma.equipment.update({
+    where: { id },
+    data: { ...(input.name !== undefined && { name: input.name }) },
+  })
+  const usage = await countEquipmentUsage(userId)
+  return toEquipmentDTO(row, usage.get(row.key) ?? 0)
+}
+
+// Ein noch zugewiesenes Gerät lässt sich nicht löschen — sonst hätte eine Übung
+// einen Schlüssel ohne Anzeigenamen.
+export async function deleteEquipment(userId: string, id: string): Promise<boolean> {
+  const existing = await prisma.equipment.findFirst({ where: { id, userId } })
+  if (!existing) return false
+  const usage = (await countEquipmentUsage(userId)).get(existing.key) ?? 0
+  if (usage > 0) {
+    throw new AppError(
+      `Dieses Gerät wird noch von ${usage} Übung${usage === 1 ? '' : 'en'} verwendet — bitte dort zuerst entfernen.`,
+      409,
+    )
+  }
+  await prisma.equipment.delete({ where: { id } })
+  return true
+}
+
 // ── DTO: Exercise ─────────────────────────────────────────
 
 export interface ExerciseDTO {
@@ -190,6 +281,7 @@ export interface ExerciseDTO {
   focusAreas: string[]
   unit: ExerciseUnit
   secondaryUnit: ExerciseUnit | null
+  equipmentKey: string | null
   imageUrl: string | null
   infoSections: ExerciseInfoSection[]
   isArchived: boolean
@@ -206,6 +298,7 @@ function toExerciseDTO(row: {
   focusAreas: unknown
   unit: ExerciseUnit
   secondaryUnit: ExerciseUnit | null
+  equipmentKey: string | null
   imageUrl: string | null
   infoSections: unknown
   archivedAt: Date | null
@@ -219,6 +312,7 @@ function toExerciseDTO(row: {
     focusAreas: toStringArray(row.focusAreas),
     unit: row.unit,
     secondaryUnit: row.secondaryUnit,
+    equipmentKey: row.equipmentKey,
     imageUrl: row.imageUrl,
     infoSections: toInfoSections(row.infoSections),
     isArchived: row.archivedAt !== null,
@@ -269,6 +363,7 @@ export interface ExerciseInput {
   focusAreas: string[]
   unit: ExerciseUnit
   secondaryUnit?: ExerciseUnit | null
+  equipmentKey?: string | null
   infoSections?: ExerciseInfoSection[]
 }
 
@@ -280,6 +375,7 @@ export async function createExercise(userId: string, input: ExerciseInput): Prom
       focusAreas: input.focusAreas,
       unit: input.unit,
       secondaryUnit: input.secondaryUnit ?? null,
+      equipmentKey: input.equipmentKey ?? null,
       infoSections: (input.infoSections ?? []) as unknown as object,
     },
     include: EXERCISE_INCLUDE,
@@ -305,6 +401,7 @@ export async function updateExercise(
       ...(input.focusAreas !== undefined && { focusAreas: input.focusAreas }),
       ...(input.unit !== undefined && { unit: input.unit }),
       ...(input.secondaryUnit !== undefined && { secondaryUnit: input.secondaryUnit }),
+      ...(input.equipmentKey !== undefined && { equipmentKey: input.equipmentKey }),
       ...(input.infoSections !== undefined && { infoSections: input.infoSections as unknown as object }),
       ...(input.archived !== undefined && { archivedAt: input.archived ? new Date() : null }),
     },
@@ -480,6 +577,7 @@ export interface SessionExerciseDTO {
     name: string
     unit: ExerciseUnit
     secondaryUnit: ExerciseUnit | null
+    equipmentKey: string | null
     imageUrl: string | null
     focusAreas: string[]
     isArchived: boolean
@@ -520,6 +618,7 @@ function toSessionDetailDTO(row: {
       name: string
       unit: ExerciseUnit
       secondaryUnit: ExerciseUnit | null
+      equipmentKey: string | null
       imageUrl: string | null
       focusAreas: unknown
       archivedAt: Date | null
@@ -541,6 +640,7 @@ function toSessionDetailDTO(row: {
         name: se.exercise.name,
         unit: se.exercise.unit,
         secondaryUnit: se.exercise.secondaryUnit,
+        equipmentKey: se.exercise.equipmentKey,
         imageUrl: se.exercise.imageUrl,
         focusAreas: toStringArray(se.exercise.focusAreas),
         isArchived: se.exercise.archivedAt !== null,

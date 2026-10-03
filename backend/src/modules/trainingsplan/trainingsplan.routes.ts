@@ -22,6 +22,11 @@ const upload = multer({
   },
 })
 
+router.get('/equipment', trainingsplanController.listEquipment)
+router.post('/equipment', trainingsplanController.createEquipment)
+router.put('/equipment/:id', trainingsplanController.updateEquipment)
+router.delete('/equipment/:id', trainingsplanController.deleteEquipment)
+
 router.get('/focus-areas', trainingsplanController.listFocusAreas)
 router.post('/focus-areas', trainingsplanController.createFocusArea)
 router.put('/focus-areas/:id', trainingsplanController.updateFocusArea)

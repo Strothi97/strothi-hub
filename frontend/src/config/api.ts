@@ -71,6 +71,8 @@ export const API_ENDPOINTS = {
     importText: '/kochbuch/import-text',
   },
   trainingsplan: {
+    equipment: '/trainingsplan/equipment',
+    equipmentItem: (id: string) => `/trainingsplan/equipment/${id}`,
     focusAreas: '/trainingsplan/focus-areas',
     focusArea: (id: string) => `/trainingsplan/focus-areas/${id}`,
     exercises: '/trainingsplan/exercises',

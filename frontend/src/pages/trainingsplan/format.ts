@@ -211,3 +211,20 @@ export function toDatetimeLocalValue(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
+
+// Filter für den Übungskatalog und die Übungsauswahl: Schwerpunkte ODER-
+// verknüpft (eine Übung passt bei einem der gewählten Bereiche), Gerät
+// einfach. EQUIPMENT_ALL = kein Gerätefilter, NO_EQUIPMENT = nur freie Übungen.
+export const EQUIPMENT_ALL = ''
+export const NO_EQUIPMENT = '__ohne__'
+
+export function matchesExerciseFilter(
+  exercise: { focusAreas: string[]; equipmentKey: string | null },
+  focusFilter: string[],
+  equipmentFilter: string,
+): boolean {
+  if (focusFilter.length > 0 && !exercise.focusAreas.some((focus) => focusFilter.includes(focus))) return false
+  if (equipmentFilter === NO_EQUIPMENT) return exercise.equipmentKey === null
+  if (equipmentFilter !== EQUIPMENT_ALL) return exercise.equipmentKey === equipmentFilter
+  return true
+}

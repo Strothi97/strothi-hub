@@ -11,6 +11,15 @@ export interface FocusArea {
   usageCount: number
 }
 
+// Trainingsgerät pro Nutzer. key ist stabil, name frei änderbar.
+export interface Equipment {
+  id: string
+  key: string
+  name: string
+  sortOrder: number
+  usageCount: number
+}
+
 // Deckt gewichtsbasiertes Krafttraining (kg/g), zeit-/distanzbasiertes
 // Cardio (s/min/h/km/m) und reine Wiederholungsübungen ohne Gewicht
 // (BODYWEIGHT, z.B. Klimmzüge) ab. Eine Übung hat eine Haupteinheit (unit)
@@ -29,6 +38,7 @@ export interface Exercise {
   focusAreas: string[]
   unit: ExerciseUnit
   secondaryUnit: ExerciseUnit | null
+  equipmentKey: string | null
   imageUrl: string | null
   infoSections: ExerciseInfoSection[]
   isArchived: boolean
@@ -42,6 +52,7 @@ export interface ExerciseInput {
   focusAreas: string[]
   unit: ExerciseUnit
   secondaryUnit?: ExerciseUnit | null
+  equipmentKey?: string | null
   infoSections?: ExerciseInfoSection[]
   archived?: boolean
 }
@@ -84,6 +95,7 @@ export interface SessionExerciseEntry {
     name: string
     unit: ExerciseUnit
     secondaryUnit: ExerciseUnit | null
+    equipmentKey: string | null
     imageUrl: string | null
     focusAreas: string[]
     isArchived: boolean

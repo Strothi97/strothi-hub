@@ -68,6 +68,7 @@ export const getExercise = async (req: Request, res: Response) => {
 }
 
 export const createExercise = async (req: Request, res: Response) => {
+  await assertValidEquipmentKey(req.user!.id, req.body?.equipmentKey)
   await assertValidFocusAreas(req.user!.id, req.body?.focusAreas)
   assertValidUnit(req.body?.unit)
   assertValidSecondaryUnit(req.body?.secondaryUnit, req.body?.unit)
@@ -76,6 +77,7 @@ export const createExercise = async (req: Request, res: Response) => {
 }
 
 export const updateExercise = async (req: Request, res: Response) => {
+  if (req.body?.equipmentKey !== undefined) await assertValidEquipmentKey(req.user!.id, req.body.equipmentKey)
   if (req.body?.focusAreas !== undefined) await assertValidFocusAreas(req.user!.id, req.body.focusAreas)
   if (req.body?.unit !== undefined) assertValidUnit(req.body.unit)
   if (req.body?.secondaryUnit !== undefined) assertValidSecondaryUnit(req.body.secondaryUnit, req.body?.unit)
@@ -223,5 +225,39 @@ export const updateFocusArea = async (req: Request, res: Response) => {
 export const deleteFocusArea = async (req: Request, res: Response) => {
   const deleted = await trainingsplanService.deleteFocusArea(req.user!.id, req.params.id)
   if (!deleted) return res.status(404).json({ message: 'Bereich nicht gefunden' })
+  return res.status(204).send()
+}
+
+// Gerät ist optional (null = freie Übung), wenn gesetzt muss es dem Nutzer gehören.
+async function assertValidEquipmentKey(userId: string, value: unknown): Promise<void> {
+  if (value === null || value === undefined) return
+  if (typeof value !== 'string') throw new AppError('Ungültiges Trainingsgerät.', 400)
+  const allowed = await trainingsplanService.getEquipmentKeys(userId)
+  if (!allowed.includes(value)) throw new AppError('Das gewählte Trainingsgerät existiert nicht mehr.', 400)
+}
+
+export const listEquipment = async (req: Request, res: Response) => {
+  const equipment = await trainingsplanService.listEquipment(req.user!.id)
+  return res.json({ equipment })
+}
+
+export const createEquipment = async (req: Request, res: Response) => {
+  const equipment = await trainingsplanService.createEquipment(req.user!.id, {
+    name: assertValidFocusAreaName(req.body?.name),
+  })
+  return res.status(201).json({ equipment })
+}
+
+export const updateEquipment = async (req: Request, res: Response) => {
+  const input: { name?: string } = {}
+  if (req.body?.name !== undefined) input.name = assertValidFocusAreaName(req.body.name)
+  const equipment = await trainingsplanService.updateEquipment(req.user!.id, req.params.id, input)
+  if (!equipment) return res.status(404).json({ message: 'Gerät nicht gefunden' })
+  return res.json({ equipment })
+}
+
+export const deleteEquipment = async (req: Request, res: Response) => {
+  const deleted = await trainingsplanService.deleteEquipment(req.user!.id, req.params.id)
+  if (!deleted) return res.status(404).json({ message: 'Gerät nicht gefunden' })
   return res.status(204).send()
 }

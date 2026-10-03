@@ -3,8 +3,9 @@ import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
 import { trainingsplanService } from '@services/trainingsplan.service'
 import { SetList } from './SetList'
-import { UNIT_META, formatShortDate } from './format'
+import { EQUIPMENT_ALL, NO_EQUIPMENT, UNIT_META, formatShortDate, matchesExerciseFilter } from './format'
 import { useFocusAreas } from './useFocusAreas'
+import { useEquipment } from './useEquipment'
 import type { Exercise, ExerciseHistoryEntry, TrainingSession } from '@app-types/trainingsplan'
 
 // Im Edit-Modus (editing gesetzt) wird der Picker-Schritt übersprungen und
@@ -59,7 +60,10 @@ export function UebungHinzufuegenModal({ sessionId, editing, onClose, onAdded }:
   const [rounds, setRounds] = useState<RoundInput[]>(editing ? roundsFromSets(editing.sets) : [emptyRound()])
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
-  const { metaFor } = useFocusAreas()
+  const { areas, metaFor } = useFocusAreas()
+  const { items: equipmentItems, nameFor } = useEquipment()
+  const [focusFilter, setFocusFilter] = useState<string[]>([])
+  const [equipmentFilter, setEquipmentFilter] = useState(EQUIPMENT_ALL)
 
   useEffect(() => {
     if (editing) return
@@ -92,7 +96,14 @@ export function UebungHinzufuegenModal({ sessionId, editing, onClose, onAdded }:
       .finally(() => setLoadingHistory(false))
   }
 
-  const filteredExercises = exercises.filter((e) => e.name.toLowerCase().includes(search.trim().toLowerCase()))
+  const filteredExercises = exercises.filter(
+    (e) =>
+      e.name.toLowerCase().includes(search.trim().toLowerCase()) &&
+      matchesExerciseFilter(e, focusFilter, equipmentFilter),
+  )
+
+  const toggleFocusFilter = (key: string) =>
+    setFocusFilter((current) => (current.includes(key) ? current.filter((k) => k !== key) : [...current, key]))
 
   const updateRound = (index: number, field: keyof RoundInput, value: string) =>
     setRounds((current) => current.map((r, i) => (i === index ? { ...r, [field]: value } : r)))
@@ -145,6 +156,54 @@ export function UebungHinzufuegenModal({ sessionId, editing, onClose, onAdded }:
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
               />
+              {areas.length > 0 && (
+                <div className="trainingsplan-picker-filters">
+                  <span className="form-label">Schwerpunkt</span>
+                  <div className="farsi-filters__chips">
+                    {areas.map((area) => (
+                      <button
+                        key={area.key}
+                        type="button"
+                        className={`tool-chip ${focusFilter.includes(area.key) ? 'is-active' : ''}`.trim()}
+                        onClick={() => toggleFocusFilter(area.key)}
+                      >
+                        {area.icon} {area.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {equipmentItems.length > 0 && (
+                <div className="trainingsplan-picker-filters">
+                  <span className="form-label">Gerät</span>
+                  <div className="farsi-filters__chips">
+                    <button
+                      type="button"
+                      className={`tool-chip ${equipmentFilter === EQUIPMENT_ALL ? 'is-active' : ''}`.trim()}
+                      onClick={() => setEquipmentFilter(EQUIPMENT_ALL)}
+                    >
+                      Alle
+                    </button>
+                    {equipmentItems.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={`tool-chip ${equipmentFilter === item.key ? 'is-active' : ''}`.trim()}
+                        onClick={() => setEquipmentFilter(item.key)}
+                      >
+                        {item.name}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      className={`tool-chip ${equipmentFilter === NO_EQUIPMENT ? 'is-active' : ''}`.trim()}
+                      onClick={() => setEquipmentFilter(NO_EQUIPMENT)}
+                    >
+                      Ohne Gerät
+                    </button>
+                  </div>
+                </div>
+              )}
               {loadingExercises ? (
                 <p>Lädt…</p>
               ) : filteredExercises.length === 0 ? (
@@ -172,7 +231,10 @@ export function UebungHinzufuegenModal({ sessionId, editing, onClose, onAdded }:
                         <span className="trainingsplan-picker-item__body">
                           <span className="trainingsplan-picker-item__name">{exercise.name}</span>
                           <span className="trainingsplan-picker-item__meta">
-                            {exercise.focusAreas.map((focus) => metaFor(focus).name).join(' · ')}
+                            {[
+                              ...exercise.focusAreas.map((focus) => metaFor(focus).name),
+                              ...(exercise.equipmentKey ? [nameFor(exercise.equipmentKey)] : []),
+                            ].join(' · ')}
                           </span>
                         </span>
                         <span className="trainingsplan-picker-item__chevron" aria-hidden="true">
