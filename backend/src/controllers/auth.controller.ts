@@ -106,6 +106,23 @@ export const deleteMyAccount = async (req: Request, res: Response) => {
   const photoDir = path.join(__dirname, '..', '..', process.env.UPLOAD_DIR || 'uploads', 'erinnerungen', user.id)
   await fs.rm(photoDir, { recursive: true, force: true }).catch(() => {})
 
+  // TrainingSession muss VOR dem User gelöscht werden: Exercise hat ein
+  // Restrict-FK von SessionExercise (siehe schema.prisma), und User->Exercise
+  // sowie User->TrainingSession->SessionExercise sind Geschwister-Kaskaden-
+  // pfade — MySQL garantiert keine Reihenfolge zwischen ihnen. Würde die DB
+  // Exercise vor den zugehörigen SessionExercise-Zeilen löschen, schlägt das
+  // Restrict zu und der gesamte user.delete()-Aufruf scheitert.
+  await prisma.trainingSession.deleteMany({ where: { userId: user.id } })
+  const trainingsplanPhotoDir = path.join(
+    __dirname,
+    '..',
+    '..',
+    process.env.UPLOAD_DIR || 'uploads',
+    'trainingsplan',
+    user.id,
+  )
+  await fs.rm(trainingsplanPhotoDir, { recursive: true, force: true }).catch(() => {})
+
   await prisma.user.delete({ where: { id: user.id } })
 
   return res.json({ ok: true })

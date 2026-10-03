@@ -44,6 +44,7 @@
   --shadow-glow-hover: 0 0 18px rgba(124, 58, 237, 0.5);
 
   /* Abstände */
+  --space-0: 2px;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 16px;

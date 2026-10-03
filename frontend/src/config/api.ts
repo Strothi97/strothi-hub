@@ -70,5 +70,19 @@ export const API_ENDPOINTS = {
     importFile: '/kochbuch/import-file',
     importText: '/kochbuch/import-text',
   },
+  trainingsplan: {
+    focusAreas: '/trainingsplan/focus-areas',
+    focusArea: (id: string) => `/trainingsplan/focus-areas/${id}`,
+    exercises: '/trainingsplan/exercises',
+    exercise: (id: string) => `/trainingsplan/exercises/${id}`,
+    exercisePhoto: (id: string) => `/trainingsplan/exercises/${id}/photo`,
+    exerciseSectionPhoto: (id: string, index: number) => `/trainingsplan/exercises/${id}/sections/${index}/photo`,
+    exerciseHistory: (id: string) => `/trainingsplan/exercises/${id}/history`,
+    sessions: '/trainingsplan/sessions',
+    session: (id: string) => `/trainingsplan/sessions/${id}`,
+    sessionExercises: (id: string) => `/trainingsplan/sessions/${id}/exercises`,
+    sessionExercise: (id: string, sessionExerciseId: string) =>
+      `/trainingsplan/sessions/${id}/exercises/${sessionExerciseId}`,
+  },
   // Weitere Endpunkte hier ergänzen
 } as const

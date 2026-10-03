@@ -62,6 +62,13 @@ export const TOOLS: ToolDefinition[] = [
     icon: '🍳',
     path: '/kochbuch',
   },
+  {
+    key: 'trainingsplan',
+    name: 'Trainingsplan',
+    description: 'Übersicht der Trainingsleistung sowie Trainingsübungen',
+    icon: '🏋️',
+    path: '/trainingsplan',
+  },
 ]
 
 export const getTool = (key: string) => TOOLS.find((tool) => tool.key === key)

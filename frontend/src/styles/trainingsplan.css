@@ -1,0 +1,1005 @@
+/* ================================
+   TOOL: Trainingsplan
+   ================================ */
+
+/* ── Filter-Leiste (Übungen-Katalog) ──────────────────────
+   Gleiches Muster wie .kochbuch-filter-bar: alle Filter-Gruppen kollabieren
+   IMMER (nicht nur auf dem Handy) auf einen kompakten Auslöse-Knopf statt
+   volle Chip-Zeilen zu zeigen — mehrere volle Zeilen übereinander wirken
+   schnell überfüllt, auch auf dem Desktop. */
+
+.trainingsplan-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.trainingsplan-filter-bar .farsi-filters {
+  display: contents;
+}
+
+.trainingsplan-filter-bar .farsi-filters__chips.farsi-filters__chips--desktop {
+  display: none;
+}
+
+.trainingsplan-filter-bar .farsi-filters__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.4em 0.85em;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-alt);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.trainingsplan-category-filter {
+  display: contents;
+}
+
+.trainingsplan-archived-chip.is-active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ── Übungen-Katalog ───────────────────────────────────── */
+
+.trainingsplan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+
+.trainingsplan-exercise-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+}
+
+.trainingsplan-exercise-card__archived {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 1;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #111;
+  background-color: #f5b400;
+  padding: 3px var(--space-2);
+  border-radius: 999px;
+}
+
+.trainingsplan-exercise-card__photo {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background-color: var(--color-surface-alt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.trainingsplan-exercise-card__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.trainingsplan-exercise-card__photo-placeholder {
+  font-size: 2.5rem;
+  opacity: 0.4;
+}
+
+.trainingsplan-exercise-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3);
+}
+
+.trainingsplan-exercise-card__title {
+  font-weight: 600;
+}
+
+.trainingsplan-exercise-card__meta {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.trainingsplan-exercise-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+/* ── Formular (Übung anlegen/bearbeiten) ──────────────────
+   Reuse der Kochbuch-Foto-Picker-/Step-Editor-Klassen (kochbuch-photo-picker,
+   kochbuch-step-list/-edit) — strukturell identisch, kein Grund, sie hier
+   noch einmal zu definieren. */
+
+.trainingsplan-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: 720px;
+}
+
+/* ── Trainingseinheiten-Liste ──────────────────────────── */
+
+.trainingsplan-session-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.trainingsplan-session-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+}
+
+.trainingsplan-session-card__date {
+  font-weight: 600;
+}
+
+.trainingsplan-session-card__meta {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.trainingsplan-session-card__note {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.trainingsplan-session-meta-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: 420px;
+  margin-bottom: var(--space-3);
+}
+
+/* ── Einheit-Detail: Kopfbereich + Kennzahlen ─────────────── */
+
+.trainingsplan-session-hero {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.trainingsplan-session-hero__week {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.trainingsplan-session-hero__date {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.trainingsplan-session-hero__note {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.trainingsplan-session-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.trainingsplan-session-stats .trainingsplan-stat-tile {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* ── Einheit-Detail: Ablauf als Timeline ───────────────────
+   Nummerierte Marker verbunden durch eine Linie, pro Übung eine Karte mit
+   Vorschaubild (oder Fokus-Icon als Platzhalter). Auf dem Handy schrumpft
+   das Vorschaubild, der Rest der Karte bleibt lesbar. */
+
+.trainingsplan-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.trainingsplan-timeline__step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+
+.trainingsplan-timeline__step:not(:first-child)::before,
+.trainingsplan-timeline__step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 15px;
+  width: 2px;
+  background-color: var(--color-border);
+}
+
+.trainingsplan-timeline__step:not(:first-child)::before {
+  top: 0;
+  height: 50%;
+}
+
+.trainingsplan-timeline__step:not(:last-child)::after {
+  top: 50%;
+  bottom: 0;
+}
+
+.trainingsplan-timeline__marker {
+  position: relative;
+  z-index: 1;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trainingsplan-timeline__card {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface-alt);
+  min-width: 0;
+}
+
+.trainingsplan-timeline__thumb {
+  flex-shrink: 0;
+  width: 84px;
+  height: 84px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.trainingsplan-timeline__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.trainingsplan-timeline__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.trainingsplan-timeline__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.trainingsplan-timeline__title {
+  font-weight: 600;
+  font-size: 1.05rem;
+  line-height: 1.3;
+}
+
+@media (max-width: 480px) {
+  .trainingsplan-timeline__thumb {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+
+  .trainingsplan-timeline__card {
+    padding: var(--space-2);
+    gap: var(--space-2);
+  }
+}
+
+/* ── Einheit-Detail: Ablauf ────────────────────────────── */
+
+.trainingsplan-session-flow__actions {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.trainingsplan-session-flow__icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  padding: 2px 6px;
+}
+
+.trainingsplan-session-flow__icon-btn:hover {
+  color: var(--color-text);
+}
+
+.trainingsplan-session-flow__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
+/* ── Übungs-Detail: Verlauf ────────────────────────────── */
+
+.trainingsplan-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.trainingsplan-history-row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.trainingsplan-history-row .trainingsplan-set-list {
+  margin: 0;
+}
+
+.trainingsplan-history-row__date,
+.trainingsplan-history-row__date:visited,
+.trainingsplan-session-link,
+.trainingsplan-session-link:visited {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-primary);
+}
+
+.trainingsplan-history-row__weekday {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+/* ── Nummerierte Satz-Liste (SetList.tsx) ──────────────────
+   Gemeinsam genutzt vom Ablauf (Einheit-Detail), der Historie
+   (Übungs-Detail) und "Letztes Mal" (Übung-hinzufügen-Modal). */
+
+.trainingsplan-set-list {
+  list-style: none;
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-size: 0.9rem;
+}
+
+.trainingsplan-set-list__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 6px 12px;
+}
+
+.trainingsplan-set-list__index {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* ── Übersicht: "Letzte Einheiten" nach Kalenderwoche gruppiert ─────
+   Statt der KW inline in jeder Zeile ("Mo, 14.09.2026 · KW 38") steht sie
+   als Trennlinie über der jeweiligen Wochengruppe (Nutzer-Feedback: KW
+   ausgelagert statt an jede Zeile angehängt). */
+
+.trainingsplan-week-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.trainingsplan-week-group__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: var(--space-1);
+}
+
+.trainingsplan-week-group__header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: var(--color-border);
+}
+
+/* ── "Übung hinzufügen"-Modal ──────────────────────────── */
+
+.trainingsplan-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.trainingsplan-modal-body>h3 {
+  margin: 0;
+}
+
+.trainingsplan-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 55vh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.trainingsplan-picker-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-alt);
+  color: var(--color-text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.trainingsplan-picker-item:hover,
+.trainingsplan-picker-item:focus-visible {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.trainingsplan-picker-item__thumb {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+
+.trainingsplan-picker-item__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.trainingsplan-picker-item__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.trainingsplan-picker-item__name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trainingsplan-picker-item__meta {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.trainingsplan-picker-item__chevron {
+  color: var(--color-text-muted);
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.trainingsplan-modal-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.trainingsplan-modal-title>h3 {
+  margin: 0;
+}
+
+.trainingsplan-back-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+  margin-left: calc(var(--space-1) * -1);
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.trainingsplan-back-btn:hover {
+  color: var(--color-primary);
+}
+
+.trainingsplan-last-time {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-0);
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  font-size: 0.85rem;
+}
+
+.trainingsplan-last-time__date {
+  flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 6px;
+  padding-right: 2px;
+  border-left: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-weight: 600;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.trainingsplan-last-time .trainingsplan-set-list {
+  margin: 0;
+  padding-left: 6px;
+  min-width: 0;
+}
+
+@media (max-width: 480px) {
+  .trainingsplan-last-time {
+    padding: var(--space-2);
+  }
+
+
+  .trainingsplan-last-time .trainingsplan-set-list {
+    gap: 6px;
+    padding-left: 6px;
+  }
+
+  .trainingsplan-last-time .trainingsplan-set-list__item {
+    gap: 4px;
+    padding: 4px 8px;
+  }
+}
+
+/* ── Verlaufs-Chart (WeightTrendChart.tsx) ─────────────────
+   Handgebauter SVG-Chart, siehe dataviz-Skill: dünne 2px-Linie, 4px-Marker,
+   recessive Gitterlinien, Hover-Tooltip statt Werten an jedem Punkt. */
+
+.trainingsplan-chart {
+  position: relative;
+  width: 100%;
+}
+
+.trainingsplan-chart__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.trainingsplan-chart__gridline {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.trainingsplan-chart__line {
+  stroke: var(--color-primary);
+  stroke-width: 2;
+}
+
+.trainingsplan-chart__marker {
+  fill: var(--color-primary);
+}
+
+.trainingsplan-chart__axis-label {
+  fill: var(--color-text-muted);
+  font-size: 9px;
+}
+
+.trainingsplan-chart__tooltip {
+  position: absolute;
+  transform: translate(-50%, -120%);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-2);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.trainingsplan-chart__tooltip span {
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+}
+
+.trainingsplan-chart-single {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* ── Info-Popup ("So geht's") ──────────────────────────────
+   Bewusst aufwendiger gestaltet als Kochbuchs schlichte Schritte-Liste:
+   großes Titelbild, Abschnitte als Karten mit alternierendem Bild/Text-
+   Layout, auf dem Handy stapeln Bild+Text automatisch (flex-wrap). */
+
+.trainingsplan-info-modal {
+  max-width: 640px;
+  width: 100%;
+  position: relative;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.trainingsplan-info-modal__close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background-color: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.trainingsplan-info-modal__hero {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--space-3);
+}
+
+.trainingsplan-info-modal__hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.trainingsplan-info-modal__title {
+  margin-bottom: var(--space-3);
+}
+
+.trainingsplan-info-modal__sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.trainingsplan-info-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.trainingsplan-info-section--reverse {
+  flex-direction: row-reverse;
+}
+
+.trainingsplan-info-section__photo {
+  flex: 1 1 220px;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.trainingsplan-info-section__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.trainingsplan-info-section__body {
+  flex: 1 1 260px;
+  position: relative;
+  padding-left: 36px;
+}
+
+.trainingsplan-info-section__body h3 {
+  margin: 0 0 var(--space-1);
+}
+
+.trainingsplan-info-section__body p {
+  color: var(--color-text-muted);
+  margin: 0;
+  white-space: pre-line;
+}
+
+.trainingsplan-info-section__number {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+
+  .trainingsplan-info-section,
+  .trainingsplan-info-section--reverse {
+    flex-direction: column;
+  }
+}
+
+/* ── Übersicht (Feature 6) ─────────────────────────────── */
+
+.trainingsplan-overview-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.trainingsplan-stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface-alt);
+  min-width: 160px;
+}
+
+.trainingsplan-stat-tile__value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.trainingsplan-stat-tile__label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* Einfacher DOM-Balken-Chart (kein SVG nötig für eine einzelne Serie),
+   gleiches Grundprinzip wie StatusBarChart.tsx: Höhe in % relativ zum
+   Maximum, dünne Balken, recessives Grundgerüst. */
+.trainingsplan-frequency-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 100px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.trainingsplan-frequency-chart__col {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.trainingsplan-frequency-chart__bar {
+  width: 100%;
+  min-height: 2px;
+  background-color: var(--color-primary);
+  border-radius: 2px 2px 0 0;
+}
+/* ── Trainingsbereiche verwalten (BereicheModal.tsx) ─────── */
+
+.trainingsplan-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.trainingsplan-area-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 28vh;
+  overflow-y: auto;
+}
+
+.trainingsplan-area-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-alt);
+}
+
+.trainingsplan-area-row--editing {
+  display: block;
+}
+
+.trainingsplan-area-row__icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.trainingsplan-area-row__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.trainingsplan-area-row__name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trainingsplan-area-row__meta {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.trainingsplan-area-row .trainingsplan-session-flow__icon-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.trainingsplan-area-form,
+.trainingsplan-area-add {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.trainingsplan-area-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.trainingsplan-area-add {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.trainingsplan-icon-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.trainingsplan-icon-picker__suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.trainingsplan-icon-picker__option {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: none;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.trainingsplan-icon-picker__option.is-active {
+  background-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
+  border-color: var(--color-primary);
+}
+
+.trainingsplan-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.trainingsplan-modal-header > h3 {
+  margin: 0;
+}
+
+.trainingsplan-modal-close {
+  flex-shrink: 0;
+  display: flex;
+  padding: var(--space-1);
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.trainingsplan-modal-close:hover {
+  color: var(--color-text);
+}

@@ -44,6 +44,9 @@ model User {
   inviteTokens        InviteToken[]
   recipes             Recipe[]
   recipeRatings       RecipeRating[]
+  exercises           Exercise[]
+  trainingSessions    TrainingSession[]
+  focusAreas          FocusArea[]
 
   @@map("users")
 }
@@ -409,6 +412,140 @@ model RecipeRating {
 
   @@unique([recipeId, userId])
   @@map("recipe_ratings")
+}
+
+// ── Tool: Trainingsplan ──────────────────────────────────
+
+enum ExerciseUnit {
+  KG
+  G
+  S
+  MIN
+  H
+  KM
+  M
+  BODYWEIGHT // reine Wiederholungsübung (z.B. Klimmzüge) — kein Gewichtsfeld beim Loggen
+}
+
+// Trainingsbereich pro Nutzer (Brust, Rücken, ...). key ist ein stabiler
+// Schlüssel, unter dem Übungen den Bereich in Exercise.focusAreas referenzieren —
+// Umbenennen ändert nur name/icon, nie den Schlüssel.
+model FocusArea {
+  id        String   @id @default(cuid())
+  userId    String
+  key       String
+  name      String
+  icon      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+  @@map("focus_areas")
+}
+
+// Katalog-Eintrag einer Übung. Anders als Kochbuchs category/mealType (die
+// wegen Altbestand nullable bleiben mussten) sind focusAreas und unit hier
+// Pflichtfelder — neues Tool, kein Altbestand, kein Migrationsschmerz.
+// focusAreas ist bewusst Json statt Prisma-Enum-Array: MySQL unterstützt
+// (anders als Postgres) keine nativen Skalar-Listen, auch nicht für Enums —
+// daher wie tags/allergens bei Recipe ein Json-String-Array, serverseitig
+// gegen EXERCISE_FOCUS_AREAS geprüft (siehe trainingsplan.service.ts).
+// archivedAt: eine bereits in Einheiten geloggte Übung kann nicht gelöscht
+// werden (siehe deleteExercise), sondern nur archiviert — bleibt für
+// Historie/Statistik voll nutzbar, verschwindet nur aus der
+// "Übung hinzufügen"-Auswahl und (per Default) aus der Katalog-Liste.
+model Exercise {
+  id            String        @id @default(cuid())
+  userId        String
+  name          String
+  focusAreas    Json // string[] aus fixer Liste (siehe EXERCISE_FOCUS_AREAS), Pflicht, mind. 1 Eintrag
+  unit          ExerciseUnit
+  // Optionale zweite Einheit, z.B. Laufen = km (unit) + min (secondaryUnit).
+  // Beim Loggen einer Runde gibt es dann ein zusätzliches Wertefeld
+  // (SetEntry.secondaryValue). Nicht gesetzt = einwertige Übung (Normalfall).
+  secondaryUnit ExerciseUnit?
+  imageUrl      String?
+  // Array<{ title: string; text: string; imageUrl: string | null }> — flach
+  // wie RecipeStep bei Kochbuch, nie unabhängig von der Übung abgefragt.
+  // Rendert im Frontend als aufwendig gestaltetes Popup (UebungInfoModal).
+  infoSections  Json?
+  archivedAt    DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionExercises SessionExercise[]
+
+  @@map("exercises")
+}
+
+// Eine geloggte Trainingseinheit. performedAt ist ein voller Zeitstempel
+// (Datum + Uhrzeit, kein @db.Date) — der UTC/Lokal-Verschiebungs-Pitfall aus
+// date-utils.ts betrifft nur @db.Date-Spalten (reines Kalenderdatum ohne
+// Uhrzeit); ein DateTime-Wert transportiert einen vollen Instant und wird
+// von Prisma/MySQL verlustfrei rund-getripped. Zeitzone spielt aber bei der
+// client-seitigen Häufigkeits-/Streak-Bucketing-Logik eine Rolle (siehe
+// format.ts im Frontend).
+model TrainingSession {
+  id          String   @id @default(cuid())
+  userId      String
+  performedAt DateTime
+  note        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercises SessionExercise[]
+
+  // Für die Sessions-Liste (sortiert) und die client-seitige Häufigkeits-/
+  // Streak-Berechnung auf der Übersicht.
+  @@index([userId, performedAt])
+  @@map("training_sessions")
+}
+
+// Eine geloggte Übung innerhalb einer Einheit. exercise-FK ist bewusst
+// Restrict (nicht Cascade) — Löschen einer Übung, die schon geloggt wurde,
+// soll die Historie nicht mitreißen (siehe deleteExercise in
+// trainingsplan.service.ts, das vorher explizit prüft und blockiert).
+// WICHTIG: das erfordert eine Anpassung an auth.controller.ts (Konto
+// löschen muss TrainingSession vor dem User löschen, sonst kann das
+// Restrict beim Geschwister-Kaskadierungspfad über Exercise zuschlagen).
+model SessionExercise {
+  id         String   @id @default(cuid())
+  sessionId  String
+  exerciseId String
+  order      Int // Position in der Einheit, für die Ablauf-Darstellung; beim Anhängen serverseitig vergeben
+  createdAt  DateTime @default(now())
+
+  session  TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  exercise Exercise        @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  sets     SetEntry[]
+
+  @@map("session_exercises")
+}
+
+// Eine "Runde" (Satz) innerhalb einer geloggten Übung. value ist der Wert in
+// der Haupteinheit der zugehörigen Exercise (z.B. kg, km, min) — bleibt null
+// bei reinen Bodyweight-Sätzen (unit = BODYWEIGHT, nur reps zählt) oder
+// direkt nach dem Anlegen einer neuen leeren Runde. reps ist unabhängig
+// davon optional (leer bei reinem Zeit-/Distanz-Cardio, siehe
+// ExerciseUnit-Kommentar). secondaryValue ist der Wert in Exercise.secondaryUnit,
+// falls die Übung eine zweite Einheit hat (z.B. Laufzeit neben Distanz) —
+// sonst immer null.
+model SetEntry {
+  id                String @id @default(cuid())
+  sessionExerciseId String
+  order             Int // Runden-Reihenfolge (1., 2., 3. ...), serverseitig aus der Array-Position vergeben
+  value             Float?
+  reps              Int?
+  secondaryValue    Float?
+
+  sessionExercise SessionExercise @relation(fields: [sessionExerciseId], references: [id], onDelete: Cascade)
+
+  @@map("set_entries")
 }
 
 // Weitere Modelle hier ergänzen:

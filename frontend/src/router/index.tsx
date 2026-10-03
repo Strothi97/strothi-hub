@@ -27,6 +27,12 @@ import { RezeptForm } from '@pages/kochbuch/RezeptForm'
 import { RezeptDetail } from '@pages/kochbuch/RezeptDetail'
 import { Kochen } from '@pages/kochbuch/Kochen'
 import { Import as KochbuchImport } from '@pages/kochbuch/Import'
+import { TrainingsplanLayout } from '@pages/trainingsplan/TrainingsplanLayout'
+import { Uebersicht as TrainingsplanUebersicht } from '@pages/trainingsplan/Uebersicht'
+import { EinheitDetail } from '@pages/trainingsplan/EinheitDetail'
+import { Uebungen } from '@pages/trainingsplan/Uebungen'
+import { UebungForm } from '@pages/trainingsplan/UebungForm'
+import { UebungDetail } from '@pages/trainingsplan/UebungDetail'
 
 export function AppRoutes() {
   return (
@@ -78,6 +84,17 @@ export function AppRoutes() {
               <Route path="rezept/:id" element={<RezeptDetail />} />
               <Route path="rezept/:id/bearbeiten" element={<RezeptForm />} />
               <Route path="rezept/:id/kochen" element={<Kochen />} />
+            </Route>
+          </Route>
+
+          <Route path="/trainingsplan" element={<ProtectedRoute requireTool="trainingsplan" />}>
+            <Route element={<TrainingsplanLayout />}>
+              <Route index element={<TrainingsplanUebersicht />} />
+              <Route path="einheiten/:id" element={<EinheitDetail />} />
+              <Route path="uebungen" element={<Uebungen />} />
+              <Route path="uebungen/neu" element={<UebungForm />} />
+              <Route path="uebungen/:id" element={<UebungDetail />} />
+              <Route path="uebungen/:id/bearbeiten" element={<UebungForm />} />
             </Route>
           </Route>
 
