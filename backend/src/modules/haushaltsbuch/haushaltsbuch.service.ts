@@ -234,7 +234,7 @@ export interface BuchungInput {
   notiz: string | null
 }
 
-const BUCHUNG_INCLUDE = { kategorie: { select: { name: true, typ: true } } } as const
+const BUCHUNG_INCLUDE = { kategorie: { select: { name: true, typ: true } }, haendler: { select: { name: true } } } as const
 
 type BuchungRow = Prisma.HaushaltBuchungGetPayload<{ include: typeof BUCHUNG_INCLUDE }>
 
@@ -248,7 +248,7 @@ function toBuchungDTO(row: BuchungRow, info?: { pfad: string; effektivInStatisti
     kategorieName: row.kategorie.name,
     kategoriePfad: info?.pfad ?? row.kategorie.name,
     effektivInStatistik: info?.effektivInStatistik ?? true,
-    haendler: row.haendler,
+    haendler: row.haendler?.name ?? null,
     notiz: row.notiz,
   }
 }
@@ -287,25 +287,38 @@ async function assertBuchungInput(userId: string, input: BuchungInput): Promise<
   if (!kategorie) throw new AppError('Die Kategorie existiert nicht.', 400)
 }
 
-function toBuchungData(input: BuchungInput) {
+// Händlername → gespeicherter Eintrag. Ohne Groß-/Kleinschreibung, damit "Edeka" und
+// "edeka" nicht zwei Händler werden. Unbekannte Namen werden hier angelegt.
+async function haendlerIdFuer(userId: string, name: string | null): Promise<string | null> {
+  const bereinigt = name?.trim() || null
+  if (!bereinigt) return null
+  const vorhanden = await prisma.haushaltHaendler.findFirst({ where: { userId, name: { equals: bereinigt } } })
+  if (vorhanden) return vorhanden.id
+  const neu = await prisma.haushaltHaendler.create({ data: { userId, name: bereinigt } })
+  return neu.id
+}
+
+async function toBuchungData(userId: string, input: BuchungInput) {
   return {
     datum: parseDateOnly(input.datum),
     betrag: input.betrag,
     kategorieId: input.kategorieId,
-    haendler: input.haendler?.trim() || null,
+    haendlerId: await haendlerIdFuer(userId, input.haendler),
     notiz: input.notiz?.trim() || null,
   }
 }
 
 export async function createBuchung(userId: string, input: BuchungInput): Promise<void> {
   await assertBuchungInput(userId, input)
-  await prisma.haushaltBuchung.create({ data: { userId, ...toBuchungData(input) } })
+  await prisma.haushaltBuchung.create({ data: { userId, ...(await toBuchungData(userId, input)) } })
 }
 
 // Alle prüfen, dann in einer Transaktion schreiben — entweder alles oder nichts.
 export async function createBuchungen(userId: string, inputs: BuchungInput[]): Promise<number> {
   for (const input of inputs) await assertBuchungInput(userId, input)
-  await prisma.$transaction(inputs.map((input) => prisma.haushaltBuchung.create({ data: { userId, ...toBuchungData(input) } })))
+  const daten = []
+  for (const input of inputs) daten.push(await toBuchungData(userId, input))
+  await prisma.$transaction(daten.map((d) => prisma.haushaltBuchung.create({ data: { userId, ...d } })))
   return inputs.length
 }
 
@@ -313,7 +326,7 @@ export async function updateBuchung(userId: string, id: string, input: BuchungIn
   const existing = await prisma.haushaltBuchung.findFirst({ where: { id, userId } })
   if (!existing) return false
   await assertBuchungInput(userId, input)
-  await prisma.haushaltBuchung.update({ where: { id }, data: toBuchungData(input) })
+  await prisma.haushaltBuchung.update({ where: { id }, data: await toBuchungData(userId, input) })
   return true
 }
 
@@ -407,4 +420,65 @@ export async function jahresUebersicht(userId: string, jahr: number) {
     })
   }
   return { jahr, monate }
+}
+
+// ── Händler ─────────────────────────────────────────────
+
+export interface HaendlerDTO {
+  id: string
+  name: string
+  usageCount: number
+}
+
+export async function listHaendler(userId: string): Promise<HaendlerDTO[]> {
+  const [rows, gruppen] = await Promise.all([
+    prisma.haushaltHaendler.findMany({ where: { userId }, orderBy: { name: 'asc' } }),
+    prisma.haushaltBuchung.groupBy({ by: ['haendlerId'], where: { userId, haendlerId: { not: null } }, _count: { _all: true } }),
+  ])
+  const usage = new Map(gruppen.map((g) => [g.haendlerId, g._count._all]))
+  return rows.map((h) => ({ id: h.id, name: h.name, usageCount: usage.get(h.id) ?? 0 }))
+}
+
+async function assertHaendlerNameFrei(userId: string, name: string, ausId?: string): Promise<void> {
+  const treffer = await prisma.haushaltHaendler.findFirst({ where: { userId, name: { equals: name } } })
+  if (treffer && treffer.id !== ausId) throw new AppError(`Den Händler "${treffer.name}" gibt es schon.`, 409)
+}
+
+export async function createHaendler(userId: string, name: string): Promise<void> {
+  await assertHaendlerNameFrei(userId, name)
+  await prisma.haushaltHaendler.create({ data: { userId, name } })
+}
+
+export async function updateHaendler(userId: string, id: string, name: string): Promise<boolean> {
+  const existing = await prisma.haushaltHaendler.findFirst({ where: { id, userId } })
+  if (!existing) return false
+  await assertHaendlerNameFrei(userId, name, id)
+  await prisma.haushaltHaendler.update({ where: { id }, data: { name } })
+  return true
+}
+
+export async function deleteHaendler(userId: string, id: string): Promise<boolean> {
+  const existing = await prisma.haushaltHaendler.findFirst({ where: { id, userId } })
+  if (!existing) return false
+  const anzahl = await prisma.haushaltBuchung.count({ where: { userId, haendlerId: id } })
+  if (anzahl > 0) throw new AppError(`Dieser Händler wird noch in ${anzahl} Buchung${anzahl === 1 ? '' : 'en'} verwendet.`, 409)
+  await prisma.haushaltHaendler.delete({ where: { id } })
+  return true
+}
+
+// ── Gesamtsumme über alle Zeiten (nur Kategorien mit Statistik) ──
+
+export async function gesamtUebersicht(userId: string) {
+  const [rows, infos] = await Promise.all([
+    prisma.haushaltBuchung.findMany({ where: { userId }, select: { betrag: true, kategorieId: true, kategorie: { select: { typ: true } } } }),
+    kategorieInfos(userId),
+  ])
+  let einnahmen = 0
+  let ausgaben = 0
+  for (const r of rows) {
+    if (infos.get(r.kategorieId)?.effektivInStatistik === false) continue
+    if (r.kategorie.typ === 'EINNAHME') einnahmen += toNumber(r.betrag)
+    else ausgaben += toNumber(r.betrag)
+  }
+  return { einnahmen: round2(einnahmen), ausgaben: round2(ausgaben) }
 }

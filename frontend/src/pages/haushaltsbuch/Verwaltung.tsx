@@ -4,6 +4,7 @@ import { Input } from '@components/ui/Input'
 import { haushaltsbuchService } from '@services/haushaltsbuch.service'
 import type { Kategorie, KategorieTyp, Kasse } from '@app-types/haushaltsbuch'
 import { formatEuro, formatDateOnly, toDateOnlyLocal } from './format'
+import { HaendlerModal } from './HaendlerModal'
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message
@@ -30,6 +31,18 @@ export function Verwaltung() {
   const [fehler, setFehler] = useState<string | null>(null)
   const [typ, setTyp] = useState<KategorieTyp>('AUSGABE')
   const [anlegen, setAnlegen] = useState<Anlegen>(null)
+  const [umbenennen, setUmbenennen] = useState<{ id: string; name: string } | null>(null)
+  const [haendlerOffen, setHaendlerOffen] = useState(false)
+
+  const submitUmbenennen = (event: FormEvent) => {
+    event.preventDefault()
+    if (!umbenennen || !umbenennen.name.trim()) return
+    const { id, name } = umbenennen
+    run(async () => {
+      await haushaltsbuchService.updateKategorie(id, { name: name.trim() })
+      setUmbenennen(null)
+    })
+  }
 
   // Kasse-Formular
   const [startbetrag, setStartbetrag] = useState('0')
@@ -224,6 +237,18 @@ export function Verwaltung() {
             <button
               type="button"
               className="haushalt-icon-action"
+              title="Umbenennen"
+              aria-label={`${k.name} umbenennen`}
+              onClick={() => {
+                setFehler(null)
+                setUmbenennen({ id: k.id, name: k.name })
+              }}
+            >
+              ✏️
+            </button>
+            <button
+              type="button"
+              className="haushalt-icon-action"
               title="Unterkategorie hinzufügen"
               aria-label={`Unterkategorie zu ${k.name} hinzufügen`}
               onClick={() => setAnlegen({ parentId: k.id, name: '' })}
@@ -242,6 +267,19 @@ export function Verwaltung() {
             </button>
           </div>
         </div>
+        {umbenennen?.id === k.id && (
+          <form className="haushalt-tree__add haushalt-tree__umbenennen" onSubmit={submitUmbenennen}>
+            <Input autoFocus value={umbenennen.name} onChange={(e) => setUmbenennen({ id: k.id, name: e.target.value })} />
+            <div className="haushalt-tree__add-actions">
+              <Button type="button" variant="secondary" onClick={() => setUmbenennen(null)}>
+                Abbrechen
+              </Button>
+              <Button type="submit" disabled={!umbenennen.name.trim()}>
+                Speichern
+              </Button>
+            </div>
+          </form>
+        )}
         {(kinder.length > 0 || offen) && (
           <ul className="haushalt-tree__kinder">
             {kinder.map((kind) => renderKnoten(kind, tiefe + 1))}
@@ -277,6 +315,17 @@ export function Verwaltung() {
           <Button type="submit">Speichern</Button>
           {kasseGespeichert && <p className="form-hint">Gespeichert.</p>}
         </form>
+      </section>
+
+      <section className="kochbuch-detail__section">
+        <h3>Händler</h3>
+        <p className="form-hint">Gespeicherte Händler werden beim Buchen als Vorschlag angeboten. So bleiben Schreibweisen einheitlich.</p>
+        <button type="button" className="haushalt-add-btn" onClick={() => setHaendlerOffen(true)}>
+          Händler verwalten
+        </button>
+        {haendlerOffen && (
+          <HaendlerModal onClose={() => setHaendlerOffen(false)} onChanged={() => load()} />
+        )}
       </section>
 
       <section className="kochbuch-detail__section">

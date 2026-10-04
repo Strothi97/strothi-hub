@@ -35,15 +35,19 @@ export function Buchungen() {
   const [suche, setSuche] = useState('')
   const [modal, setModal] = useState<{ buchung?: Buchung } | null>(null)
   const [schnell, setSchnell] = useState(false)
+  const [gesamt, setGesamt] = useState<{ einnahmen: number; ausgaben: number } | null>(null)
 
   const load = useCallback(() => {
-    return haushaltsbuchService
-      .listBuchungen({
-        von: firstDayOfMonth(jahr, monat),
-        bis: lastDayOfMonth(jahr, monat),
-        suche: suche.trim() || undefined,
-      })
-      .then(({ data }) => setBuchungen(data.buchungen))
+    return Promise.all([
+      haushaltsbuchService
+        .listBuchungen({
+          von: firstDayOfMonth(jahr, monat),
+          bis: lastDayOfMonth(jahr, monat),
+          suche: suche.trim() || undefined,
+        })
+        .then(({ data }) => setBuchungen(data.buchungen)),
+      haushaltsbuchService.gesamt().then(({ data }) => setGesamt(data.gesamt)),
+    ])
   }, [jahr, monat, suche])
 
   useEffect(() => {
@@ -128,10 +132,12 @@ export function Buchungen() {
         <div className="haushalt-tile haushalt-tile--einnahmen">
           <span className="haushalt-tile__label">Einnahmen im Monat</span>
           <span className="haushalt-tile__value">{formatEuro(monatsSumme.einnahmen)}</span>
+          {gesamt && <span className="haushalt-tile__hint">Gesamt {formatEuro(gesamt.einnahmen)}</span>}
         </div>
         <div className="haushalt-tile haushalt-tile--ausgaben">
           <span className="haushalt-tile__label">Ausgaben im Monat</span>
           <span className="haushalt-tile__value">{formatEuro(monatsSumme.ausgaben)}</span>
+          {gesamt && <span className="haushalt-tile__hint">Gesamt {formatEuro(gesamt.ausgaben)}</span>}
         </div>
       </div>
 

@@ -51,6 +51,7 @@ model User {
   haushaltKasse       HaushaltKasse?
   haushaltKategorien  HaushaltKategorie[]
   haushaltBuchungen   HaushaltBuchung[]
+  haushaltHaendler    HaushaltHaendler[]
 
   @@map("users")
 }
@@ -613,6 +614,21 @@ model HaushaltKategorie {
   @@map("haushalt_kategorien")
 }
 
+// Gespeicherter Händler pro Nutzer. Name ist eindeutig (ohne Groß-/Kleinschreibung).
+model HaushaltHaendler {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  buchungen HaushaltBuchung[]
+
+  @@unique([userId, name])
+  @@map("haushalt_haendler")
+}
+
 // Einzelne Buchung. betrag ist immer positiv; die Richtung ergibt sich aus der
 // Kategorie (EINNAHME = plus, AUSGABE = minus). datum ist ein reines Kalenderdatum.
 model HaushaltBuchung {
@@ -621,13 +637,14 @@ model HaushaltBuchung {
   datum        DateTime @db.Date
   betrag       Decimal  @db.Decimal(12, 2)
   kategorieId  String
-  haendler     String?
+  haendlerId   String?
   notiz        String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   kategorie HaushaltKategorie @relation(fields: [kategorieId], references: [id], onDelete: Restrict)
+  haendler  HaushaltHaendler? @relation(fields: [haendlerId], references: [id], onDelete: Restrict)
 
   @@index([userId, datum])
   @@map("haushalt_buchungen")

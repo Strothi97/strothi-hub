@@ -22,6 +22,12 @@ router.post('/buchungen/batch', controller.createBuchungen)
 router.put('/buchungen/:id', controller.updateBuchung)
 router.delete('/buchungen/:id', controller.deleteBuchung)
 
+router.get('/haendler', controller.listHaendler)
+router.post('/haendler', controller.createHaendler)
+router.put('/haendler/:id', controller.updateHaendler)
+router.delete('/haendler/:id', controller.deleteHaendler)
+
+router.get('/uebersicht/gesamt', controller.gesamtUebersicht)
 router.get('/uebersicht/monat', controller.monatsUebersicht)
 router.get('/uebersicht/jahr', controller.jahresUebersicht)
 

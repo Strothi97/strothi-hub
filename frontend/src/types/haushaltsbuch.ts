@@ -67,3 +67,14 @@ export interface JahresMonat {
   bilanz: number
   kasse: number | null
 }
+
+export interface Haendler {
+  id: string
+  name: string
+  usageCount: number
+}
+
+export interface Gesamt {
+  einnahmen: number
+  ausgaben: number
+}

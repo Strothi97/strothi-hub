@@ -4,6 +4,8 @@ import type {
   Buchung,
   BuchungInput,
   Kasse,
+  Gesamt,
+  Haendler,
   Kategorie,
   KategorieTyp,
   MonatsUebersicht,
@@ -30,6 +32,12 @@ export const haushaltsbuchService = {
   createBuchungenBatch: (items: BuchungInput[]) => api.post<{ anzahl: number }>(`${endpoints.buchungen}/batch`, { items }),
   updateBuchung: (id: string, input: BuchungInput) => api.put(endpoints.buchung(id), input),
   deleteBuchung: (id: string) => api.delete(endpoints.buchung(id)),
+
+  listHaendler: () => api.get<{ haendler: Haendler[] }>(`/haushaltsbuch/haendler`),
+  createHaendler: (name: string) => api.post(`/haushaltsbuch/haendler`, { name }),
+  updateHaendler: (id: string, name: string) => api.put(`/haushaltsbuch/haendler/${id}`, { name }),
+  deleteHaendler: (id: string) => api.delete(`/haushaltsbuch/haendler/${id}`),
+  gesamt: () => api.get<{ gesamt: Gesamt }>(`/haushaltsbuch/uebersicht/gesamt`),
 
   monatsUebersicht: (jahr: number, monat: number) =>
     api.get<{ uebersicht: MonatsUebersicht }>(endpoints.uebersichtMonat, { params: { jahr, monat } }),

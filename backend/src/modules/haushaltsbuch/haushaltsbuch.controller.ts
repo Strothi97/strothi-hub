@@ -162,3 +162,37 @@ export const jahresUebersicht = async (req: Request, res: Response) => {
   if (!Number.isInteger(jahr)) throw new AppError('Das Jahr ist ungültig.', 400)
   return res.json({ uebersicht: await service.jahresUebersicht(req.user!.id, jahr) })
 }
+
+// ── Händler ──
+
+function assertHaendlerName(value: unknown): string {
+  const name = typeof value === 'string' ? value.trim() : ''
+  if (!name) throw new AppError('Bitte einen Namen für den Händler angeben.', 400)
+  if (name.length > 60) throw new AppError('Der Name ist zu lang.', 400)
+  return name
+}
+
+export const listHaendler = async (req: Request, res: Response) => {
+  return res.json({ haendler: await service.listHaendler(req.user!.id) })
+}
+
+export const createHaendler = async (req: Request, res: Response) => {
+  await service.createHaendler(req.user!.id, assertHaendlerName(req.body?.name))
+  return res.status(201).json({ ok: true })
+}
+
+export const updateHaendler = async (req: Request, res: Response) => {
+  const ok = await service.updateHaendler(req.user!.id, req.params.id, assertHaendlerName(req.body?.name))
+  if (!ok) return res.status(404).json({ message: 'Händler nicht gefunden' })
+  return res.json({ ok: true })
+}
+
+export const deleteHaendler = async (req: Request, res: Response) => {
+  const ok = await service.deleteHaendler(req.user!.id, req.params.id)
+  if (!ok) return res.status(404).json({ message: 'Händler nicht gefunden' })
+  return res.status(204).send()
+}
+
+export const gesamtUebersicht = async (req: Request, res: Response) => {
+  return res.json({ gesamt: await service.gesamtUebersicht(req.user!.id) })
+}

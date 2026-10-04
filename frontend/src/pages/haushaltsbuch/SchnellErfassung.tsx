@@ -3,6 +3,7 @@ import { Button } from '@components/ui/Button'
 import { haushaltsbuchService } from '@services/haushaltsbuch.service'
 import type { BuchungInput, Kategorie } from '@app-types/haushaltsbuch'
 import { KategorieCombobox } from './KategorieCombobox'
+import { HaendlerCombobox } from './HaendlerCombobox'
 import { toDateOnlyLocal } from './format'
 
 interface Zeile {
@@ -131,12 +132,11 @@ export function SchnellErfassung({ kategorien, onSaved, onClose }: SchnellErfass
                   ariaLabel="Kategorie"
                   placeholder="Kategorie…"
                 />
-                <input
-                  className="input"
-                  aria-label="Händler"
+                <HaendlerCombobox
+                  ariaLabel="Händler"
                   placeholder="Händler"
                   value={z.haendler}
-                  onChange={(e) => aendern(z.key, { haendler: e.target.value })}
+                  onChange={(name) => aendern(z.key, { haendler: name })}
                 />
                 <input
                   className="input haushalt-schnell__betrag"

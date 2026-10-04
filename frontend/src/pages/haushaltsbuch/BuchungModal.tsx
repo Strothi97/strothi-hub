@@ -4,6 +4,7 @@ import { haushaltsbuchService } from '@services/haushaltsbuch.service'
 import type { Buchung, Kategorie } from '@app-types/haushaltsbuch'
 import { toDateOnlyLocal } from './format'
 import { KategorieCombobox } from './KategorieCombobox'
+import { HaendlerCombobox } from './HaendlerCombobox'
 
 interface BuchungModalProps {
   kategorien: Kategorie[]
@@ -107,7 +108,7 @@ export function BuchungModal({ kategorien, buchung, onClose, onSaved }: BuchungM
 
           <div className="form-group">
             <label className="form-label" htmlFor="haushalt-haendler">Händler</label>
-            <input id="haushalt-haendler" className="input" placeholder="z.B. Edeka" value={haendler} onChange={(e) => setHaendler(e.target.value)} />
+            <HaendlerCombobox id="haushalt-haendler" value={haendler} onChange={setHaendler} placeholder="z.B. Edeka" />
           </div>
 
           <div className="form-group">
