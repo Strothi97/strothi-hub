@@ -36,6 +36,7 @@ export function Buchungen() {
   const [modal, setModal] = useState<{ buchung?: Buchung } | null>(null)
   const [schnell, setSchnell] = useState(false)
   const [gesamt, setGesamt] = useState<{ einnahmen: number; ausgaben: number } | null>(null)
+  const [kasse, setKasse] = useState<number | null>(null)
 
   const load = useCallback(() => {
     return Promise.all([
@@ -47,6 +48,7 @@ export function Buchungen() {
         })
         .then(({ data }) => setBuchungen(data.buchungen)),
       haushaltsbuchService.gesamt().then(({ data }) => setGesamt(data.gesamt)),
+      haushaltsbuchService.monatsUebersicht(jahr, monat).then(({ data }) => setKasse(data.uebersicht.kasse)),
     ])
   }, [jahr, monat, suche])
 
@@ -138,6 +140,12 @@ export function Buchungen() {
           <span className="haushalt-tile__label">Ausgaben im Monat</span>
           <span className="haushalt-tile__value">{formatEuro(monatsSumme.ausgaben)}</span>
           {gesamt && <span className="haushalt-tile__hint">Gesamt {formatEuro(gesamt.ausgaben)}</span>}
+        </div>
+        <div className="haushalt-tile haushalt-tile--kasse">
+          <span className="haushalt-tile__label">Kassenstand am Monatsende</span>
+          <span className={`haushalt-tile__value ${kasse !== null && kasse < 0 ? 'is-ausgabe-text' : ''}`.trim()}>
+            {kasse === null ? '–' : formatEuro(kasse)}
+          </span>
         </div>
       </div>
 
