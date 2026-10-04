@@ -16,14 +16,16 @@ export function KategorieCombobox({ kategorien, value, onChange, id, ariaLabel, 
   const [suche, setSuche] = useState('')
   const ausgewaehlt = kategorien.find((k) => k.id === value)
 
-  // Anzeige nur mit Namen. Der Pfad erscheint nur, wenn ein Name mehrfach vorkommt.
+  // Anzeige nur mit Namen. Kommt ein Name mehrfach vor (auch bei Einnahme und Ausgabe),
+  // erscheinen Typ und Pfad, z.B. "Einnahme: Geschenk" und "Ausgabe: Geschenk".
   const namenMehrfach = useMemo(() => {
     const zaehler = new Map<string, number>()
     for (const k of kategorien) zaehler.set(k.name, (zaehler.get(k.name) ?? 0) + 1)
     return new Set([...zaehler].filter(([, n]) => n > 1).map(([name]) => name))
   }, [kategorien])
 
-  const anzeige = (k: Kategorie) => (namenMehrfach.has(k.name) ? k.pfad : k.name)
+  const anzeige = (k: Kategorie) =>
+    namenMehrfach.has(k.name) ? `${k.typ === 'EINNAHME' ? 'Einnahme' : 'Ausgabe'}: ${k.pfad}` : k.name
 
   const treffer = useMemo(() => {
     const needle = suche.trim().toLowerCase()
