@@ -60,10 +60,10 @@ export function BuchungModal({ kategorien, buchung, onClose, onSaved }: BuchungM
   }
 
   return (
-    <div className="farsi-modal-backdrop" onClick={onClose}>
+    // Kein Schließen per Klick daneben: sonst geht die Eingabe verloren.
+    <div className="farsi-modal-backdrop">
       <form
         className="farsi-modal"
-        onClick={(event) => event.stopPropagation()}
         onSubmit={handleSubmit}
         role="dialog"
         aria-modal="true"

@@ -91,10 +91,10 @@ export function SchnellErfassung({ kategorien, onSaved, onClose }: SchnellErfass
   }
 
   return (
-    <div className="farsi-modal-backdrop" onClick={onClose}>
+    // Kein Schließen per Klick daneben: sonst gehen eingetragene Zeilen verloren.
+    <div className="farsi-modal-backdrop">
       <div
         className="farsi-modal haushalt-schnell"
-        onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label="Mehrere Buchungen erfassen"
