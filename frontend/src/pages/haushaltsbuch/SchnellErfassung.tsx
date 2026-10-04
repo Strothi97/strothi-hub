@@ -5,6 +5,7 @@ import type { BuchungInput, Kategorie } from '@app-types/haushaltsbuch'
 import { KategorieCombobox } from './KategorieCombobox'
 import { HaendlerCombobox } from './HaendlerCombobox'
 import { toDateOnlyLocal } from './format'
+import { DatumInput } from './DatumInput'
 
 interface Zeile {
   key: number
@@ -118,13 +119,7 @@ export function SchnellErfassung({ kategorien, onSaved, onClose }: SchnellErfass
             </div>
             {zeilen.map((z) => (
               <div key={z.key} className="haushalt-schnell__zeile" role="row">
-                <input
-                  type="date"
-                  className="input"
-                  aria-label="Datum"
-                  value={z.datum}
-                  onChange={(e) => aendern(z.key, { datum: e.target.value })}
-                />
+                <DatumInput ariaLabel="Datum" value={z.datum} onChange={(datum) => aendern(z.key, { datum })} />
                 <KategorieCombobox
                   kategorien={kategorien}
                   value={z.kategorieId}

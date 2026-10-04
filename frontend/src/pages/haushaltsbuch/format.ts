@@ -21,6 +21,19 @@ export function formatDateOnly(value: string): string {
   return `${d}.${m}.${y}`
 }
 
+// Tippt man "0410", "04.10", "04102026" oder "04.10.26", ergibt das "JJJJ-MM-TT".
+// Ohne Jahr gilt das aktuelle Jahr, zweistellige Jahre zählen ab 2000. Ungültiges liefert null.
+export function parseDatumEingabe(text: string, heute = new Date()): string | null {
+  const m = text.trim().match(/^(\d{1,2})\D?(\d{1,2})(?:\D?(\d{2}|\d{4}))?\.?$/)
+  if (!m) return null
+  const tag = Number(m[1])
+  const monat = Number(m[2])
+  const jahr = m[3] ? Number(m[3]) + (m[3].length === 2 ? 2000 : 0) : heute.getFullYear()
+  const date = new Date(jahr, monat - 1, tag)
+  if (date.getFullYear() !== jahr || date.getMonth() !== monat - 1 || date.getDate() !== tag) return null
+  return toDateOnlyLocal(date)
+}
+
 // Wochentag + Datum für Listen, z.B. "Sa, 12.09.2026".
 export function formatDateWithWeekday(value: string): string {
   const [y, m, d] = value.split('-').map(Number)

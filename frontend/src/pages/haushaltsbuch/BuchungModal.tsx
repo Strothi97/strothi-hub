@@ -5,6 +5,7 @@ import type { Buchung, Kategorie } from '@app-types/haushaltsbuch'
 import { toDateOnlyLocal } from './format'
 import { KategorieCombobox } from './KategorieCombobox'
 import { HaendlerCombobox } from './HaendlerCombobox'
+import { DatumInput } from './DatumInput'
 
 interface BuchungModalProps {
   kategorien: Kategorie[]
@@ -103,7 +104,7 @@ export function BuchungModal({ kategorien, buchung, onClose, onSaved }: BuchungM
 
           <div className="form-group">
             <label className="form-label" htmlFor="haushalt-datum">Datum</label>
-            <input id="haushalt-datum" type="date" className="input" value={datum} onChange={(e) => setDatum(e.target.value)} required />
+            <DatumInput id="haushalt-datum" value={datum} onChange={setDatum} required />
           </div>
 
           <div className="form-group">
