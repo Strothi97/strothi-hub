@@ -13,7 +13,8 @@ interface KategorieComboboxProps {
 // Textfeld mit Vorschlagsliste: Tippen filtert, Enter übernimmt den ersten Treffer.
 export function KategorieCombobox({ kategorien, value, onChange, id, ariaLabel, placeholder }: KategorieComboboxProps) {
   const [offen, setOffen] = useState(false)
-  const [suche, setSuche] = useState('')
+  // null = nichts getippt, dann steht im Feld die aktuelle Auswahl
+  const [suche, setSuche] = useState<string | null>(null)
   const ausgewaehlt = kategorien.find((k) => k.id === value)
 
   // Anzeige nur mit Namen. Kommt ein Name mehrfach vor (auch bei Einnahme und Ausgabe),
@@ -28,23 +29,24 @@ export function KategorieCombobox({ kategorien, value, onChange, id, ariaLabel, 
     namenMehrfach.has(k.name) ? `${k.typ === 'EINNAHME' ? 'Einnahme' : 'Ausgabe'}: ${k.pfad}` : k.name
 
   const treffer = useMemo(() => {
-    const needle = suche.trim().toLowerCase()
+    const needle = (suche ?? '').trim().toLowerCase()
     const sortiert = [...kategorien].sort((a, b) => a.pfad.localeCompare(b.pfad))
     return needle ? sortiert.filter((k) => k.name.toLowerCase().includes(needle)) : sortiert
   }, [kategorien, suche])
 
   const waehlen = (kategorie: Kategorie) => {
     onChange(kategorie.id)
-    setSuche('')
+    setSuche(null)
     setOffen(false)
   }
 
+  // Enter übernimmt nur, wenn getippt wurde. Sonst bleibt die bestehende Auswahl erhalten.
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter' && offen && treffer.length > 0) {
+    if (event.key === 'Enter' && offen && suche !== null && treffer.length > 0) {
       event.preventDefault()
       waehlen(treffer[0])
     } else if (event.key === 'Escape') {
-      setSuche('')
+      setSuche(null)
       setOffen(false)
     }
   }
@@ -57,12 +59,15 @@ export function KategorieCombobox({ kategorien, value, onChange, id, ariaLabel, 
         aria-label={ariaLabel}
         placeholder={placeholder ?? 'Kategorie tippen…'}
         autoComplete="off"
-        value={offen ? suche : ausgewaehlt ? anzeige(ausgewaehlt) : ''}
-        onFocus={() => {
-          setSuche('')
+        value={suche ?? (ausgewaehlt ? anzeige(ausgewaehlt) : '')}
+        onFocus={(e) => {
+          e.currentTarget.select()
           setOffen(true)
         }}
-        onBlur={() => setOffen(false)}
+        onBlur={() => {
+          setOffen(false)
+          setSuche(null)
+        }}
         onChange={(e) => {
           setSuche(e.target.value)
           setOffen(true)
