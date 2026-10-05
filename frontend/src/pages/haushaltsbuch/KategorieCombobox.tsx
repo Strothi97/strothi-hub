@@ -80,10 +80,17 @@ export function KategorieCombobox({ kategorien, value, onChange, id, ariaLabel, 
           e.currentTarget.select()
           setOffen(true)
         }}
-        onBlur={() => {
-          setOffen(false)
-          setSuche(null)
-          setAktiv(-1)
+        onBlur={(e) => {
+          // Verzögert geschlossen (statt sofort synchron): schließt React die Liste
+          // während der Browser noch mitten in der Tab-Fokusberechnung steckt, bringt
+          // das in Firefox die Tab-Reihenfolge durcheinander (Liste "springt" wieder auf).
+          const feld = e.currentTarget
+          window.setTimeout(() => {
+            if (document.activeElement === feld) return
+            setOffen(false)
+            setSuche(null)
+            setAktiv(-1)
+          }, 0)
         }}
         onChange={(e) => {
           setSuche(e.target.value)

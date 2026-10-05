@@ -84,11 +84,18 @@ export function HaendlerCombobox({ value, onChange, id, ariaLabel, placeholder, 
           e.currentTarget.select()
           setOffen(true)
         }}
-        onBlur={() => {
-          setOffen(false)
-          setGetippt(false)
-          setAktiv(-1)
+        onBlur={(e) => {
           melden(value)
+          // Verzögert geschlossen (statt sofort synchron): schließt React die Liste
+          // während der Browser noch mitten in der Tab-Fokusberechnung steckt, bringt
+          // das in Firefox die Tab-Reihenfolge durcheinander (Liste "springt" wieder auf).
+          const feld = e.currentTarget
+          window.setTimeout(() => {
+            if (document.activeElement === feld) return
+            setOffen(false)
+            setGetippt(false)
+            setAktiv(-1)
+          }, 0)
         }}
         onChange={(e) => {
           onChange(e.target.value)
