@@ -101,7 +101,13 @@ export function BuchungModal({ kategorien, buchung, onClose, onSaved }: BuchungM
 
           <div className="form-group">
             <label className="form-label" htmlFor="haushalt-kategorie">Kategorie</label>
-            <KategorieCombobox id="haushalt-kategorie" kategorien={kategorien} value={kategorieId} onChange={setKategorieId} />
+            <KategorieCombobox
+              id="haushalt-kategorie"
+              kategorien={kategorien}
+              value={kategorieId}
+              onChange={setKategorieId}
+              onTabOut={() => document.getElementById('haushalt-betrag')?.focus()}
+            />
             {gewaehlt && (
               <p className="form-hint">
                 {gewaehlt.typ === 'EINNAHME' ? 'Einnahme (+)' : 'Ausgabe (−)'}

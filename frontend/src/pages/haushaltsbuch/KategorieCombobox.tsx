@@ -8,10 +8,14 @@ interface KategorieComboboxProps {
   id?: string
   ariaLabel?: string
   placeholder?: string
+  // Wenn gesetzt, übernimmt Tab (ohne Shift) das Weiterspringen selbst, statt es dem
+  // Browser zu überlassen — in Firefox kann der native Tab-Sprung hier hängen bleiben,
+  // wenn die Liste dabei gerade schließt (siehe onBlur unten).
+  onTabOut?: () => void
 }
 
 // Textfeld mit Vorschlagsliste: Tippen filtert, Enter übernimmt den ersten Treffer.
-export function KategorieCombobox({ kategorien, value, onChange, id, ariaLabel, placeholder }: KategorieComboboxProps) {
+export function KategorieCombobox({ kategorien, value, onChange, id, ariaLabel, placeholder, onTabOut }: KategorieComboboxProps) {
   const [offen, setOffen] = useState(false)
   // null = nichts getippt, dann steht im Feld die aktuelle Auswahl
   const [suche, setSuche] = useState<string | null>(null)
@@ -45,8 +49,6 @@ export function KategorieCombobox({ kategorien, value, onChange, id, ariaLabel, 
 
   // Pfeiltasten gehen durch die Liste, Enter übernimmt den markierten Treffer. Ohne
   // Pfeiltaste übernimmt Enter nur, wenn getippt wurde — sonst bleibt die Auswahl erhalten.
-  // Tab übernimmt genauso (ohne preventDefault, der Sprung zum nächsten Feld bleibt also
-  // erhalten) — sonst springt Tab sonst nur in die noch offene Liste statt weiter zum Preis.
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'ArrowDown' && treffer.length > 0) {
       event.preventDefault()
@@ -58,8 +60,18 @@ export function KategorieCombobox({ kategorien, value, onChange, id, ariaLabel, 
     } else if (event.key === 'Enter' && offen && treffer.length > 0 && (aktiv >= 0 || suche !== null)) {
       event.preventDefault()
       waehlen(treffer[aktiv >= 0 ? aktiv : 0])
-    } else if (event.key === 'Tab' && offen && treffer.length > 0 && (aktiv >= 0 || suche !== null)) {
-      waehlen(treffer[aktiv >= 0 ? aktiv : 0])
+    } else if (event.key === 'Tab' && !event.shiftKey && onTabOut) {
+      // Springt selbst zum nächsten Feld, statt dem nativen Tab-Sprung des Browsers zu
+      // vertrauen — in Firefox blieb der hier hängen, wenn die Liste dabei noch offen war.
+      event.preventDefault()
+      if (offen && treffer.length > 0 && (aktiv >= 0 || suche !== null)) {
+        waehlen(treffer[aktiv >= 0 ? aktiv : 0])
+      } else {
+        setOffen(false)
+        setSuche(null)
+        setAktiv(-1)
+      }
+      onTabOut()
     } else if (event.key === 'Escape') {
       setSuche(null)
       setAktiv(-1)

@@ -153,8 +153,10 @@ export function SchnellErfassung({ kategorien, onSaved, onClose }: SchnellErfass
                   onChange={(id) => aendern(z.key, { kategorieId: id })}
                   ariaLabel="Kategorie"
                   placeholder="Kategorie…"
+                  onTabOut={() => document.getElementById(`haushalt-schnell-betrag-${z.key}`)?.focus()}
                 />
                 <input
+                  id={`haushalt-schnell-betrag-${z.key}`}
                   className="input haushalt-schnell__betrag"
                   aria-label="Betrag"
                   inputMode="decimal"
