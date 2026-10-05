@@ -439,6 +439,43 @@ export async function listHaendler(userId: string): Promise<HaendlerDTO[]> {
   return rows.map((h) => ({ id: h.id, name: h.name, usageCount: usage.get(h.id) ?? 0 }))
 }
 
+export interface HaendlerVorschlagDTO {
+  kategorieId: string
+  betrag: number
+  notiz: string | null
+}
+
+// Vorschlag für eine neue Buchung, abgeleitet aus den bisherigen Buchungen dieses Händlers:
+// die Kategorie, die am häufigsten vorkam (bei Gleichstand die zuletzt verwendete), sowie
+// Betrag und Notiz der letzten Buchung — die sind bei Versicherungen/Abos meist noch aktuell.
+// Ohne bekannten Händler oder ohne bisherige Buchungen gibt es keinen Vorschlag.
+export async function haendlerVorschlag(userId: string, name: string): Promise<HaendlerVorschlagDTO | null> {
+  const bereinigt = name.trim()
+  if (!bereinigt) return null
+  const haendler = await prisma.haushaltHaendler.findFirst({ where: { userId, name: { equals: bereinigt } } })
+  if (!haendler) return null
+  const buchungen = await prisma.haushaltBuchung.findMany({
+    where: { userId, haendlerId: haendler.id },
+    orderBy: [{ datum: 'desc' }, { createdAt: 'desc' }],
+    select: { kategorieId: true, betrag: true, notiz: true },
+  })
+  if (buchungen.length === 0) return null
+
+  const haeufigkeit = new Map<string, number>()
+  for (const b of buchungen) haeufigkeit.set(b.kategorieId, (haeufigkeit.get(b.kategorieId) ?? 0) + 1)
+  let kategorieId = buchungen[0].kategorieId
+  let bestand = 0
+  for (const [id, anzahl] of haeufigkeit) {
+    if (anzahl > bestand) {
+      bestand = anzahl
+      kategorieId = id
+    }
+  }
+
+  const letzte = buchungen[0]
+  return { kategorieId, betrag: toNumber(letzte.betrag), notiz: letzte.notiz }
+}
+
 async function assertHaendlerNameFrei(userId: string, name: string, ausId?: string): Promise<void> {
   const treffer = await prisma.haushaltHaendler.findFirst({ where: { userId, name: { equals: name } } })
   if (treffer && treffer.id !== ausId) throw new AppError(`Den Händler "${treffer.name}" gibt es schon.`, 409)

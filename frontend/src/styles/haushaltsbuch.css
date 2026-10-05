@@ -613,7 +613,7 @@
 
 .haushalt-schnell__head {
   display: grid;
-  grid-template-columns: 130px minmax(0, 1.4fr) minmax(0, 1fr) 110px minmax(0, 1fr) 30px;
+  grid-template-columns: 130px minmax(0, 1fr) minmax(0, 1.4fr) 110px minmax(0, 1fr) 30px;
   gap: var(--space-2);
   font-size: 0.75rem;
   font-weight: 600;
@@ -624,7 +624,7 @@
 
 .haushalt-schnell__zeile {
   display: grid;
-  grid-template-columns: 130px minmax(0, 1.4fr) minmax(0, 1fr) 110px minmax(0, 1fr) 30px;
+  grid-template-columns: 130px minmax(0, 1fr) minmax(0, 1.4fr) 110px minmax(0, 1fr) 30px;
   gap: var(--space-2);
   align-items: center;
   padding: var(--space-2);

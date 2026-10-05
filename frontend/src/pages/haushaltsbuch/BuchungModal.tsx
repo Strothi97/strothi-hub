@@ -30,6 +30,16 @@ export function BuchungModal({ kategorien, buchung, onClose, onSaved }: BuchungM
 
   const gewaehlt = kategorien.find((k) => k.id === kategorieId)
 
+  // Für diesen Händler schon mal gebucht? Dann Kategorie (häufigste), Betrag und Notiz
+  // (von der letzten Buchung) vorschlagen — aber nur in noch leere Felder, nichts überschreiben.
+  const handleHaendlerCommit = async (name: string) => {
+    const { data } = await haushaltsbuchService.haendlerVorschlag(name)
+    if (!data.vorschlag) return
+    if (!kategorieId) setKategorieId(data.vorschlag.kategorieId)
+    if (!betrag.trim()) setBetrag(String(data.vorschlag.betrag))
+    if (!notiz.trim() && data.vorschlag.notiz) setNotiz(data.vorschlag.notiz)
+  }
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
     setFehler(null)
@@ -79,6 +89,17 @@ export function BuchungModal({ kategorien, buchung, onClose, onSaved }: BuchungM
           </div>
 
           <div className="form-group">
+            <label className="form-label" htmlFor="haushalt-haendler">Händler</label>
+            <HaendlerCombobox
+              id="haushalt-haendler"
+              value={haendler}
+              onChange={setHaendler}
+              onCommit={handleHaendlerCommit}
+              placeholder="z.B. Edeka"
+            />
+          </div>
+
+          <div className="form-group">
             <label className="form-label" htmlFor="haushalt-kategorie">Kategorie</label>
             <KategorieCombobox id="haushalt-kategorie" kategorien={kategorien} value={kategorieId} onChange={setKategorieId} />
             {gewaehlt && (
@@ -105,11 +126,6 @@ export function BuchungModal({ kategorien, buchung, onClose, onSaved }: BuchungM
           <div className="form-group">
             <label className="form-label" htmlFor="haushalt-datum">Datum</label>
             <DatumInput id="haushalt-datum" value={datum} onChange={setDatum} required />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label" htmlFor="haushalt-haendler">Händler</label>
-            <HaendlerCombobox id="haushalt-haendler" value={haendler} onChange={setHaendler} placeholder="z.B. Edeka" />
           </div>
 
           <div className="form-group">

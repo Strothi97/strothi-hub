@@ -6,6 +6,7 @@ import type {
   Kasse,
   Gesamt,
   Haendler,
+  HaendlerVorschlag,
   Kategorie,
   KategorieTyp,
   MonatsUebersicht,
@@ -34,6 +35,8 @@ export const haushaltsbuchService = {
   deleteBuchung: (id: string) => api.delete(endpoints.buchung(id)),
 
   listHaendler: () => api.get<{ haendler: Haendler[] }>(`/haushaltsbuch/haendler`),
+  haendlerVorschlag: (name: string) =>
+    api.get<{ vorschlag: HaendlerVorschlag | null }>(`/haushaltsbuch/haendler/vorschlag`, { params: { name } }),
   createHaendler: (name: string) => api.post(`/haushaltsbuch/haendler`, { name }),
   updateHaendler: (id: string, name: string) => api.put(`/haushaltsbuch/haendler/${id}`, { name }),
   deleteHaendler: (id: string) => api.delete(`/haushaltsbuch/haendler/${id}`),

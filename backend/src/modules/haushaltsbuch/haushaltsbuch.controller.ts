@@ -176,6 +176,11 @@ export const listHaendler = async (req: Request, res: Response) => {
   return res.json({ haendler: await service.listHaendler(req.user!.id) })
 }
 
+export const haendlerVorschlag = async (req: Request, res: Response) => {
+  const name = typeof req.query.name === 'string' ? req.query.name : ''
+  return res.json({ vorschlag: await service.haendlerVorschlag(req.user!.id, name) })
+}
+
 export const createHaendler = async (req: Request, res: Response) => {
   await service.createHaendler(req.user!.id, assertHaendlerName(req.body?.name))
   return res.status(201).json({ ok: true })

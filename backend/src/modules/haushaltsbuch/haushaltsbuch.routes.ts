@@ -23,6 +23,7 @@ router.put('/buchungen/:id', controller.updateBuchung)
 router.delete('/buchungen/:id', controller.deleteBuchung)
 
 router.get('/haendler', controller.listHaendler)
+router.get('/haendler/vorschlag', controller.haendlerVorschlag)
 router.post('/haendler', controller.createHaendler)
 router.put('/haendler/:id', controller.updateHaendler)
 router.delete('/haendler/:id', controller.deleteHaendler)

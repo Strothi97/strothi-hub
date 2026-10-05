@@ -74,6 +74,12 @@ export interface Haendler {
   usageCount: number
 }
 
+export interface HaendlerVorschlag {
+  kategorieId: string
+  betrag: number
+  notiz: string | null
+}
+
 export interface Gesamt {
   einnahmen: number
   ausgaben: number

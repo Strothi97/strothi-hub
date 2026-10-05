@@ -52,6 +52,26 @@ export function SchnellErfassung({ kategorien, onSaved, onClose }: SchnellErfass
 
   const entfernen = (key: number) => setZeilen((aktuell) => mitLeererZeile(aktuell.filter((z) => z.key !== key)))
 
+  // Für diesen Händler schon mal gebucht? Dann Kategorie (häufigste), Betrag und Notiz
+  // (von der letzten Buchung) in dieser Zeile vorschlagen — nur in noch leere Felder.
+  const haendlerUebernommen = async (key: number, name: string) => {
+    const { data } = await haushaltsbuchService.haendlerVorschlag(name)
+    const vorschlag = data.vorschlag
+    if (!vorschlag) return
+    setZeilen((aktuell) =>
+      mitLeererZeile(
+        aktuell.map((z) => {
+          if (z.key !== key) return z
+          const patch: Partial<Zeile> = {}
+          if (!z.kategorieId) patch.kategorieId = vorschlag.kategorieId
+          if (!z.betrag.trim()) patch.betrag = String(vorschlag.betrag)
+          if (!z.notiz.trim() && vorschlag.notiz) patch.notiz = vorschlag.notiz
+          return { ...z, ...patch }
+        }),
+      ),
+    )
+  }
+
   const ausgefuellt = zeilen.filter((z) => z.betrag.trim() !== '')
 
   const speichern = async () => {
@@ -111,8 +131,8 @@ export function SchnellErfassung({ kategorien, onSaved, onClose }: SchnellErfass
           <div className="haushalt-schnell__tabelle" role="table" aria-label="Buchungen">
             <div className="haushalt-schnell__head" role="row">
               <span>Datum</span>
-              <span>Kategorie</span>
               <span>Händler</span>
+              <span>Kategorie</span>
               <span>Betrag €</span>
               <span>Notiz</span>
               <span />
@@ -120,18 +140,19 @@ export function SchnellErfassung({ kategorien, onSaved, onClose }: SchnellErfass
             {zeilen.map((z) => (
               <div key={z.key} className="haushalt-schnell__zeile" role="row">
                 <DatumInput ariaLabel="Datum" value={z.datum} onChange={(datum) => aendern(z.key, { datum })} />
+                <HaendlerCombobox
+                  ariaLabel="Händler"
+                  placeholder="Händler"
+                  value={z.haendler}
+                  onChange={(name) => aendern(z.key, { haendler: name })}
+                  onCommit={(name) => haendlerUebernommen(z.key, name)}
+                />
                 <KategorieCombobox
                   kategorien={kategorien}
                   value={z.kategorieId}
                   onChange={(id) => aendern(z.key, { kategorieId: id })}
                   ariaLabel="Kategorie"
                   placeholder="Kategorie…"
-                />
-                <HaendlerCombobox
-                  ariaLabel="Händler"
-                  placeholder="Händler"
-                  value={z.haendler}
-                  onChange={(name) => aendern(z.key, { haendler: name })}
                 />
                 <input
                   className="input haushalt-schnell__betrag"

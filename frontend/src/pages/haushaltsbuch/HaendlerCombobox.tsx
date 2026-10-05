@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, KeyboardEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, KeyboardEvent } from 'react'
 import { haushaltsbuchService } from '@services/haushaltsbuch.service'
 import type { Haendler } from '@app-types/haushaltsbuch'
 
@@ -8,17 +8,22 @@ interface HaendlerComboboxProps {
   id?: string
   ariaLabel?: string
   placeholder?: string
+  // Wird ausgelöst, wenn ein Händlername feststeht (Auswahl aus der Liste oder Verlassen des
+  // Feldes mit Inhalt) — nicht bei jedem Tastendruck. Für Vorschläge wie Kategorie/Betrag.
+  onCommit?: (name: string) => void
 }
 
 // Händlerfeld mit gespeicherten Vorschlägen. Freier Text ist erlaubt: ein neuer
 // Name wird beim Speichern angelegt. Enter übernimmt den ersten Vorschlag.
-export function HaendlerCombobox({ value, onChange, id, ariaLabel, placeholder }: HaendlerComboboxProps) {
+export function HaendlerCombobox({ value, onChange, id, ariaLabel, placeholder, onCommit }: HaendlerComboboxProps) {
   const [haendler, setHaendler] = useState<Haendler[]>([])
   const [offen, setOffen] = useState(false)
   // Enter übernimmt nur einen Vorschlag, wenn in diesem Feld getippt wurde
   const [getippt, setGetippt] = useState(false)
   // Mit Pfeiltasten markierter Vorschlag, -1 = keiner
   const [aktiv, setAktiv] = useState(-1)
+  // Verhindert doppelte onCommit-Aufrufe für denselben Namen (z.B. erneutes Verlassen ohne Änderung)
+  const letzterCommit = useRef<string | null>(null)
 
   useEffect(() => {
     haushaltsbuchService.listHaendler().then(({ data }) => setHaendler(data.haendler))
@@ -30,11 +35,19 @@ export function HaendlerCombobox({ value, onChange, id, ariaLabel, placeholder }
     return treffer.filter((h) => h.name !== value).slice(0, 8)
   }, [haendler, value])
 
+  const melden = (name: string) => {
+    const bereinigt = name.trim()
+    if (!bereinigt || letzterCommit.current === bereinigt) return
+    letzterCommit.current = bereinigt
+    onCommit?.(bereinigt)
+  }
+
   const uebernehmen = (name: string) => {
     onChange(name)
     setGetippt(false)
     setAktiv(-1)
     setOffen(false)
+    melden(name)
   }
 
   // Enter: markierter Vorschlag, sonst nach dem Tippen der erste Vorschlag.
@@ -72,12 +85,14 @@ export function HaendlerCombobox({ value, onChange, id, ariaLabel, placeholder }
           setOffen(false)
           setGetippt(false)
           setAktiv(-1)
+          melden(value)
         }}
         onChange={(e) => {
           onChange(e.target.value)
           setGetippt(true)
           setAktiv(-1)
           setOffen(true)
+          if (e.target.value.trim() === '') letzterCommit.current = null
         }}
         onKeyDown={handleKeyDown}
       />

@@ -15,6 +15,8 @@ export function KategorieCombobox({ kategorien, value, onChange, id, ariaLabel, 
   const [offen, setOffen] = useState(false)
   // null = nichts getippt, dann steht im Feld die aktuelle Auswahl
   const [suche, setSuche] = useState<string | null>(null)
+  // Mit Pfeiltasten markierter Treffer, -1 = keiner (dann ist die bestehende Auswahl markiert)
+  const [aktiv, setAktiv] = useState(-1)
   const ausgewaehlt = kategorien.find((k) => k.id === value)
 
   // Anzeige nur mit Namen. Kommt ein Name mehrfach vor (auch bei Einnahme und Ausgabe),
@@ -37,16 +39,26 @@ export function KategorieCombobox({ kategorien, value, onChange, id, ariaLabel, 
   const waehlen = (kategorie: Kategorie) => {
     onChange(kategorie.id)
     setSuche(null)
+    setAktiv(-1)
     setOffen(false)
   }
 
-  // Enter übernimmt nur, wenn getippt wurde. Sonst bleibt die bestehende Auswahl erhalten.
+  // Pfeiltasten gehen durch die Liste, Enter übernimmt den markierten Treffer. Ohne
+  // Pfeiltaste übernimmt Enter nur, wenn getippt wurde — sonst bleibt die Auswahl erhalten.
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter' && offen && suche !== null && treffer.length > 0) {
+    if (event.key === 'ArrowDown' && treffer.length > 0) {
       event.preventDefault()
-      waehlen(treffer[0])
+      setOffen(true)
+      setAktiv((i) => Math.min(i + 1, treffer.length - 1))
+    } else if (event.key === 'ArrowUp' && offen && treffer.length > 0) {
+      event.preventDefault()
+      setAktiv((i) => Math.max(i - 1, 0))
+    } else if (event.key === 'Enter' && offen && treffer.length > 0 && (aktiv >= 0 || suche !== null)) {
+      event.preventDefault()
+      waehlen(treffer[aktiv >= 0 ? aktiv : 0])
     } else if (event.key === 'Escape') {
       setSuche(null)
+      setAktiv(-1)
       setOffen(false)
     }
   }
@@ -67,9 +79,11 @@ export function KategorieCombobox({ kategorien, value, onChange, id, ariaLabel, 
         onBlur={() => {
           setOffen(false)
           setSuche(null)
+          setAktiv(-1)
         }}
         onChange={(e) => {
           setSuche(e.target.value)
+          setAktiv(-1)
           setOffen(true)
         }}
         onKeyDown={handleKeyDown}
@@ -79,18 +93,22 @@ export function KategorieCombobox({ kategorien, value, onChange, id, ariaLabel, 
           {treffer.length === 0 ? (
             <li className="haushalt-combo__leer">Keine Kategorie gefunden</li>
           ) : (
-            treffer.map((k) => (
-              <li key={k.id} role="option" aria-selected={k.id === value}>
-                <button
-                  type="button"
-                  className={`haushalt-combo__option ${k.id === value ? 'is-active' : ''}`.trim()}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => waehlen(k)}
-                >
-                  {anzeige(k)}
-                </button>
-              </li>
-            ))
+            treffer.map((k, index) => {
+              const istMarkiert = aktiv >= 0 ? index === aktiv : k.id === value
+              return (
+                <li key={k.id} role="option" aria-selected={istMarkiert}>
+                  <button
+                    type="button"
+                    className={`haushalt-combo__option ${istMarkiert ? 'is-active' : ''}`.trim()}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onMouseEnter={() => setAktiv(index)}
+                    onClick={() => waehlen(k)}
+                  >
+                    {anzeige(k)}
+                  </button>
+                </li>
+              )
+            })
           )}
         </ul>
       )}
