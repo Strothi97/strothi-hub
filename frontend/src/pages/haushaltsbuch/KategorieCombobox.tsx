@@ -45,6 +45,8 @@ export function KategorieCombobox({ kategorien, value, onChange, id, ariaLabel, 
 
   // Pfeiltasten gehen durch die Liste, Enter übernimmt den markierten Treffer. Ohne
   // Pfeiltaste übernimmt Enter nur, wenn getippt wurde — sonst bleibt die Auswahl erhalten.
+  // Tab übernimmt genauso (ohne preventDefault, der Sprung zum nächsten Feld bleibt also
+  // erhalten) — sonst springt Tab sonst nur in die noch offene Liste statt weiter zum Preis.
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'ArrowDown' && treffer.length > 0) {
       event.preventDefault()
@@ -55,6 +57,8 @@ export function KategorieCombobox({ kategorien, value, onChange, id, ariaLabel, 
       setAktiv((i) => Math.max(i - 1, 0))
     } else if (event.key === 'Enter' && offen && treffer.length > 0 && (aktiv >= 0 || suche !== null)) {
       event.preventDefault()
+      waehlen(treffer[aktiv >= 0 ? aktiv : 0])
+    } else if (event.key === 'Tab' && offen && treffer.length > 0 && (aktiv >= 0 || suche !== null)) {
       waehlen(treffer[aktiv >= 0 ? aktiv : 0])
     } else if (event.key === 'Escape') {
       setSuche(null)
@@ -99,6 +103,7 @@ export function KategorieCombobox({ kategorien, value, onChange, id, ariaLabel, 
                 <li key={k.id} role="option" aria-selected={istMarkiert}>
                   <button
                     type="button"
+                    tabIndex={-1}
                     className={`haushalt-combo__option ${istMarkiert ? 'is-active' : ''}`.trim()}
                     onMouseDown={(e) => e.preventDefault()}
                     onMouseEnter={() => setAktiv(index)}

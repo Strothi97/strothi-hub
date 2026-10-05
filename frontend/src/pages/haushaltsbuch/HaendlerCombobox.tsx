@@ -50,7 +50,8 @@ export function HaendlerCombobox({ value, onChange, id, ariaLabel, placeholder, 
     melden(name)
   }
 
-  // Enter: markierter Vorschlag, sonst nach dem Tippen der erste Vorschlag.
+  // Enter: markierter Vorschlag, sonst nach dem Tippen der erste. Tab übernimmt genauso,
+  // aber ohne preventDefault — sonst springt Tab nur in die noch offene Liste statt weiter.
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'ArrowDown' && vorschlaege.length > 0) {
       event.preventDefault()
@@ -61,6 +62,8 @@ export function HaendlerCombobox({ value, onChange, id, ariaLabel, placeholder, 
       setAktiv((i) => Math.max(i - 1, 0))
     } else if (event.key === 'Enter' && offen && vorschlaege.length > 0 && (aktiv >= 0 || getippt)) {
       event.preventDefault()
+      uebernehmen(vorschlaege[aktiv >= 0 ? aktiv : 0].name)
+    } else if (event.key === 'Tab' && offen && vorschlaege.length > 0 && (aktiv >= 0 || getippt)) {
       uebernehmen(vorschlaege[aktiv >= 0 ? aktiv : 0].name)
     } else if (event.key === 'Escape') {
       setAktiv(-1)
@@ -102,6 +105,7 @@ export function HaendlerCombobox({ value, onChange, id, ariaLabel, placeholder, 
             <li key={h.id} role="option" aria-selected={index === aktiv}>
               <button
                 type="button"
+                tabIndex={-1}
                 className={`haushalt-combo__option ${index === aktiv ? 'is-active' : ''}`.trim()}
                 onMouseDown={(e) => e.preventDefault()}
                 onMouseEnter={() => setAktiv(index)}
