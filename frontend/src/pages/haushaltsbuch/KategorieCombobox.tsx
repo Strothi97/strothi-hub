@@ -106,7 +106,6 @@ export function KategorieCombobox({ kategorien, value, onChange, id, ariaLabel, 
                     tabIndex={-1}
                     className={`haushalt-combo__option ${istMarkiert ? 'is-active' : ''}`.trim()}
                     onMouseDown={(e) => e.preventDefault()}
-                    onMouseEnter={() => setAktiv(index)}
                     onClick={() => waehlen(k)}
                   >
                     {anzeige(k)}

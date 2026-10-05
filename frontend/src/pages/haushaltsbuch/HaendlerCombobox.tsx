@@ -108,7 +108,6 @@ export function HaendlerCombobox({ value, onChange, id, ariaLabel, placeholder, 
                 tabIndex={-1}
                 className={`haushalt-combo__option ${index === aktiv ? 'is-active' : ''}`.trim()}
                 onMouseDown={(e) => e.preventDefault()}
-                onMouseEnter={() => setAktiv(index)}
                 onClick={() => uebernehmen(h.name)}
               >
                 {h.name}
