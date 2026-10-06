@@ -654,14 +654,6 @@
   background-color: var(--color-surface-alt);
 }
 
-.haushalt-schnell__zeile.is-umbuchung {
-  grid-template-columns: 130px minmax(0, 1fr) 110px minmax(0, 1fr) 30px;
-}
-
-.haushalt-schnell__head.is-umbuchung {
-  grid-template-columns: 130px minmax(0, 1fr) 110px minmax(0, 1fr) 30px;
-}
-
 .haushalt-schnell__zeile input,
 .haushalt-schnell__zeile .haushalt-combo {
   min-width: 0;
@@ -685,27 +677,40 @@
     display: none;
   }
 
-  .haushalt-schnell__zeile,
-  .haushalt-schnell__zeile.is-umbuchung {
+  .haushalt-schnell__zeile {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
-  .haushalt-schnell__zeile > .haushalt-combo,
-  .haushalt-schnell__zeile > input[aria-label='Kategorie'] {
+  /* Reihenfolge der Felder im DOM bleibt Datum, Händler, Kategorie, Betrag, Notiz, Löschen
+     (wichtig für die Tab-Reihenfolge) — "order" ändert hier nur, wie es aussieht: Datum
+     und Betrag nebeneinander (beide kurz), Händler und Kategorie je eine volle Zeile
+     (brauchen Platz für Vorschlagsliste), Notiz und Löschen nebeneinander. Ohne das stand
+     neben dem Datum eine leere Lücke, und Händler/Kategorie haben die Zuordnung verwirrt. */
+  .haushalt-schnell__zeile > input[aria-label='Datum'] {
+    order: 1;
+  }
+
+  .haushalt-schnell__zeile > input[aria-label='Betrag'] {
+    order: 2;
+  }
+
+  .haushalt-schnell__zeile > .haushalt-combo:has(input[aria-label='Händler']) {
+    order: 3;
     grid-column: 1 / -1;
   }
 
-  .haushalt-schnell__zeile > input[aria-label='Datum'],
-  .haushalt-schnell__zeile > input[aria-label='Betrag'] {
-    grid-column: auto;
+  .haushalt-schnell__zeile > .haushalt-combo:has(input[aria-label='Kategorie']) {
+    order: 4;
+    grid-column: 1 / -1;
+  }
+
+  .haushalt-schnell__zeile > input[aria-label='Notiz'] {
+    order: 5;
   }
 
   .haushalt-schnell__zeile .haushalt-icon-action {
+    order: 6;
     justify-self: end;
-  }
-
-  .haushalt-schnell__zeile::before {
-    content: '';
   }
 }
 
