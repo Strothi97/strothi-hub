@@ -324,7 +324,7 @@ export function Verwaltung() {
           Händler verwalten
         </button>
         {haendlerOffen && (
-          <HaendlerModal onClose={() => setHaendlerOffen(false)} onChanged={() => load()} />
+          <HaendlerModal kategorien={kategorien} onClose={() => setHaendlerOffen(false)} onChanged={() => load()} />
         )}
       </section>
 

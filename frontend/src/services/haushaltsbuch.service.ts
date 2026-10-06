@@ -27,7 +27,7 @@ export const haushaltsbuchService = {
   deleteKategorie: (id: string) => api.delete(endpoints.kategorie(id)),
   sortiereKategorien: (ids: string[]) => api.post(`${endpoints.kategorien}/sortieren`, { ids }),
 
-  listBuchungen: (params?: { von?: string; bis?: string; kategorieId?: string; suche?: string }) =>
+  listBuchungen: (params?: { von?: string; bis?: string; kategorieId?: string; haendlerId?: string; suche?: string }) =>
     api.get<{ buchungen: Buchung[] }>(endpoints.buchungen, { params }),
   createBuchung: (input: BuchungInput) => api.post(endpoints.buchungen, input),
   createBuchungenBatch: (items: BuchungInput[]) => api.post<{ anzahl: number }>(`${endpoints.buchungen}/batch`, { items }),

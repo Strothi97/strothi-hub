@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { haushaltsbuchService } from '@services/haushaltsbuch.service'
 import type { Kategorie, KategorieSumme, MonatsUebersicht } from '@app-types/haushaltsbuch'
-import { MONATE, formatEuro, rollupZuOberkategorie, shiftMonth } from './format'
+import { MONATE, formatAnteil, formatEuro, rollupZuOberkategorie, shiftMonth } from './format'
 
 function today() {
   const now = new Date()
@@ -25,14 +25,27 @@ export function KategorieModusSchalter({ modus, onChange }: { modus: KategorieMo
   )
 }
 
-export function Balken({ liste, groesste, typ }: { liste: KategorieSumme[]; groesste: number; typ: 'EINNAHME' | 'AUSGABE' }) {
+export function Balken({
+  liste,
+  groesste,
+  gesamt,
+  typ,
+}: {
+  liste: KategorieSumme[]
+  groesste: number
+  gesamt: number
+  typ: 'EINNAHME' | 'AUSGABE'
+}) {
   return (
     <ul className="haushalt-balken-liste">
       {liste.map((k) => (
         <li key={k.id} className="haushalt-balken">
           <div className="haushalt-balken__kopf">
             <span>{k.pfad}</span>
-            <span>{formatEuro(k.summe)}</span>
+            <span>
+              {formatEuro(k.summe)}
+              <span className="haushalt-balken__anteil"> · {formatAnteil(k.summe, gesamt)}</span>
+            </span>
           </div>
           <div className="haushalt-balken__spur">
             <div
@@ -129,14 +142,14 @@ export function Uebersicht() {
             {ausgaben.length === 0 ? (
               <p className="admin-empty-state">Keine Ausgaben in diesem Monat.</p>
             ) : (
-              <Balken liste={[...ausgaben].sort((a, b) => b.summe - a.summe)} groesste={groesste} typ="AUSGABE" />
+              <Balken liste={[...ausgaben].sort((a, b) => b.summe - a.summe)} groesste={groesste} gesamt={uebersicht.ausgaben} typ="AUSGABE" />
             )}
           </section>
 
           {einnahmen.length > 0 && (
             <section className="kochbuch-detail__section">
               <h3>Einnahmen nach Kategorie</h3>
-              <Balken liste={[...einnahmen].sort((a, b) => b.summe - a.summe)} groesste={groesste} typ="EINNAHME" />
+              <Balken liste={[...einnahmen].sort((a, b) => b.summe - a.summe)} groesste={groesste} gesamt={uebersicht.einnahmen} typ="EINNAHME" />
             </section>
           )}
 

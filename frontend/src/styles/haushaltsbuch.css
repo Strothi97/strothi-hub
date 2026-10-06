@@ -97,6 +97,27 @@
   font-size: 0.9rem;
 }
 
+.haushalt-balken__anteil {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.haushalt-haendler-row-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.haushalt-haendler-row-btn:hover .trainingsplan-area-row__name {
+  text-decoration: underline;
+}
+
 .haushalt-balken__spur {
   height: 8px;
   margin-top: 4px;

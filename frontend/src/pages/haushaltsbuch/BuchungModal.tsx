@@ -70,10 +70,14 @@ export function BuchungModal({ kategorien, buchung, onClose, onSaved }: BuchungM
   }
 
   return (
-    // Kein Schließen per Klick daneben: sonst geht die Eingabe verloren.
+    // Kein Schließen per Klick daneben: sonst geht die Eingabe verloren. stopPropagation
+    // zusätzlich nötig, weil dieses Modal auch verschachtelt vorkommt (z.B. im Händler-
+    // Detail, das selbst in einem schließenden Popup steckt) — sonst schließt ein Klick
+    // hier das äußere Popup mit.
     <div className="farsi-modal-backdrop">
       <form
         className="farsi-modal"
+        onClick={(event) => event.stopPropagation()}
         onSubmit={handleSubmit}
         role="dialog"
         aria-modal="true"

@@ -2,10 +2,12 @@ import { useEffect, useState, FormEvent } from 'react'
 import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
 import { haushaltsbuchService } from '@services/haushaltsbuch.service'
-import type { Haendler } from '@app-types/haushaltsbuch'
+import type { Haendler, Kategorie } from '@app-types/haushaltsbuch'
 import { formatEuro } from './format'
+import { HaendlerDetailModal } from './HaendlerDetailModal'
 
 interface HaendlerModalProps {
+  kategorien: Kategorie[]
   onClose: () => void
   onChanged: () => void
 }
@@ -15,7 +17,7 @@ function errorMessage(err: unknown): string {
   return message ?? 'Das hat leider nicht geklappt.'
 }
 
-export function HaendlerModal({ onClose, onChanged }: HaendlerModalProps) {
+export function HaendlerModal({ kategorien, onClose, onChanged }: HaendlerModalProps) {
   const [haendler, setHaendler] = useState<Haendler[]>([])
   const [loading, setLoading] = useState(true)
   const [suche, setSuche] = useState('')
@@ -23,6 +25,7 @@ export function HaendlerModal({ onClose, onChanged }: HaendlerModalProps) {
   const [editName, setEditName] = useState('')
   const [neu, setNeu] = useState('')
   const [fehler, setFehler] = useState<string | null>(null)
+  const [detail, setDetail] = useState<Haendler | null>(null)
 
   const load = () => haushaltsbuchService.listHaendler().then(({ data }) => setHaendler(data.haendler))
 
@@ -110,7 +113,12 @@ export function HaendlerModal({ onClose, onChanged }: HaendlerModalProps) {
                   </li>
                 ) : (
                   <li key={h.id} className="trainingsplan-area-row">
-                    <span className="trainingsplan-area-row__body">
+                    <button
+                      type="button"
+                      className="trainingsplan-area-row__body haushalt-haendler-row-btn"
+                      onClick={() => setDetail(h)}
+                      title="Alle Buchungen dieses Händlers ansehen"
+                    >
                       <span className="trainingsplan-area-row__name">{h.name}</span>
                       <span className="trainingsplan-area-row__meta">
                         {h.usageCount} Buchung{h.usageCount === 1 ? '' : 'en'}
@@ -127,7 +135,7 @@ export function HaendlerModal({ onClose, onChanged }: HaendlerModalProps) {
                           </>
                         )}
                       </span>
-                    </span>
+                    </button>
                     <button
                       type="button"
                       className="trainingsplan-session-flow__icon-btn"
@@ -166,6 +174,18 @@ export function HaendlerModal({ onClose, onChanged }: HaendlerModalProps) {
           </form>
         </div>
       </div>
+
+      {detail && (
+        <HaendlerDetailModal
+          haendler={detail}
+          kategorien={kategorien}
+          onClose={() => setDetail(null)}
+          onChanged={() => {
+            load()
+            onChanged()
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -104,14 +104,14 @@ export function Jahr() {
             {jahrAusgaben.length === 0 ? (
               <p className="admin-empty-state">Keine Ausgaben in {jahr}.</p>
             ) : (
-              <Balken liste={jahrAusgaben} groesste={jahrGroesste} typ="AUSGABE" />
+              <Balken liste={jahrAusgaben} groesste={jahrGroesste} gesamt={summe.ausgaben} typ="AUSGABE" />
             )}
           </section>
 
           {jahrEinnahmen.length > 0 && (
             <section className="kochbuch-detail__section">
               <h3>Einnahmen nach Kategorie, das ganze Jahr</h3>
-              <Balken liste={jahrEinnahmen} groesste={jahrGroesste} typ="EINNAHME" />
+              <Balken liste={jahrEinnahmen} groesste={jahrGroesste} gesamt={summe.einnahmen} typ="EINNAHME" />
             </section>
           )}
         </>

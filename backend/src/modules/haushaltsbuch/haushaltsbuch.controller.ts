@@ -116,6 +116,7 @@ export const listBuchungen = async (req: Request, res: Response) => {
     von: q.von,
     bis: q.bis,
     kategorieId: q.kategorieId,
+    haendlerId: q.haendlerId,
     suche: q.suche,
   })
   return res.json({ buchungen })

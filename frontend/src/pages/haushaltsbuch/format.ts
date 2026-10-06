@@ -7,6 +7,13 @@ export function formatEuro(value: number): string {
   return euro.format(value)
 }
 
+const prozent = new Intl.NumberFormat('de-DE', { style: 'percent', maximumFractionDigits: 1 })
+// Anteil (0..1) als Prozent, z.B. 0.082 -> "8,2 %". Ohne sinnvollen Gesamtwert leer.
+export function formatAnteil(teil: number, gesamt: number): string {
+  if (gesamt <= 0) return ''
+  return prozent.format(teil / gesamt)
+}
+
 export const MONATE = [
   'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
   'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',

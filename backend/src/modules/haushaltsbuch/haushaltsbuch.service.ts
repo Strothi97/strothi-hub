@@ -257,6 +257,7 @@ export interface BuchungFilter {
   von?: string
   bis?: string
   kategorieId?: string
+  haendlerId?: string
   suche?: string
 }
 
@@ -267,12 +268,17 @@ export async function listBuchungen(userId: string, filter: BuchungFilter): Prom
         userId,
         ...(filter.von && filter.bis && { datum: { gte: parseDateOnly(filter.von), lte: parseDateOnly(filter.bis) } }),
         ...(filter.kategorieId && { kategorieId: filter.kategorieId }),
+        ...(filter.haendlerId && { haendlerId: filter.haendlerId }),
       },
       include: BUCHUNG_INCLUDE,
       // Tage neueste zuerst. Innerhalb eines Tages: älteste Erfassung zuerst — beim
       // Nacherfassen aus dem Kontoauszug (der neueste Buchung zuerst zeigt) landet die
       // zuerst eingetragene (= die neueste des Tages) dadurch oben, wie beim Bankkonto.
-      orderBy: [{ datum: 'desc' }, { createdAt: 'asc' }],
+      // Sortiert wird nach "id", nicht "createdAt": Buchungen aus "+ Mehrere" landen oft
+      // auf exakt derselben Millisekunde, dann ist die SQL-Reihenfolge bei Gleichstand
+      // nicht garantiert. cuids steigen auch bei gleichem Zeitstempel in Erstellungs-
+      // reihenfolge an, weil sie einen Zähler enthalten — deshalb hier verlässlicher.
+      orderBy: [{ datum: 'desc' }, { id: 'asc' }],
     }),
     kategorieInfos(userId),
   ])
@@ -500,7 +506,9 @@ export async function haendlerVorschlag(userId: string, name: string): Promise<H
   if (!haendler) return null
   const buchungen = await prisma.haushaltBuchung.findMany({
     where: { userId, haendlerId: haendler.id },
-    orderBy: [{ datum: 'desc' }, { createdAt: 'desc' }],
+    // "id" statt "createdAt": bei gleichzeitig gespeicherten Buchungen (z.B. "+ Mehrere")
+    // ist der Zeitstempel oft identisch, die cuid steigt aber zuverlässig an.
+    orderBy: [{ datum: 'desc' }, { id: 'desc' }],
     select: { kategorieId: true, betrag: true, notiz: true },
   })
   if (buchungen.length === 0) return null
