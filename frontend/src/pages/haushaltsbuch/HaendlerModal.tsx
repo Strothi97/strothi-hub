@@ -3,6 +3,7 @@ import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
 import { haushaltsbuchService } from '@services/haushaltsbuch.service'
 import type { Haendler } from '@app-types/haushaltsbuch'
+import { formatEuro } from './format'
 
 interface HaendlerModalProps {
   onClose: () => void
@@ -113,6 +114,18 @@ export function HaendlerModal({ onClose, onChanged }: HaendlerModalProps) {
                       <span className="trainingsplan-area-row__name">{h.name}</span>
                       <span className="trainingsplan-area-row__meta">
                         {h.usageCount} Buchung{h.usageCount === 1 ? '' : 'en'}
+                        {h.ausgaben > 0 && (
+                          <>
+                            {' · '}
+                            <span className="is-ausgabe-text">−{formatEuro(h.ausgaben)}</span>
+                          </>
+                        )}
+                        {h.einnahmen > 0 && (
+                          <>
+                            {' · '}
+                            <span className="is-einnahme-text">+{formatEuro(h.einnahmen)}</span>
+                          </>
+                        )}
                       </span>
                     </span>
                     <button

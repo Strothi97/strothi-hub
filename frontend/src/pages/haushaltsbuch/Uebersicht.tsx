@@ -1,14 +1,31 @@
 import { useEffect, useState } from 'react'
 import { haushaltsbuchService } from '@services/haushaltsbuch.service'
-import type { KategorieSumme, MonatsUebersicht } from '@app-types/haushaltsbuch'
-import { MONATE, formatEuro, shiftMonth } from './format'
+import type { Kategorie, KategorieSumme, MonatsUebersicht } from '@app-types/haushaltsbuch'
+import { MONATE, formatEuro, rollupZuOberkategorie, shiftMonth } from './format'
 
 function today() {
   const now = new Date()
   return { jahr: now.getFullYear(), monat: now.getMonth() + 1 }
 }
 
-function Balken({ liste, groesste, typ }: { liste: KategorieSumme[]; groesste: number; typ: 'EINNAHME' | 'AUSGABE' }) {
+type KategorieModus = 'alle' | 'ober'
+
+// Umschalter "Alle Kategorien" / "Nur Oberkategorien" — wird für Monats- und Jahresansicht
+// gleich gebraucht, daher hier als eigene Komponente.
+export function KategorieModusSchalter({ modus, onChange }: { modus: KategorieModus; onChange: (m: KategorieModus) => void }) {
+  return (
+    <div className="haushalt-typ-filter" role="radiogroup" aria-label="Kategorie-Detailgrad">
+      <button type="button" className={`tool-chip ${modus === 'alle' ? 'is-active' : ''}`.trim()} onClick={() => onChange('alle')}>
+        Alle Kategorien
+      </button>
+      <button type="button" className={`tool-chip ${modus === 'ober' ? 'is-active' : ''}`.trim()} onClick={() => onChange('ober')}>
+        Nur Oberkategorien
+      </button>
+    </div>
+  )
+}
+
+export function Balken({ liste, groesste, typ }: { liste: KategorieSumme[]; groesste: number; typ: 'EINNAHME' | 'AUSGABE' }) {
   return (
     <ul className="haushalt-balken-liste">
       {liste.map((k) => (
@@ -32,8 +49,14 @@ function Balken({ liste, groesste, typ }: { liste: KategorieSumme[]; groesste: n
 export function Uebersicht() {
   const [{ jahr, monat }, setPeriode] = useState(today)
   const [uebersicht, setUebersicht] = useState<MonatsUebersicht | null>(null)
+  const [kategorien, setKategorien] = useState<Kategorie[]>([])
+  const [modus, setModus] = useState<KategorieModus>('alle')
   const [loading, setLoading] = useState(true)
   const [fehler, setFehler] = useState<string | null>(null)
+
+  useEffect(() => {
+    haushaltsbuchService.listKategorien().then(({ data }) => setKategorien(data.kategorien))
+  }, [])
 
   useEffect(() => {
     setLoading(true)
@@ -47,8 +70,12 @@ export function Uebersicht() {
 
   const schritt = (delta: number) => setPeriode((p) => shiftMonth(p.jahr, p.monat, delta))
 
-  const ausgaben = uebersicht?.kategorien.filter((k) => k.typ === 'AUSGABE') ?? []
-  const einnahmen = uebersicht?.kategorien.filter((k) => k.typ === 'EINNAHME') ?? []
+  const kategorieListe = (typ: 'EINNAHME' | 'AUSGABE') => {
+    const roh = uebersicht?.kategorien.filter((k) => k.typ === typ) ?? []
+    return modus === 'ober' ? rollupZuOberkategorie(roh, kategorien) : roh
+  }
+  const ausgaben = kategorieListe('AUSGABE')
+  const einnahmen = kategorieListe('EINNAHME')
   const groesste = Math.max(1, ...ausgaben.map((k) => k.summe), ...einnahmen.map((k) => k.summe))
 
   return (
@@ -94,6 +121,8 @@ export function Uebersicht() {
               <span className="haushalt-tile__hint">Vormonat {formatEuro(uebersicht.vormonatBilanz)}</span>
             </div>
           </div>
+
+          <KategorieModusSchalter modus={modus} onChange={setModus} />
 
           <section className="kochbuch-detail__section">
             <h3>Ausgaben nach Kategorie</h3>

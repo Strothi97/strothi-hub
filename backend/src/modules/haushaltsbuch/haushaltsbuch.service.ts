@@ -269,7 +269,10 @@ export async function listBuchungen(userId: string, filter: BuchungFilter): Prom
         ...(filter.kategorieId && { kategorieId: filter.kategorieId }),
       },
       include: BUCHUNG_INCLUDE,
-      orderBy: [{ datum: 'desc' }, { createdAt: 'desc' }],
+      // Tage neueste zuerst. Innerhalb eines Tages: älteste Erfassung zuerst — beim
+      // Nacherfassen aus dem Kontoauszug (der neueste Buchung zuerst zeigt) landet die
+      // zuerst eingetragene (= die neueste des Tages) dadurch oben, wie beim Bankkonto.
+      orderBy: [{ datum: 'desc' }, { createdAt: 'asc' }],
     }),
     kategorieInfos(userId),
   ])
@@ -406,8 +409,20 @@ export async function monatsUebersicht(userId: string, jahr: number, monat: numb
   }
 }
 
+type KategorieSummeIntern = { id: string; name: string; typ: KategorieTyp; pfad: string; summe: number }
+
+function addiereKategorieSummen(ziel: Map<string, KategorieSummeIntern>, quelle: KategorieSummeIntern[]) {
+  for (const k of quelle) {
+    const eintrag = ziel.get(k.id) ?? { ...k, summe: 0 }
+    eintrag.summe += k.summe
+    ziel.set(k.id, eintrag)
+  }
+}
+
 export async function jahresUebersicht(userId: string, jahr: number) {
   const monate = []
+  const jahrKategorien = new Map<string, KategorieSummeIntern>()
+  const jahrVerschiebungen = new Map<string, KategorieSummeIntern>()
   for (let monat = 1; monat <= 12; monat++) {
     const summen = await monatsSummen(userId, jahr, monat)
     const { bis } = monthRange(jahr, monat)
@@ -418,8 +433,12 @@ export async function jahresUebersicht(userId: string, jahr: number) {
       bilanz: summen.bilanz,
       kasse: await kassenstand(userId, tagDavor(bis)),
     })
+    addiereKategorieSummen(jahrKategorien, summen.kategorien)
+    addiereKategorieSummen(jahrVerschiebungen, summen.verschiebungen)
   }
-  return { jahr, monate }
+  const rund = (m: Map<string, KategorieSummeIntern>) =>
+    [...m.values()].map((e) => ({ ...e, summe: round2(e.summe) })).sort((a, b) => b.summe - a.summe)
+  return { jahr, monate, kategorien: rund(jahrKategorien), verschiebungen: rund(jahrVerschiebungen) }
 }
 
 // ── Händler ─────────────────────────────────────────────
@@ -428,15 +447,40 @@ export interface HaendlerDTO {
   id: string
   name: string
   usageCount: number
+  einnahmen: number
+  ausgaben: number
 }
 
+// Summen über alle Zeiten pro Händler (unabhängig vom Statistik-Schalter der Kategorie —
+// hier geht es nur darum, wie viel Geld insgesamt zu diesem Händler floss, nicht um den
+// Cashflow). Gruppieren lässt sich das nicht direkt per SQL, weil der Typ (Einnahme/Ausgabe)
+// an der Kategorie hängt, nicht an der Buchung — daher wird in JS aufsummiert.
 export async function listHaendler(userId: string): Promise<HaendlerDTO[]> {
-  const [rows, gruppen] = await Promise.all([
+  const [rows, buchungen] = await Promise.all([
     prisma.haushaltHaendler.findMany({ where: { userId }, orderBy: { name: 'asc' } }),
-    prisma.haushaltBuchung.groupBy({ by: ['haendlerId'], where: { userId, haendlerId: { not: null } }, _count: { _all: true } }),
+    prisma.haushaltBuchung.findMany({
+      where: { userId, haendlerId: { not: null } },
+      select: { haendlerId: true, betrag: true, kategorie: { select: { typ: true } } },
+    }),
   ])
-  const usage = new Map(gruppen.map((g) => [g.haendlerId, g._count._all]))
-  return rows.map((h) => ({ id: h.id, name: h.name, usageCount: usage.get(h.id) ?? 0 }))
+  const summen = new Map<string, { anzahl: number; einnahmen: number; ausgaben: number }>()
+  for (const b of buchungen) {
+    const eintrag = summen.get(b.haendlerId as string) ?? { anzahl: 0, einnahmen: 0, ausgaben: 0 }
+    eintrag.anzahl += 1
+    if (b.kategorie.typ === 'EINNAHME') eintrag.einnahmen += toNumber(b.betrag)
+    else eintrag.ausgaben += toNumber(b.betrag)
+    summen.set(b.haendlerId as string, eintrag)
+  }
+  return rows.map((h) => {
+    const s = summen.get(h.id)
+    return {
+      id: h.id,
+      name: h.name,
+      usageCount: s?.anzahl ?? 0,
+      einnahmen: round2(s?.einnahmen ?? 0),
+      ausgaben: round2(s?.ausgaben ?? 0),
+    }
+  })
 }
 
 export interface HaendlerVorschlagDTO {

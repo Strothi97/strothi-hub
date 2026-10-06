@@ -1,5 +1,7 @@
 // Hilfsfunktionen für das Tool "Haushaltsbuch"
 
+import type { Kategorie, KategorieSumme } from '@app-types/haushaltsbuch'
+
 const euro = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' })
 export function formatEuro(value: number): string {
   return euro.format(value)
@@ -55,4 +57,30 @@ export function firstDayOfMonth(jahr: number, monat: number): string {
 export function shiftMonth(jahr: number, monat: number, delta: number): { jahr: number; monat: number } {
   const date = new Date(jahr, monat - 1 + delta, 1)
   return { jahr: date.getFullYear(), monat: date.getMonth() + 1 }
+}
+
+// Oberste Oberkategorie einer Kategorie-ID (läuft die parentId-Kette nach oben).
+function wurzelKategorie(kategorien: Kategorie[], id: string): Kategorie | undefined {
+  const nach = new Map(kategorien.map((k) => [k.id, k]))
+  let aktuell = nach.get(id)
+  const besucht = new Set<string>()
+  while (aktuell?.parentId && !besucht.has(aktuell.id)) {
+    besucht.add(aktuell.id)
+    aktuell = nach.get(aktuell.parentId)
+  }
+  return aktuell
+}
+
+// Fasst Kategorie-Summen auf ihre jeweilige Oberkategorie zusammen, für die Umschaltung
+// "Alle Kategorien" / "Nur Oberkategorien". Kategorien ohne Unterkategorie bleiben wie sie sind.
+export function rollupZuOberkategorie(summen: KategorieSumme[], kategorien: Kategorie[]): KategorieSumme[] {
+  const map = new Map<string, KategorieSumme>()
+  for (const s of summen) {
+    const wurzel = wurzelKategorie(kategorien, s.id)
+    const key = wurzel?.id ?? s.id
+    const eintrag = map.get(key) ?? { id: key, name: wurzel?.name ?? s.name, typ: s.typ, pfad: wurzel?.pfad ?? s.pfad, summe: 0 }
+    eintrag.summe += s.summe
+    map.set(key, eintrag)
+  }
+  return [...map.values()].sort((a, b) => b.summe - a.summe)
 }

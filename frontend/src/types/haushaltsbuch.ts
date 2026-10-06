@@ -68,10 +68,19 @@ export interface JahresMonat {
   kasse: number | null
 }
 
+export interface JahresUebersicht {
+  jahr: number
+  monate: JahresMonat[]
+  kategorien: KategorieSumme[]
+  verschiebungen: KategorieSumme[]
+}
+
 export interface Haendler {
   id: string
   name: string
   usageCount: number
+  einnahmen: number
+  ausgaben: number
 }
 
 export interface HaendlerVorschlag {

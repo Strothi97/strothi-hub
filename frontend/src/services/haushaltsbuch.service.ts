@@ -10,7 +10,7 @@ import type {
   Kategorie,
   KategorieTyp,
   MonatsUebersicht,
-  JahresMonat,
+  JahresUebersicht,
 } from '@app-types/haushaltsbuch'
 
 const endpoints = API_ENDPOINTS.haushaltsbuch
@@ -45,5 +45,5 @@ export const haushaltsbuchService = {
   monatsUebersicht: (jahr: number, monat: number) =>
     api.get<{ uebersicht: MonatsUebersicht }>(endpoints.uebersichtMonat, { params: { jahr, monat } }),
   jahresUebersicht: (jahr: number) =>
-    api.get<{ uebersicht: { jahr: number; monate: JahresMonat[] } }>(endpoints.uebersichtJahr, { params: { jahr } }),
+    api.get<{ uebersicht: JahresUebersicht }>(endpoints.uebersichtJahr, { params: { jahr } }),
 }
