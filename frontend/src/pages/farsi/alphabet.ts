@@ -55,6 +55,14 @@ export const PERSIAN_ALPHABET: AlphabetLetter[] = [
   { char: 'ی', name: 'je', sound: 'j, i, ej', leftJoining: true },
 ]
 
+// Die lateinischen Sonderbuchstaben der Lautschrift, die man im Alphabet oft nachschlägt.
+export const SONDERLAUTE = ['ā', 'č', 'ğ', 'ġ', 'š', 'ž'] as const
+
+// Alle Buchstaben, deren Laut das Zeichen enthält (ġ gehört zu zwei Buchstaben).
+export function buchstabenMitLaut(laut: string): AlphabetLetter[] {
+  return PERSIAN_ALPHABET.filter((letter) => letter.sound.includes(laut))
+}
+
 const TATWEEL = 'ـ'
 
 export interface LetterForms {

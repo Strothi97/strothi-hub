@@ -5,6 +5,8 @@ import { Input } from '@components/ui/Input'
 import { FarsiEntryForm } from './FarsiEntryForm'
 import { FarsiEntryModal } from './FarsiEntryModal'
 import { AlphabetTable } from './AlphabetTable'
+import { SonderLaute } from './SonderLaute'
+import { normalizeSearch } from './searchNormalize'
 import { WORD_TYPE_META } from './wordType'
 import type { FarsiEntry, FarsiEntryInput } from '@app-types/farsi'
 
@@ -30,13 +32,10 @@ export function Arbeitsflaeche() {
   }, [])
 
   const filteredEntries = useMemo(() => {
-    const needle = search.trim().toLowerCase()
+    const needle = normalizeSearch(search.trim())
     if (!needle) return entries
     return entries.filter((entry) =>
-      [...entry.german, ...entry.persianLatin, entry.persianScript ?? '']
-        .join(' ')
-        .toLowerCase()
-        .includes(needle),
+      normalizeSearch([...entry.german, ...entry.persianLatin, entry.persianScript ?? ''].join(' ')).includes(needle),
     )
   }, [entries, search])
 
@@ -87,6 +86,7 @@ export function Arbeitsflaeche() {
             {PANEL_LABELS[panel]}
           </button>
         ))}
+        {showAlphabet && <SonderLaute />}
       </div>
 
       <div className={gridClass}>

@@ -761,8 +761,56 @@
 .farsi-workspace__toggles {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
   margin-bottom: var(--space-3);
+}
+
+/* Sonderlaute rechtsbündig in derselben Zeile wie die Panel-Schalter */
+.farsi-sonder {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.farsi-sonder__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-alt);
+  font-size: 0.85rem;
+}
+
+.farsi-sonder__laut {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.farsi-sonder__buchstabe {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  color: var(--color-text-muted);
+}
+
+.farsi-sonder__glyph {
+  font-size: 1.05rem;
+  color: var(--color-text);
+}
+
+.farsi-sonder__name {
+  font-size: 0.75rem;
+}
+
+/* Auf der Alphabet-Seite steht die Leiste oberhalb der Tabelle, nicht rechts */
+.farsi-alphabet-page > .farsi-sonder {
+  margin: 0 0 var(--space-3);
+  justify-content: flex-start;
 }
 
 .farsi-workspace__grid {

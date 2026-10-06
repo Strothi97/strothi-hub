@@ -4,6 +4,7 @@ import { Card } from '@components/ui/Card'
 import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
 import { FarsiEntryModal } from './FarsiEntryModal'
+import { normalizeSearch } from './searchNormalize'
 import { ALPHABETICAL_TYPE_ORDER, WORD_TYPE_META, WORD_TYPE_ORDER } from './wordType'
 import type { FarsiEntry, FarsiEntryInput, FarsiWordType } from '@app-types/farsi'
 
@@ -13,9 +14,7 @@ import type { FarsiEntry, FarsiEntryInput, FarsiWordType } from '@app-types/fars
 // (JS-Regex-Wortgrenzen basieren auf ASCII-\w), daher Wortgrenzen per
 // Whitespace-Split statt Regex.
 function matchScore(entry: FarsiEntry, needle: string): number {
-  const values = [...entry.german, ...entry.persianLatin, entry.persianScript ?? ''].map((value) =>
-    value.toLowerCase(),
-  )
+  const values = [...entry.german, ...entry.persianLatin, entry.persianScript ?? ''].map((value) => normalizeSearch(value))
   let best = 0
   for (const value of values) {
     if (value === needle) return 3
@@ -62,13 +61,10 @@ export function Woerterbuch() {
     if (typeFilter.length > 0) result = result.filter((entry) => entry.type && typeFilter.includes(entry.type))
     if (onlyIncomplete) result = result.filter((entry) => !entry.isComplete)
 
-    const needle = search.trim().toLowerCase()
+    const needle = normalizeSearch(search.trim())
     if (needle) {
       result = result.filter((entry) =>
-        [...entry.german, ...entry.persianLatin, entry.persianScript ?? '']
-          .join(' ')
-          .toLowerCase()
-          .includes(needle),
+        normalizeSearch([...entry.german, ...entry.persianLatin, entry.persianScript ?? ''].join(' ')).includes(needle),
       )
     }
     return result
@@ -76,7 +72,7 @@ export function Woerterbuch() {
 
   const sortedEntries = useMemo(() => {
     const collator = new Intl.Collator('de', { sensitivity: 'base' })
-    const needle = search.trim().toLowerCase()
+    const needle = normalizeSearch(search.trim())
 
     return [...filteredEntries].sort((a, b) => {
       if (needle) {
