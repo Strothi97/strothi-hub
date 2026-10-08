@@ -80,7 +80,7 @@ export function ReminderForm({ reminder, isTodo, onSave, onDelete, onCancel }: R
         intervalUnit: recurrence === 'CUSTOM_INTERVAL' ? intervalUnit : null,
         weekdays: recurrence === 'WEEKDAYS' ? weekdays : null,
         times,
-        leadReminders: recurrence === 'ONCE' ? leadReminders : null,
+        leadReminders,
         isTodo,
       })
     } finally {
@@ -199,15 +199,15 @@ export function ReminderForm({ reminder, isTodo, onSave, onDelete, onCancel }: R
         <TimesInput value={times} onChange={setTimes} />
       </div>
 
-      {recurrence === 'ONCE' && (
-        <div className="form-group">
-          <span className="form-label">Vorab erinnern (optional)</span>
-          <p className="form-hint">
-            Zusätzliche, frühere Erinnerungen vor dem Termin — z.B. "6 Monate vorher: Hotel buchen".
-          </p>
-          <LeadRemindersInput value={leadReminders} onChange={setLeadReminders} />
-        </div>
-      )}
+      <div className="form-group">
+        <span className="form-label">Vorab erinnern (optional)</span>
+        <p className="form-hint">
+          {recurrence === 'ONCE'
+            ? 'Zusätzliche, frühere Erinnerungen vor dem Termin — z.B. "6 Monate vorher: Hotel buchen".'
+            : 'Zusätzliche, frühere Erinnerungen vor jedem Termin — z.B. bei einem Jahrestag "1 Monat vorher" und "2 Wochen vorher".'}
+        </p>
+        <LeadRemindersInput value={leadReminders} onChange={setLeadReminders} />
+      </div>
 
       {error && <p className="form-error">{error}</p>}
 

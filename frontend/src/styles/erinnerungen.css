@@ -133,7 +133,22 @@
   gap: var(--space-2);
 }
 
-.erinnerungen-lead-row {
+/* Jede Vorab-Erinnerung als eigene Karte (statt einer frei umbrechenden
+   Zeile) — bei wenig Platz brechen Stepper/Chips und "vorher, um"/Uhrzeit
+   bewusst in zwei Zeilen um, nicht zufällig mittendrin. */
+.erinnerungen-lead-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  padding-right: calc(var(--space-3) + 28px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-alt);
+}
+
+.erinnerungen-lead-card__row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -157,18 +172,20 @@
   flex-shrink: 0;
 }
 
-.erinnerungen-lead-row__remove {
+.erinnerungen-lead-card__remove {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
   border: none;
   background: none;
   color: var(--color-text-muted);
   font-size: 1.2rem;
   line-height: 1;
   cursor: pointer;
-  padding: 0 var(--space-1);
-  margin-left: auto;
+  padding: 4px;
 }
 
-.erinnerungen-lead-row__remove:hover {
+.erinnerungen-lead-card__remove:hover {
   color: var(--color-error);
 }
 

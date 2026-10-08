@@ -21,11 +21,11 @@ export function isLeapYear(year: number): boolean {
   return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0
 }
 
-export function subtractOffset(date: Date, offsetN: number, unit: IntervalUnit): Date {
+export function addOffset(date: Date, offsetN: number, unit: IntervalUnit): Date {
   const result = new Date(date.getTime())
-  if (unit === 'DAY') result.setUTCDate(result.getUTCDate() - offsetN)
-  else if (unit === 'WEEK') result.setUTCDate(result.getUTCDate() - offsetN * 7)
-  else if (unit === 'MONTH') result.setUTCMonth(result.getUTCMonth() - offsetN)
+  if (unit === 'DAY') result.setUTCDate(result.getUTCDate() + offsetN)
+  else if (unit === 'WEEK') result.setUTCDate(result.getUTCDate() + offsetN * 7)
+  else if (unit === 'MONTH') result.setUTCMonth(result.getUTCMonth() + offsetN)
   return result
 }
 
@@ -49,11 +49,13 @@ interface RecurrenceInput {
   leadReminders?: unknown
 }
 
-// ── Vorab-Erinnerungen (nur ONCE) ────────────────────────
-// Zusätzlich zum Termin selbst (startDate + times) können bei einmaligen
-// Erinnerungen weitere, frühere Erinnerungspunkte definiert werden (z.B.
-// "6 Monate vorher: Hotel buchen"). Unabhängig von der normalen
-// Wiederholungs-Logik (isDueOn) — die bleibt unverändert für den Termin selbst.
+// ── Vorab-Erinnerungen ────────────────────────────────────
+// Zusätzlich zum Termin selbst (startDate/Wiederholung + times) können
+// weitere, frühere Erinnerungspunkte definiert werden (z.B. "6 Monate
+// vorher: Hotel buchen", oder bei einem jährlichen Jahrestag "1 Monat
+// vorher"). Funktioniert für jede Wiederholungsart — bei wiederkehrenden
+// Terminen feuert jede Vorab-Erinnerung vor jedem Vorkommen erneut (siehe
+// scheduler.ts: Tag+Offset muss laut isDueOn ein gültiges Vorkommen sein).
 export interface LeadReminder {
   offsetN: number
   offsetUnit: IntervalUnit
@@ -140,27 +142,22 @@ const MAX_LOOKAHEAD_DAYS = 366 * 2
 
 function nextReminderOccurrence(reminder: RecurrenceInput, today: Date): Date | null {
   const todayUtc = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()))
-  let best: Date | null = null
+  const leads = parseLeadReminders(reminder.leadReminders)
+
   for (let i = 0; i <= MAX_LOOKAHEAD_DAYS; i++) {
     const candidate = new Date(todayUtc.getTime() + i * 24 * 60 * 60 * 1000)
-    if (isDueOn(reminder, candidate)) {
-      best = candidate
-      break
+    if (isDueOn(reminder, candidate)) return candidate
+    // Vorab-Erinnerungen können früher fällig sein als der Termin selbst
+    // (z.B. "Hotel buchen" 6 Monate vor dem Konzert) — für "Nächstes Datum"
+    // soll der wirklich nächste Push zählen, nicht nur der Termintag. Gilt
+    // für jede Wiederholungsart: ist candidate+Offset ein gültiges
+    // Vorkommen, würde dort eine Vorab-Erinnerung feuern.
+    for (const lead of leads) {
+      if (isDueOn(reminder, addOffset(candidate, lead.offsetN, lead.offsetUnit))) return candidate
     }
   }
 
-  // Vorab-Erinnerungen können früher fällig sein als der Termin selbst
-  // (z.B. "Hotel buchen" 6 Monate vor dem Konzert) — für "Nächstes Datum"
-  // soll der wirklich nächste Push zählen, nicht nur der Termintag.
-  if (reminder.recurrence === 'ONCE') {
-    for (const lead of parseLeadReminders(reminder.leadReminders)) {
-      const leadDate = subtractOffset(reminder.startDate, lead.offsetN, lead.offsetUnit)
-      if (daysBetween(todayUtc, leadDate) < 0) continue
-      if (!best || leadDate < best) best = leadDate
-    }
-  }
-
-  return best
+  return null
 }
 
 // Nächstes Vorkommen eines Geburtstags ab (inkl.) heute — für Sortierung/Anzeige.

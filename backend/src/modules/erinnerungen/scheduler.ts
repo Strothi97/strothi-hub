@@ -1,5 +1,5 @@
 import { prisma } from '../../db'
-import { isDueOn, isLeapYear, parseLeadReminders, subtractOffset, describeLeadOffset } from './erinnerungen.service'
+import { isDueOn, isLeapYear, parseLeadReminders, addOffset, describeLeadOffset } from './erinnerungen.service'
 import { sendPush, PushPayload } from '../../services/push.service'
 
 // Server läuft unter Passenger in Server-/UTC-Zeit, Uhrzeiten sind aber
@@ -77,17 +77,19 @@ export async function runErinnerungenCheck(): Promise<void> {
       })
     }
 
-    // Vorab-Erinnerungen (nur ONCE, z.B. "6 Monate vorher: Hotel buchen")
-    // — unabhängig vom obigen Termin-Check, eigener refId pro Listenindex,
-    // damit mehrere Vorab-Erinnerungen derselben Erinnerung nicht kollidieren.
+    // Vorab-Erinnerungen (z.B. "6 Monate vorher: Hotel buchen", oder bei einer
+    // jährlichen Erinnerung "1 Monat vorher") — unabhängig vom obigen Termin-
+    // Check, eigener refId pro Listenindex, damit mehrere Vorab-Erinnerungen
+    // derselben Erinnerung nicht kollidieren. Funktioniert für jede
+    // Wiederholungsart: heute+Offset muss laut isDueOn ein gültiges Vorkommen
+    // sein — bei wiederkehrenden Terminen feuert das vor jedem Vorkommen neu.
     for (const reminder of reminders) {
-      if (reminder.recurrence !== 'ONCE') continue
       const leads = parseLeadReminders(reminder.leadReminders)
       for (let index = 0; index < leads.length; index++) {
         const lead = leads[index]
         if (lead.time !== berlin.hhmm) continue
-        const leadDate = subtractOffset(reminder.startDate, lead.offsetN, lead.offsetUnit)
-        if (leadDate.getTime() !== todayUtcMidnight.getTime()) continue
+        const targetDate = addOffset(todayUtcMidnight, lead.offsetN, lead.offsetUnit)
+        if (!isDueOn(reminder, targetDate)) continue
         await fireOnce('reminder_lead', `${reminder.id}:${index}`, scheduledFor, reminder.userId, {
           title: `📅 ${reminder.title}`,
           body: `${describeLeadOffset(lead)} fällig${reminder.note ? ' — ' + reminder.note : ''}`,
