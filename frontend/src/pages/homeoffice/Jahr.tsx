@@ -183,8 +183,9 @@ export function Jahr() {
                 {current.adjustmentTotal !== 0 && (
                   <>
                     {' '}
-                    ({current.counts.HOLIDAY} eingetragen {current.adjustmentTotal > 0 ? '+' : ''}
-                    {current.adjustmentTotal} Korrektur)
+                    ({current.counts.HOLIDAY} eingetragen {current.adjustmentTotal > 0 ? '−' : '+'}
+                    {Math.abs(current.adjustmentTotal)} Korrektur — Korrekturen sind zusätzlicher
+                    Urlaubsanspruch, keine zusätzlich genommenen Tage)
                   </>
                 )}
               </p>

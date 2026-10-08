@@ -170,13 +170,17 @@ export async function getYearAggregation(userId: string, year: number) {
 
   const adjustmentTotal = adjustments.reduce((sum, adjustment) => sum + adjustment.amount, 0)
 
+  // Korrekturen sind zusätzlicher Urlaubsanspruch (z.B. Resttage aus dem Vorjahr), keine
+  // zusätzlich genommenen Tage — die sind im Kalender (counts.HOLIDAY) schon mit erfasst,
+  // wenn sie genommen wurden. "Effektive Urlaubstage" zieht sie deshalb ab: sie zeigen, wie
+  // viele Tage vom regulären Vertragsanspruch genommen wurden, nicht Kalender + Korrektur.
   return {
     year,
     counts,
     totalWorkdays: days.length,
     adjustments,
     adjustmentTotal,
-    effectiveHolidayDays: counts.HOLIDAY + adjustmentTotal,
+    effectiveHolidayDays: counts.HOLIDAY - adjustmentTotal,
     days,
   }
 }
